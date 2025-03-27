@@ -47,7 +47,33 @@ export class Player {
     }
 }
 
-type Hand = [Card, Card];
+export class Hand {
+    card1: Card;
+    card2: Card;
+
+    constructor(card1: Card, card2: Card) {
+        this.card1 = card1;
+        this.card2 = card2;
+    }
+
+    isSuited() {
+        return this.card1.suit === this.card2.suit;
+    }
+
+    isPaired() {
+        return this.card1.rank === this.card2.rank;
+    }
+
+    isConnected() {
+        return (this.card1.rank === 'A' && this.card2.rank === '2') ||
+               (this.card1.rank === '2' && this.card2.rank === 'A') ||
+               (Math.abs(this.card1.rankVal() - this.card2.rankVal()) === 1);
+    }
+
+    isSuitedConnector() {
+        return this.isSuited() && this.isConnected();
+    }
+}
 
 export class Card {
     rank: string;
@@ -56,5 +82,10 @@ export class Card {
     constructor(rank: string, suit: string) {
         this.rank = rank;
         this.suit = suit;
+    }
+
+    rankVal() {
+        const ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+        return ranks.indexOf(this.rank);
     }
 }
