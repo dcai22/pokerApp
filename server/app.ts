@@ -13,38 +13,38 @@ app.get('/', (req: Request, res: Response) => {
     res.send('Hello world');
 });
 
-app.post('/registerUser', (req: Request, res: Response) => {
+app.post('/registerPlayer', (req: Request, res: Response) => {
     // TODO;
 });
 
-app.delete('/removeUser', (req: Request, res: Response) => {
+app.delete('/removePlayer', (req: Request, res: Response) => {
     // TODO;
 });
 
-app.post('/user/createTable', (req: Request, res: Response) => {
+app.post('/player/createTable', (req: Request, res: Response) => {
     // TODO;
 });
 
-app.post('/user/joinTable', (req: Request, res: Response) => {
+app.post('/player/joinTable', (req: Request, res: Response) => {
     // TODO
 });
 
-app.delete('/user/leaveTable', (req: Request, res: Response) => {
+app.delete('/player/leaveTable', (req: Request, res: Response) => {
     // TODO;
 });
 
-app.put('/user/addHand', (req: Request, res: Response) => {
+app.put('/player/addHand', (req: Request, res: Response) => {
     // TODO;
 });
 
-app.put('/user/vpip', (req: Request, res: Response) => {
+app.put('/player/vpip', (req: Request, res: Response) => {
     // TODO;
 });
 
-app.get('/user/getVpip', (req: Request, res: Response) => {
+app.get('/player/getVpip', (req: Request, res: Response) => {
     // TODO;
 });
 
-app.get('/user/handStats', (req: Request, res: Response) => {
+app.get('/player/handStats', (req: Request, res: Response) => {
     // TODO;
 });
