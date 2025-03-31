@@ -1,0 +1,15 @@
+POSTGRESQL
+run psql with:
+```bash
+sudo -i -u postgres
+psql
+```
+
+then if you need password, run `\password postgres`
+
+
+FRONTEND
+`npm run dev`
+
+BACKEND
+`npx tsx server.ts`

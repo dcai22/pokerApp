@@ -1,18 +1,20 @@
+import type { ObjectId } from "mongodb";
+
 export interface DataStore {
     Players: number[],
     Tables: number[]
 }
 
 export class Table {
-    id: number;
-    players: number[] = [];         // sorted by position
+    id: ObjectId;
+    players: ObjectId[] = [];         // sorted by position
     sb: number;
     bb: number;
     owner: number;                          // playerId
     ante = 0;
     numHands = 0;
 
-    constructor(id: number, sb: number, bb: number, owner: number, ante?: number) {
+    constructor(id: ObjectId, sb: number, bb: number, owner: number, ante?: number) {
         this.id = id;
         this.sb = sb;
         this.bb = bb;
@@ -22,7 +24,7 @@ export class Table {
 }
 
 export class Player {
-    id: number;
+    id: ObjectId;
     username: string = 'anonymous';
     hands: Hand[] = [];
     vpips: boolean[] = [];
@@ -30,7 +32,7 @@ export class Player {
     stack: number = 0;
     buyin: number = 0;
 
-    constructor(id: number, username?: string) {
+    constructor(id: ObjectId, username?: string) {
         this.id = id;
         if (typeof username !== "undefined") this.username = username;
     }
