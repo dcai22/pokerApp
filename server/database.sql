@@ -27,7 +27,6 @@ CREATE TABLE Tables (
 CREATE TABLE Table_Players (
     table_id INT,
     player_id INT,
-    position INT,
     PRIMARY KEY (table_id, player_id),
     FOREIGN KEY (table_id) REFERENCES Tables(id),
     FOREIGN KEY (player_id) REFERENCES Players(id)
@@ -38,6 +37,7 @@ CREATE TABLE Hands (
     combination_id INT,
     player_id INT,
     table_id INT,
+    vpip BOOLEAN,
     FOREIGN KEY (player_id) REFERENCES Players(id),
     FOREIGN KEY (table_id) REFERENCES Tables(id)
 );
