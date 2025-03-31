@@ -1,3 +1,4 @@
+// import DBButton from "~/components/DBButton";
 import type { Route } from "./+types/home";
 import RandomButton from "~/components/RandomButton";
 
@@ -9,5 +10,10 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Home() {
-  return <RandomButton />;
+  return (
+    <>
+      <RandomButton />
+      {/* <DBButton /> */}
+    </>
+  );
 }
