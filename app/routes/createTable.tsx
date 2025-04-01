@@ -1,9 +1,27 @@
-function CreateTable() {
+import { Form, redirect } from "react-router";
+import type { Route } from "../+types/root";
+
+export async function loader({ params }: Route.LoaderArgs) {
+    const username = params.username;
+    return { username };
+}
+
+export async function action({ request, params }: Route.ActionArgs) {
+    const formData = await request.formData();
+    const updates = Object.fromEntries(formData);
+    console.log(updates.table_id);
+    // TODO: check if table already exists
+    return redirect(`/table/${params.username}/${updates.table_id}`);
+}
+
+export default function CreateTable({ loaderData }: Route.ComponentProps) {
     return (
         <>
-            Create Table
+            <p>Create a new table</p>
+            <Form method="post">
+                <p><input name="table_id" type="text"></input></p>
+                <button type="submit">CREATE TABLE</button>
+            </Form>
         </>
     );
 }
-
-export default CreateTable;

@@ -1,11 +1,14 @@
-import { Form } from "react-router";
+import { Form, redirect } from "react-router";
 import type { Route } from "../+types/root";
 import axios from "axios";
 
-export async function action({ request, params }: Route.ActionArgs) {
+export async function action({ request }: Route.ActionArgs) {
     const formData = await request.formData();
     const updates = Object.fromEntries(formData);
-    console.log(updates.username);
+    const username = updates.username;
+    console.log(username);
+    // TODO: create database entry and use player_id for routing
+    return redirect(`/joinTable/${username}`);
 }
 
 export default function Register() {
