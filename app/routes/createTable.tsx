@@ -1,4 +1,4 @@
-import { Form, redirect } from "react-router";
+import { Form, redirect, useNavigate } from "react-router";
 import type { Route } from "../+types/root";
 
 export async function loader({ params }: Route.LoaderArgs) {
@@ -15,13 +15,17 @@ export async function action({ request, params }: Route.ActionArgs) {
 }
 
 export default function CreateTable({ loaderData }: Route.ComponentProps) {
+    const navigate = useNavigate();
+
     return (
         <>
-            <p>Create a new table</p>
+            <p>Hi {loaderData.username}!</p>
+            <p>Please enter your new table id:</p>
             <Form method="post">
                 <p><input name="table_id" type="text"></input></p>
                 <button type="submit">CREATE TABLE</button>
             </Form>
+            <p><button onClick={() => navigate(`/joinTable/${loaderData.username}`)}>JOIN AN EXISTING TABLE</button></p>
         </>
     );
 }
