@@ -1,3 +1,5 @@
+31/03/2025
+
 POSTGRESQL
 run psql with:
 ```bash
@@ -13,3 +15,13 @@ FRONTEND
 
 BACKEND
 `npx tsx server.ts`
+
+
+
+01/04/2025
+https://www.youtube.com/watch?v=h7MTWLv3xvw
+Since we are working with react-router v7, root.tsx should export the component App which contains <Outlet />
+This uses the RouteConfig defined in routes.ts
+The index route is the route corresponding to "/"
+
+Routes depending on an id must export loader and action functions
