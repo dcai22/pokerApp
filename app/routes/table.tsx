@@ -9,6 +9,7 @@ export async function loader({ params }: Route.LoaderArgs) {
 }
 
 export default function Table({ loaderData }: Route.ComponentProps) {
+
     return (
         <p>
             Welcome to table {loaderData.table_id}!

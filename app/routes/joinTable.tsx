@@ -35,7 +35,7 @@ function JoinTable({ loaderData }: Route.ComponentProps) {
                 <button type="submit">JOIN TABLE</button>
             </Form>
 
-            <button onClick={() => navigate(`/createTable/${loaderData.username}`)}>NEW TABLE</button>
+            <button onClick={() => navigate(`/createTable/${loaderData.username}`)}>CREATE A NEW TABLE</button>
         </>
     );
 }
