@@ -9,8 +9,8 @@ function RandomButton() {
         async function initVotes() {
             const res = await axios.get("http://localhost:3000/numVotes");
             if (res.status === 200) {
-                setNumYes(res.data.numyes);
-                setNumNo(res.data.numno);
+                setNumYes(res.data.num_yes);
+                setNumNo(res.data.num_no);
             }
         }
 
@@ -21,11 +21,13 @@ function RandomButton() {
         // setters don't update the value until the next render
         const [ newYes, newNo ] = [ numYes + 1, numNo ];
         setNumYes(newYes);
+        setNumNo(newNo);
         axios.put("http://localhost:3000/updateVotes", { numYes: newYes, numNo: newNo });
     }
 
     function onVoteNo() {
         const [ newYes, newNo ] = [ numYes, numNo + 1 ];
+        setNumYes(newYes);
         setNumNo(newNo);
         axios.put("http://localhost:3000/updateVotes", { numYes: newYes, numNo: newNo });
     }
@@ -37,13 +39,18 @@ function RandomButton() {
         axios.put("http://localhost:3000/updateVotes", { numYes: newYes, numNo: newNo });
     }
 
+    function getPercentage() {
+        const numTotal = numNo + numYes;
+        return 100 * (numYes / (numTotal || 1));
+    }
+
     return (
         // Yes percentage edge case when numYes = numNo = 0
         <>
             <h1 onClick={onVoteYes}>VOTE YES</h1>
             <h1 onClick={onVoteNo}>VOTE NO</h1>
             <h1>Yes Votes: {numYes} / {numNo + numYes}</h1>
-            <h1>Yes Percentage: {(100 * (numYes / ((numNo + numYes) || 1))).toFixed(2)}%</h1>
+            <h1>Yes Percentage: {getPercentage().toFixed(2)}%</h1>
             <h1 onClick={onVoteReset}>RESET</h1>
         </>
     );
