@@ -1,4 +1,4 @@
-// import DBButton from "~/components/DBButton";
+import { useNavigate } from "react-router";
 import type { Route } from "./+types/home";
 import RandomButton from "~/components/RandomButton";
 
@@ -10,10 +10,13 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Home() {
+  const navigate = useNavigate();
+
   return (
     <>
+      Welcome to my app!
       <RandomButton />
-      {/* <DBButton /> */}
+      <p><button onClick={() => navigate(`/register`)}>get me out</button></p>
     </>
-  );
+  )
 }

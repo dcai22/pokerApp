@@ -62,47 +62,12 @@ app.get('/numVotes', async (req: Request, res: Response) => {
         console.log(err);
     }
 });
-// app.put('/voteYes', async (req: Request, res: Response) => {
-//     try {
-//         const allVotes = await pool.query("SELECT * FROM test WHERE id=1");
-//         await pool.query(
-//             "UPDATE test SET voteYes=$1",
-//             [allVotes.rows[0].voteyes + 1]
-//         );
-//         res.json("res was updated");
-//     } catch(err) {
-//         console.log(err);
-//     }
-// });
-// app.put('/voteNo', async (req: Request, res: Response) => {
-//     try {
-//         const allVotes = await pool.query("SELECT * FROM test WHERE id=1");
-//         await pool.query(
-//             "UPDATE test SET voteNo=$1",
-//             [allVotes.rows[0].voteno + 1]
-//         );
-//         res.json("res was updated");
-//     } catch(err) {
-//         console.log(err);
-//     }
-// });
-// app.put('/voteReset', async (req: Request, res: Response) => {
-//     try {
-//         await pool.query(
-//             "UPDATE test SET voteYes=$1 voteNo=$2",
-//             [0, 0]
-//         );
-//         res.json("res was updated");
-//     } catch(err) {
-//         console.log(err);
-//     }
-// });
 app.put('/updateVotes', async (req: Request, res: Response) => {
     const numYes = req.body.numYes as number;
     const numNo = req.body.numNo as number;
     try {
         await pool.query(
-            "UPDATE test SET numYes=$1, numNo=$2 WHERE id=1",
+            "UPDATE test SET num_yes=$1, num_no=$2 WHERE id=1",
             [numYes, numNo]
         );
         res.json("res was updated");
