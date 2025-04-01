@@ -5,6 +5,6 @@ export default [
     route("register", "routes/register.tsx"),
     route("createTable", "routes/createTable.tsx"),
     route("joinTable", "routes/joinTable.tsx"),
-    route("table", "routes/table.tsx"),
+    route("table/:id", "routes/table.tsx"),
     route("viewStatistics", "routes/viewStatistics.tsx")
 ] satisfies RouteConfig;

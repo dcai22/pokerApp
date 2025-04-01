@@ -1,9 +1,18 @@
-function Table() {
-    return (
-        <>
-            Table
-        </>
-    );
+import type { Route } from "../+types/root";
+
+export async function loader({ params }: Route.LoaderArgs) {
+    const table_id = params.id;
+    return { table_id };
 }
 
-export default Table;
+export async function action() {
+
+}
+
+export default function Table({ loaderData }: Route.ComponentProps) {
+    return (
+        <p>
+            Welcome to table {loaderData.table_id}!
+        </p>
+    );
+}
