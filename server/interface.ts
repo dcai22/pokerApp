@@ -23,16 +23,16 @@ export class Table {
 
 export class Player {
     id: number;
-    username: string = 'anonymous';
+    username: string;
     hands: Hand[] = [];
     vpips: boolean[] = [];
     isPlaying: boolean = false;
     stack: number = 0;
     buyin: number = 0;
 
-    constructor(id: number, username?: string) {
+    constructor(id: number, username: string) {
         this.id = id;
-        if (typeof username !== "undefined") this.username = username;
+        this.username = username;
     }
 
     getVpip() {
