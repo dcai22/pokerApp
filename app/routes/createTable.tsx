@@ -10,7 +10,10 @@ export async function loader({ params }: Route.LoaderArgs) {
 export async function action({ request, params }: Route.ActionArgs) {
     const formData = await request.formData();
     const updates = Object.fromEntries(formData);
-    console.log(updates.table_id);
+
+    if (updates.sb > updates.bb) {
+        throw new Response("Small Blind cannot be larger than Big Blind", { status: 400 });
+    }
 
     try {
         await axios.post(

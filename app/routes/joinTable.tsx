@@ -15,7 +15,8 @@ export async function action({ request, params }: Route.ActionArgs) {
     const formData = await request.formData();
     const updates = Object.fromEntries(formData);
     const table_name = updates.table_name;
-    // TODO: check if table exists
+    
+    // check if table exists
     try {
         const res = await axios.post(
             "http://localhost:3000/player/joinTable",
@@ -40,7 +41,6 @@ function JoinTable({ loaderData }: Route.ComponentProps) {
     const navigate = useNavigate();
 
     // TODO: check if player exists
-
     return (
         <>
             Hi {loaderData.username}!<br />

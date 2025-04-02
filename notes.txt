@@ -32,3 +32,17 @@ There was a problem in register.tsx where calling axios.put(...) with a duplicat
 I thought this was a problem with my backend route, but the solution was to wrap the axios.put(...) call with a try-catch block
 For the backend, pool.query(...) can throw an error that needs to be caught in a try-catch block
 However you cannot simply perform res.status(400), you need to do res.status(400).json(), i.e., there must be a `.json()`
+
+03/04/2025
+Request body can be sent in axios.get(...) and axios.delete(...) as follows:
+```
+await axios.get(
+    URL,
+    {
+        data: {
+            var1: val1,
+            var2: val2,
+        },
+    }
+);
+```
