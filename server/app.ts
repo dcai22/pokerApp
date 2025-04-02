@@ -58,22 +58,51 @@ app.post('/player/createTable', async (req: Request, res: Response) => {
 
     // const username = req.params.username;
     const username = req.body.username;
-    let owner;
+    let owner_id;
     try {
-        const allOwners = await pool.query(
+        const dbRes = await pool.query(
             "SELECT * FROM players WHERE username=$1",
             [username]
         );
-        owner = allOwners.rows[0].id;
+        owner_id = dbRes.rows[0].id;
     } catch(err) {
         res.status(400).json();
     }
 
+    // create table
+    try {
+        const dbRes = await pool.query(
+            "INSERT INTO tables(name, sb, bb, owner) VALUES($1, $2, $3, $4);",
+            [table_name, sb, bb, owner_id]
+        );
+
+        if (!dbRes.rowCount) {
+            res.status(400).json();
+        }
+    } catch(err) {
+        res.status(400).json();
+    }
+
+    // get table_id
+    let table_id;
+    try {
+        const dbRes = await pool.query(
+            "SELECT * FROM tables WHERE name=$1",
+            [table_name]
+        );
+
+        table_id = dbRes.rows[0].id;
+    } catch(err) {
+        res.status(400).json();
+    }
+
+    // add player to table
     try {
         await pool.query(
-            "INSERT INTO tables(name, sb, bb, owner) VALUES($1, $2, $3, $4)",
-            [table_name, sb, bb, owner]
+            "INSERT INTO table_players(table_id, player_id) VALUES($1, $2)",
+            [table_id, owner_id]
         );
+        res.json();
     } catch(err) {
         res.status(400).json();
     }
@@ -127,8 +156,54 @@ app.post('/player/joinTable', async (req: Request, res: Response) => {
     }
 });
 
-app.delete('/player/leaveTable', (req: Request, res: Response) => {
-    // TODO;
+app.delete('/player/leaveTable', async (req: Request, res: Response) => {
+    const username = req.body.username;
+    const table_name = req.body.table_name;
+
+    // get player_id
+    let player_id;
+    try {
+        const dbRes = await pool.query(
+            "SELECT * FROM players WHERE username=$1",
+            [username]
+        );
+        
+        if (dbRes.rowCount) {
+            player_id = dbRes.rows[0].id;
+        } else {
+            res.status(400).json();
+        }
+    } catch(err) {
+        res.status(400).json();
+    }
+
+    // get table_id
+    let table_id;
+    try {
+        const dbRes = await pool.query(
+            "SELECT * FROM tables WHERE name=$1",
+            [table_name]
+        );
+        
+        if (dbRes.rowCount) {
+            table_id = dbRes.rows[0].id;
+        } else {
+            res.status(400).json();
+        }
+    } catch(err) {
+        res.status(400).json();
+    }
+
+    try {
+        const dbRes = await pool.query(
+            "DELETE FROM table_players WHERE table_id=$1 AND player_id=$2",
+            [table_id, player_id]
+        );
+
+        res.json();
+    } catch(err) {
+        res.status(400).json();
+    }
 });
 
 app.put('/player/addHand', (req: Request, res: Response) => {
