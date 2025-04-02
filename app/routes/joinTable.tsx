@@ -14,12 +14,28 @@ export async function action({ request, params }: Route.ActionArgs) {
 
     const formData = await request.formData();
     const updates = Object.fromEntries(formData);
-    const table_id = updates.table_id;
-    console.log(table_id);
+    const table_name = updates.table_name;
     // TODO: check if table exists
-    return redirect(`/table/${username}/${table_id}`);
+    try {
+        const res = await axios.post(
+            "http://localhost:3000/player/joinTable",
+            {
+                username: username,
+                table_name: table_name,
+            }
+        );
+
+        if (res.status === 200) {
+            return redirect(`/table/${username}/${table_name}`);
+        } else {
+            throw new Response("Table doesn't exist", { status: 400 });
+        }
+    } catch(err) {
+        throw new Response("Page not found", { status: 404 });
+    }
 }
 
+// TODO: use table_id instead of table_name
 function JoinTable({ loaderData }: Route.ComponentProps) {
     const navigate = useNavigate();
 
@@ -27,15 +43,15 @@ function JoinTable({ loaderData }: Route.ComponentProps) {
 
     return (
         <>
-            <p>Hi {loaderData.username}!</p>
+            Hi {loaderData.username}!<br />
 
             <Form method="put">
-                <p>Please entire the table code:</p>
-                <p><input name="table_id" type="text"></input></p>
-                <button type="submit">JOIN TABLE</button>
+                Please enter your table name:<br />
+                <input name="table_name" type="text"></input><br />
+                <button type="submit">Join</button><br />
             </Form>
 
-            <button onClick={() => navigate(`/createTable/${loaderData.username}`)}>CREATE A NEW TABLE</button>
+            Don't have a table? Create one <button onClick={() => navigate(`/createTable/${loaderData.username}`)}>HERE</button><br />
         </>
     );
 }

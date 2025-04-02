@@ -35,7 +35,7 @@ export default function CreateTable({ loaderData }: Route.ComponentProps) {
     return (
         <>
             Hi {loaderData.username}!<br />
-            Please enter your new table id:<br />
+            Create a new table!<br />
             <Form method="post">
                 <label htmlFor="name">Table name:</label><br />
                 <input name="name" id="name" type="text"></input><br />
@@ -46,9 +46,9 @@ export default function CreateTable({ loaderData }: Route.ComponentProps) {
                 <label htmlFor="bb">Big Blind:</label><br />
                 <input name="bb" type="number"></input><br />
 
-                <button type="submit">CREATE TABLE</button>
+                <button type="submit">Create</button><br />
             </Form>
-            <button onClick={() => navigate(`/joinTable/${loaderData.username}`)}>JOIN AN EXISTING TABLE</button><br />
+            Want to join a table? Click <button onClick={() => navigate(`/joinTable/${loaderData.username}`)}>HERE</button><br />
         </>
     );
 }
