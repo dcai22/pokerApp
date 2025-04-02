@@ -2,41 +2,45 @@ import { Form, redirect, useNavigate } from "react-router";
 import type { Route } from "../+types/root";
 import axios from "axios";
 
-export async function action({ request }: Route.ActionArgs) {
+export async function action({ request, params }: Route.ActionArgs) {
     const formData = await request.formData();
     const updates = Object.fromEntries(formData);
-    // TODO: create database entry and use player_id for routing
-    // TODO: has password
+
     try {
-        await axios.post(
-            "http://localhost:3000/registerPlayer",
+        const res = await axios.post(
+            "http://localhost:3000/login",
             {
                 username: updates.username,
                 password: updates.password,
             }
         );
-        return redirect(`/joinTable/${updates.username}`);
+
+        // console.log(res.data);
+        if (res.data.rowCount) {
+            return redirect(`/joinTable/${updates.username}`);
+        } else {
+            throw new Response("username or password incorrect", { status: 400 });
+        }
     } catch(err) {
-        throw new Response("user with that name already exists", { status: 400 });
+        throw new Response("Page not found", { status: 404 });
     }
 }
 
-export default function Register() {
+export default function Login() {
     const navigate = useNavigate();
 
     return (
         <>
-            Register a new account<br />
+            Log in to your account<br />
             <Form method="post">
                 <label htmlFor="username">Username:</label><br />
                 <input name="username" id="username" type="text"></input><br />
-
                 <label htmlFor="password">Password:</label><br />
                 <input name="password" id="password" type="password"></input><br />
-
-                <button type="submit">Submit</button>
+                <button type="submit">LOGIN</button>
             </Form>
-            Already have an account? Login <button onClick={() => navigate("/login")}>HERE</button><br />
+
+            Don't have an account? Register <button onClick={() => navigate("/register")}>HERE</button><br />
         </>
     );
 }

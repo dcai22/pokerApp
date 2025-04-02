@@ -2,8 +2,6 @@ import express, { json, type Request, type Response } from 'express';
 import cors from 'cors';
 
 import pool from "./db";
-import { Player } from './interface';
-import { blob } from 'stream/consumers';
 
 const app = express();
 
@@ -27,14 +25,30 @@ app.post('/registerPlayer', async (req: Request, res: Response) => {
             "INSERT INTO players(username, password) VALUES($1, $2)",
             [username, password]
         );
-        res.json();
+        res.json(dbRes);
     } catch(err) {
         res.status(400).json();
     }
 });
 
 app.delete('/removePlayer', (req: Request, res: Response) => {
-    // TODO;
+    // TODO
+});
+
+// TODO: add tokens
+app.post('/login', async (req: Request, res: Response) => {
+    const username = req.body.username;
+    const password = req.body.password;
+
+    try {
+        const dbRes = await pool.query(
+            "SELECT * FROM players WHERE username=$1 AND password=$2",
+            [username, password]
+        );
+        res.json(dbRes);
+    } catch(err) {
+        res.status(400).json();
+    }
 });
 
 app.post('/player/createTable', async (req: Request, res: Response) => {
@@ -65,8 +79,52 @@ app.post('/player/createTable', async (req: Request, res: Response) => {
     }
 });
 
-app.post('/player/joinTable', (req: Request, res: Response) => {
-    // TODO
+// TODO: use table_id instead of table_name
+app.post('/player/joinTable', async (req: Request, res: Response) => {
+    const username = req.body.username;
+    const table_name = req.body.table_name;
+    let player_id;
+    let table_id;
+
+    // get player_id from username
+    try {
+        const dbRes = await pool.query(
+            "SELECT * FROM players WHERE username=$1",
+            [username]
+        );
+        if (dbRes.rowCount) {
+            player_id = dbRes.rows[0].id;
+        } else {
+            res.status(400).json();
+        }
+    } catch(err) {
+        res.status(400).json();
+    }
+
+    // get table_id from table_name
+    try {
+        const dbRes = await pool.query(
+            "SELECT * FROM tables WHERE name=$1",
+            [table_name]
+        );
+        if (dbRes.rowCount) {
+            table_id = dbRes.rows[0].id;
+        } else {
+            res.status(400).json();
+        }
+    } catch(err) {
+        res.status(400).json();
+    }
+
+    try {
+        await pool.query(
+            "INSERT INTO table_players(table_id, player_id) VALUES($1, $2)",
+            [table_id, player_id]
+        );
+        res.json();
+    } catch(err) {
+        res.status(400).json();
+    }
 });
 
 app.delete('/player/leaveTable', (req: Request, res: Response) => {
