@@ -1,16 +1,41 @@
 import axios from "axios";
 import type { Route } from "../+types/root";
 import { useNavigate } from "react-router";
-import { useEffect } from "react";
 
 export async function loader({ params }: Route.LoaderArgs) {
-    const username = params.username;
-    // TODO: use table_id instead of table_name
-    const table_name = params.table_name;
-    if (!table_name) {
+    const player_id = params.player_id;
+    const table_id = params.table_id;
+    if (!player_id || !table_id) {
         throw new Response("Not Found", { status: 404 });
     }
-    return { username, table_name };
+
+    let username;
+    try {
+        const res = await axios.get(
+            "http://localhost:3000/getPlayer",
+            {
+                data: { player_id },
+            }
+        );
+        username = res.data.name;
+    } catch(err) {
+        throw new Response("Player does not exist", { status: 400 });
+    }
+
+    let table_name;
+    try {
+        const res = await axios.get(
+            "http://localhost:3000/getTable",
+            {
+                data: { table_id },
+            }
+        );
+        table_name = res.data.name;
+    } catch(err) {
+        throw new Response("Table does not exist", { status: 400 });
+    }
+
+    return { player_id, table_id, username, table_name };
 }
 
 export default function Table({ loaderData }: Route.ComponentProps) {
@@ -22,13 +47,13 @@ export default function Table({ loaderData }: Route.ComponentProps) {
                 "http://localhost:3000/player/leaveTable",
                 {
                     data: {
-                        username: loaderData.username,
-                        table_name: loaderData.table_name,
+                        player_id: loaderData.player_id,
+                        table_id: loaderData.table_id,
                     },
                 }
             );
 
-            navigate(`/joinTable/${loaderData.username}`);
+            navigate(`/joinTable/${loaderData.player_id}`);
         } catch(err) {
             throw new Response("Page not found", { status: 404 });
         }
@@ -41,6 +66,7 @@ export default function Table({ loaderData }: Route.ComponentProps) {
         <>
             Hi {loaderData.username},<br />
             Welcome to table {loaderData.table_name}!<br />
+            Join code: {loaderData.table_id}<br />
             <br />
             <h1 onClick={leaveTable}>leave</h1><br />
         </>

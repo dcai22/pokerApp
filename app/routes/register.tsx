@@ -5,17 +5,17 @@ import axios from "axios";
 export async function action({ request }: Route.ActionArgs) {
     const formData = await request.formData();
     const updates = Object.fromEntries(formData);
-    // TODO: create database entry and use player_id for routing
-    // TODO: has password
+
+    // TODO: hash password
     try {
-        await axios.post(
+        const res = await axios.post(
             "http://localhost:3000/registerPlayer",
             {
                 username: updates.username,
                 password: updates.password,
             }
         );
-        return redirect(`/joinTable/${updates.username}`);
+        return redirect(`/joinTable/${res.data.player_id}`);
     } catch(err) {
         throw new Response("user with that name already exists", { status: 400 });
     }

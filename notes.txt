@@ -46,3 +46,5 @@ await axios.get(
     }
 );
 ```
+
+TODO: add parameter checks to loaders
