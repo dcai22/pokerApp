@@ -1,6 +1,7 @@
 import axios from "axios";
 import type { Route } from "../+types/root";
 import { useNavigate } from "react-router";
+import { useEffect } from "react";
 
 export async function loader({ params }: Route.LoaderArgs) {
     const username = params.username;
@@ -32,6 +33,9 @@ export default function Table({ loaderData }: Route.ComponentProps) {
             throw new Response("Page not found", { status: 404 });
         }
     }
+
+    // SSR doesn't allow access to window
+    // window.addEventListener("beforeunload", leaveTable);
 
     return (
         <>

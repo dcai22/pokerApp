@@ -5,7 +5,6 @@ import { Form, redirect, useNavigate } from "react-router";
 export async function loader({ params }: Route.LoaderArgs) {
     // TODO: use player_id for routing
     const username = params.username;
-    console.log(username);
     return { username };
 }
 
