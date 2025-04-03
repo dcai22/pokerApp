@@ -16,7 +16,7 @@ export async function action({ request, params }: Route.ActionArgs) {
         );
 
         if (res.status === 200) {
-            return redirect(`/joinTable/${res.data.id}`);
+            return redirect(`/joinTable/${res.data.player_id}`);
         } else {
             throw new Response("username or password incorrect", { status: 400 });
         }

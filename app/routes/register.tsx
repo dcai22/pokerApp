@@ -1,3 +1,4 @@
+import bcrypt from "bcryptjs";
 import { Form, redirect, useNavigate } from "react-router";
 import type { Route } from "../+types/root";
 import axios from "axios";
@@ -6,13 +7,16 @@ export async function action({ request }: Route.ActionArgs) {
     const formData = await request.formData();
     const updates = Object.fromEntries(formData);
 
-    // TODO: hash password
+    const saltRounds = 10;
+    const salt = await bcrypt.genSalt(saltRounds);
+    const hash = await bcrypt.hash(updates.password as string, salt);
+
     try {
         const res = await axios.post(
             "http://localhost:3000/registerPlayer",
             {
                 username: updates.username,
-                password: updates.password,
+                hash: hash,
             }
         );
         return redirect(`/joinTable/${res.data.player_id}`);
