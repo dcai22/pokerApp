@@ -2,7 +2,7 @@ import { Form, redirect, useNavigate } from "react-router";
 import type { Route } from "../+types/root";
 import axios from "axios";
 
-export async function action({ request, params }: Route.ActionArgs) {
+export async function action({ request }: Route.ActionArgs) {
     const formData = await request.formData();
     const updates = Object.fromEntries(formData);
 
