@@ -1,8 +1,9 @@
-import express, { json, type Request, type Response } from 'express';
+import express, { json, type NextFunction, type Request, type Response } from 'express';
 import cors from 'cors';
 
 import pool from "./db";
 import bcrypt from 'bcryptjs';
+import { genToken } from './helpers/auth';
 
 const app = express();
 
@@ -16,25 +17,31 @@ app.get('/', (req: Request, res: Response) => {
     res.send('Hello world');
 });
 
-// returns player_id
+// AUTH //
+// returns player_id and token
 app.post('/registerPlayer', async (req: Request, res: Response) => {
     const username = req.body.username;
-    const hash = req.body.hash;
+    const hashedPassword = req.body.hashedPassword;
 
     try {
         // throws an error if it fails
         const dbRes = await pool.query(
             "INSERT INTO players(username, password) VALUES($1, $2) RETURNING id",
-            [username, hash]
+            [username, hashedPassword]
         );
-
+        
         if (dbRes.rowCount) {
-            res.json({ player_id: dbRes.rows[0].id })
+            const player_id = dbRes.rows[0].id;
+            const token = await genToken(player_id);
+            res.json({ player_id, token })
+            return;
         } else {
             res.status(400).json();
+            return;
         }
     } catch(err) {
         res.status(400).json();
+        return;
     }
 });
 
@@ -42,7 +49,6 @@ app.delete('/removePlayer', (req: Request, res: Response) => {
     // TODO
 });
 
-// TODO: add tokens
 app.post('/login', async (req: Request, res: Response) => {
     const username = req.body.username;
     const password = req.body.password;
@@ -60,18 +66,45 @@ app.post('/login', async (req: Request, res: Response) => {
             player_id = dbRes.rows[0].id;
         } else {
             res.status(400).json();
+            return;
         }
     } catch(err) {
         res.status(400).json();
+        return;
     }
 
     if (await bcrypt.compare(password, hash)) {
-        res.json({ player_id });
+        const token = await genToken(player_id);
+        res.json({ player_id, token });
+        return;
     } else {
-        res.status(400).json();
+        const token = genToken(player_id);
+        res.status(400).json({ token: token });
+        return;
     }
 });
 
+app.delete('/deleteToken', async (req: Request, res: Response) => {
+    const token = req.body.token;
+
+    const dbRes = await pool.query("SELECT hash FROM tokens")
+    const allTokens = dbRes.rows;
+
+    for (const dbToken of allTokens) {
+        if (await bcrypt.compare(token, dbToken.hash)) {
+            await pool.query(
+                "DELETE FROM tokens WHERE hash=$1",
+                [dbToken.hash]
+            );
+            res.json();
+            return;
+        }
+    }
+
+    res.json();
+});
+
+// PLAYER //
 app.post('/player/createTable', async (req: Request, res: Response) => {
     const table_name = req.body.name;
     const sb = req.body.sb;
@@ -90,9 +123,11 @@ app.post('/player/createTable', async (req: Request, res: Response) => {
             table_id = dbRes.rows[0].id;
         } else {
             res.status(400).json();
+            return;
         }
     } catch(err) {
         res.status(400).json({ table_id: table_id });
+        return;
     }
 
     // add player to table
@@ -102,8 +137,10 @@ app.post('/player/createTable', async (req: Request, res: Response) => {
             [table_id, player_id]
         );
         res.json({ table_id });
+        return;
     } catch(err) {
         res.status(400).json();
+        return;
     }
 });
 
@@ -117,8 +154,10 @@ app.post('/player/joinTable', async (req: Request, res: Response) => {
             [table_id, player_id]
         );
         res.json();
+        return;
     } catch(err) {
         res.status(400).json();
+        return;
     }
 });
 
@@ -133,8 +172,10 @@ app.delete('/player/leaveTable', async (req: Request, res: Response) => {
         );
 
         res.json();
+        return;
     } catch(err) {
         res.status(400).json();
+        return;
     }
 });
 
@@ -166,11 +207,14 @@ app.get('/getPlayer', async (req: Request, res: Response) => {
         
         if (dbRes.rowCount) {
             res.json(dbRes.rows[0]);
+            return;
         } else {
             res.status(400).json();
+            return;
         }
     } catch(err) {
         res.status(400).json();
+        return;
     }
 });
 
@@ -184,11 +228,14 @@ app.get('/getTable', async (req: Request, res: Response) => {
 
         if (dbRes.rowCount) {
             res.json(dbRes.rows[0]);
+            return;
         } else {
             res.status(400).json();
+            return;
         }
     } catch(err) {
         res.status(400).json();
+        return;
     }
 });
 
@@ -198,8 +245,10 @@ app.get('/numVotes', async (req: Request, res: Response) => {
     try {
         const allVotes = await pool.query("SELECT * FROM test WHERE id=1");
         res.json(allVotes.rows[0]);
+        return;
     } catch(err) {
         res.status(400).json();
+        return;
     }
 });
 app.put('/updateVotes', async (req: Request, res: Response) => {
@@ -211,7 +260,9 @@ app.put('/updateVotes', async (req: Request, res: Response) => {
             [numYes, numNo]
         );
         res.json("res was updated");
+        return;
     } catch(err) {
         res.status(400).json();
+        return;
     }
 });

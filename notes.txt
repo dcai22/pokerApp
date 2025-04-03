@@ -48,3 +48,19 @@ await axios.get(
 ```
 
 TODO: add parameter checks to loaders
+NOTE: parameter checks will be done with tokens stored in localStorage
+      Token is purged upon loading the register and login routes (DONE)
+      Token is created after successful register/login (DONE)
+      all other routes will verify the token in their loader
+TODO: change all names `hash` to either `hashedPassword` or `hashedToken`
+
+04/04/2025
+Many methods of dealing with tokens don't work due to this app using Server Side Rendering (SSR)
+This is why I can't use localStorage or sessionStorage
+Instead, I will store tokens in the url when redirecting
+This new strategy will limit the user to a single session at a time
+Revised plan for tokens:
+ - Tokens will be added to the url for protected sites
+    - Loader function for these sites will check the url
+ - Register and login will create a new token upon success
+ - Login will remove all other tokens from the database

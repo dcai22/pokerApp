@@ -38,6 +38,7 @@ export async function loader({ params }: Route.LoaderArgs) {
     return { player_id, table_id, username, table_name };
 }
 
+// TODO: remove table_players entry from database upon leaving page
 export default function Table({ loaderData }: Route.ComponentProps) {
     const navigate = useNavigate();
 

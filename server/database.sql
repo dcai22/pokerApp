@@ -51,3 +51,9 @@ CREATE TABLE Hands (
     FOREIGN KEY (player_id) REFERENCES Players(id),
     FOREIGN KEY (table_id) REFERENCES Tables(id)
 );
+
+CREATE TABLE Tokens (
+    hash varchar(255) PRIMARY KEY,
+    player_id INT,
+    FOREIGN KEY (player_id) REFERENCES Players(id)
+);
