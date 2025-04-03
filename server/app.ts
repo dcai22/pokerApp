@@ -2,6 +2,7 @@ import express, { json, type Request, type Response } from 'express';
 import cors from 'cors';
 
 import pool from "./db";
+import bcrypt from 'bcryptjs';
 
 const app = express();
 
@@ -18,13 +19,13 @@ app.get('/', (req: Request, res: Response) => {
 // returns player_id
 app.post('/registerPlayer', async (req: Request, res: Response) => {
     const username = req.body.username;
-    const password = req.body.password;
+    const hash = req.body.hash;
 
     try {
         // throws an error if it fails
         const dbRes = await pool.query(
             "INSERT INTO players(username, password) VALUES($1, $2) RETURNING id",
-            [username, password]
+            [username, hash]
         );
 
         if (dbRes.rowCount) {
@@ -46,18 +47,27 @@ app.post('/login', async (req: Request, res: Response) => {
     const username = req.body.username;
     const password = req.body.password;
 
+    let hash;
+    let player_id;
     try {
         const dbRes = await pool.query(
-            "SELECT * FROM players WHERE username=$1 AND password=$2",
-            [username, password]
+            "SELECT * FROM players WHERE username=$1",
+            [username]
         );
 
         if (dbRes.rowCount) {
-            res.json(dbRes.rows[0]);
+            hash = dbRes.rows[0].password;
+            player_id = dbRes.rows[0].id;
         } else {
             res.status(400).json();
         }
     } catch(err) {
+        res.status(400).json();
+    }
+
+    if (await bcrypt.compare(password, hash)) {
+        res.json({ player_id });
+    } else {
         res.status(400).json();
     }
 });
@@ -97,7 +107,6 @@ app.post('/player/createTable', async (req: Request, res: Response) => {
     }
 });
 
-// TODO: use table_id instead of table_name
 app.post('/player/joinTable', async (req: Request, res: Response) => {
     const player_id = req.body.player_id;
     const table_id = req.body.table_id;
