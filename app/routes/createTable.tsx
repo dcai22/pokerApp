@@ -3,8 +3,22 @@ import type { Route } from "../+types/root";
 import axios from "axios";
 
 export async function loader({ params }: Route.LoaderArgs) {
-    const username = params.username;
-    return { username };
+    const player_id = params.player_id;
+
+    let username;
+    try {
+        const res = await axios.get(
+            "http://localhost:3000/getPlayer",
+            {
+                data: { player_id: player_id },
+            }
+        );
+        username = res.data.username;
+    } catch(err) {
+        throw new Response("Player does not exist", { status: 400 });
+    }
+
+    return { player_id, username };
 }
 
 export async function action({ request, params }: Route.ActionArgs) {
@@ -16,17 +30,18 @@ export async function action({ request, params }: Route.ActionArgs) {
     }
 
     try {
-        await axios.post(
+        const res = await axios.post(
             "http://localhost:3000/player/createTable",
             {
                 name: updates.name,
                 sb: updates.sb,
                 bb: updates.bb,
-                username: params.username,
+                player_id: params.player_id,
             }
         );
 
-        return redirect(`/table/${params.username}/${updates.name}`);
+        console.log(res);
+        return redirect(`/table/${params.player_id}/${res.data.table_id}`);
     } catch(err) {
         throw new Response("Page not found", { status: 404 });
     }
@@ -51,7 +66,7 @@ export default function CreateTable({ loaderData }: Route.ComponentProps) {
 
                 <button type="submit">Create</button><br />
             </Form>
-            Want to join a table? Click <button onClick={() => navigate(`/joinTable/${loaderData.username}`)}>HERE</button><br />
+            Want to join a table? Click <button onClick={() => navigate(`/joinTable/${loaderData.player_id}`)}>HERE</button><br />
         </>
     );
 }

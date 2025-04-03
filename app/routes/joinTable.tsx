@@ -3,30 +3,43 @@ import type { Route } from "../+types/root";
 import { Form, redirect, useNavigate } from "react-router";
 
 export async function loader({ params }: Route.LoaderArgs) {
-    // TODO: use player_id for routing
-    const username = params.username;
-    return { username };
+    const player_id = params.player_id;
+
+    let username;
+    try {
+        const res = await axios.get(
+            "http://localhost:3000/getPlayer",
+            {
+                data: { player_id: player_id },
+            }
+        );
+        username = res.data.username;
+    } catch(err) {
+        throw new Response("Player does not exist", { status: 400 });
+    }
+
+    return { player_id, username };
 }
 
 export async function action({ request, params }: Route.ActionArgs) {
-    const username = params.username;
+    const player_id = params.player_id;
 
     const formData = await request.formData();
     const updates = Object.fromEntries(formData);
-    const table_name = updates.table_name;
+    const table_id = updates.table_id;
     
     // check if table exists
     try {
         const res = await axios.post(
             "http://localhost:3000/player/joinTable",
             {
-                username: username,
-                table_name: table_name,
+                player_id: player_id,
+                table_id: table_id,
             }
         );
 
         if (res.status === 200) {
-            return redirect(`/table/${username}/${table_name}`);
+            return redirect(`/table/${player_id}/${table_id}`);
         } else {
             throw new Response("Table doesn't exist", { status: 400 });
         }
@@ -35,7 +48,6 @@ export async function action({ request, params }: Route.ActionArgs) {
     }
 }
 
-// TODO: use table_id instead of table_name
 function JoinTable({ loaderData }: Route.ComponentProps) {
     const navigate = useNavigate();
 
@@ -45,12 +57,12 @@ function JoinTable({ loaderData }: Route.ComponentProps) {
             Hi {loaderData.username}!<br />
 
             <Form method="put">
-                Please enter your table name:<br />
-                <input name="table_name" type="text"></input><br />
+                Please enter the table id:<br />
+                <input name="table_id" type="text"></input><br />
                 <button type="submit">Join</button><br />
             </Form>
 
-            Don't have a table? Create one <button onClick={() => navigate(`/createTable/${loaderData.username}`)}>HERE</button><br />
+            Don't have a table? Create one <button onClick={() => navigate(`/createTable/${loaderData.player_id}`)}>HERE</button><br />
         </>
     );
 }

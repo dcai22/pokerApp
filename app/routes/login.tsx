@@ -15,9 +15,8 @@ export async function action({ request, params }: Route.ActionArgs) {
             }
         );
 
-        // console.log(res.data);
-        if (res.data.rowCount) {
-            return redirect(`/joinTable/${updates.username}`);
+        if (res.status === 200) {
+            return redirect(`/joinTable/${res.data.id}`);
         } else {
             throw new Response("username or password incorrect", { status: 400 });
         }
