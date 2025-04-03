@@ -40,7 +40,6 @@ export async function action({ request, params }: Route.ActionArgs) {
             }
         );
 
-        console.log(res);
         return redirect(`/table/${params.player_id}/${res.data.table_id}`);
     } catch(err) {
         throw new Response("Page not found", { status: 404 });
