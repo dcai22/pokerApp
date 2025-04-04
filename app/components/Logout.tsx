@@ -1,7 +1,12 @@
-import { Form, redirect, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import axios from "axios";
 
-export default function Logout({ player_id, token }: { player_id: number, token: string }) {
+interface LogoutProps {
+    player_id: number,
+    token: string,
+}
+
+export default function Logout({ player_id, token }: LogoutProps) {
     const navigate = useNavigate();
 
     async function onClick() {
