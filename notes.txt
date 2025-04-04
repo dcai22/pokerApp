@@ -64,3 +64,19 @@ Revised plan for tokens:
     - Loader function for these sites will check the url
  - Register and login will create a new token upon success
  - Login will remove all other tokens from the database
+
+I notice storing tokens in the URL is a security risk, so I will try using cookies:
+https://reactrouter.com/explanation/sessions-and-cookies
+TODO:
+ - URLs should no longer have the player_id param for security purposes     (DONE)
+    - The loader can process the token and return user details              (DONE)
+ - Cookie is checked in loader of register/login                            (DONE)
+    - A redirect is performed if a token is found                           (DONE)
+ - Cookie is stored upon successful login/register                          (DONE)
+ - All redirects should use commitSession() or similar                      (DONE)
+ - Some way to automatically clear tokens from db                           **TODO**
+NOTES:
+ - session.flash(...) can be used to set a value temporarily, useful for errors
+
+05/04/2025
+TODO: Logout button on home

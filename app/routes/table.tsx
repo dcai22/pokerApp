@@ -1,9 +1,22 @@
 import axios from "axios";
 import type { Route } from "../+types/root";
-import { useNavigate } from "react-router";
+import { redirect, useNavigate } from "react-router";
+import { getSession } from "~/sessions.server";
+import { authToken } from "server/helpers/auth";
 
-export async function loader({ params }: Route.LoaderArgs) {
-    const player_id = params.player_id;
+export async function loader({ request, params }: Route.LoaderArgs) {
+    const session = await getSession(request.headers.get("Cookie"));
+    if (!session.has("userId")) {
+        return redirect("/login");
+    }
+    const token = session.get("userId");
+    let player_id;
+    try {
+        player_id = await authToken(token as string);
+    } catch(err) {
+        throw new Response("Error in joinTable", { status: 400 });
+    }
+
     const table_id = params.table_id;
     if (!player_id || !table_id) {
         throw new Response("Not Found", { status: 404 });
@@ -54,7 +67,7 @@ export default function Table({ loaderData }: Route.ComponentProps) {
                 }
             );
 
-            navigate(`/joinTable/${loaderData.player_id}`);
+            navigate(`/joinTable`);
         } catch(err) {
             throw new Response("Page not found", { status: 404 });
         }

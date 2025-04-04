@@ -46,8 +46,18 @@ export async function genToken(player_id: number) {
     }
 }
 
-export function authToken(player_id: number, token: string) {
-    // TODO
+// returns 
+export async function authToken(token: string) {
+    const dbRes = await pool.query("SELECT * FROM tokens");
+    const allTokens = dbRes.rows;
+
+    for (const dbToken of allTokens) {
+        if (await bcrypt.compare(token, dbToken.hash)) {
+            return dbToken.player_id;
+        }
+    }
+
+    return null;
 }
 
 export async function deleteLocalTokens() {

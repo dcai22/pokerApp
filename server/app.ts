@@ -53,7 +53,7 @@ app.post('/login', async (req: Request, res: Response) => {
     const username = req.body.username;
     const password = req.body.password;
 
-    let hash;
+    let hashedPassword;
     let player_id;
     try {
         const dbRes = await pool.query(
@@ -62,7 +62,7 @@ app.post('/login', async (req: Request, res: Response) => {
         );
 
         if (dbRes.rowCount) {
-            hash = dbRes.rows[0].password;
+            hashedPassword = dbRes.rows[0].password;
             player_id = dbRes.rows[0].id;
         } else {
             res.status(400).json();
@@ -73,13 +73,12 @@ app.post('/login', async (req: Request, res: Response) => {
         return;
     }
 
-    if (await bcrypt.compare(password, hash)) {
+    if (await bcrypt.compare(password, hashedPassword)) {
         const token = await genToken(player_id);
         res.json({ player_id, token });
         return;
     } else {
-        const token = genToken(player_id);
-        res.status(400).json({ token: token });
+        res.status(400).json();
         return;
     }
 });
@@ -87,7 +86,7 @@ app.post('/login', async (req: Request, res: Response) => {
 app.delete('/deleteToken', async (req: Request, res: Response) => {
     const token = req.body.token;
 
-    const dbRes = await pool.query("SELECT hash FROM tokens")
+    const dbRes = await pool.query("SELECT hash FROM tokens");
     const allTokens = dbRes.rows;
 
     for (const dbToken of allTokens) {
