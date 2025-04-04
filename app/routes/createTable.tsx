@@ -1,9 +1,29 @@
 import { Form, redirect, useNavigate } from "react-router";
 import type { Route } from "../+types/root";
 import axios from "axios";
+import { commitSession, destroySession, getSession } from "~/sessions.server";
+import { authToken } from "server/helpers/auth";
 
-export async function loader({ params }: Route.LoaderArgs) {
-    const player_id = params.player_id;
+export async function loader({ request }: Route.LoaderArgs) {
+    const session = await getSession(request.headers.get("Cookie"));
+    if (!session.has("userId")) {
+        return redirect("/login");
+    }
+    const token = session.get("userId");
+    let player_id;
+    try {
+        player_id = await authToken(token as string);
+    } catch(err) {
+        throw new Response("Error in createTable", { status: 400 });
+    }
+
+    if (!player_id) {
+        return redirect("/login", {
+            headers: {
+                "Set-Cookie": await destroySession(session),
+            },
+        });
+    }
 
     let username;
     try {
@@ -21,7 +41,19 @@ export async function loader({ params }: Route.LoaderArgs) {
     return { player_id, username };
 }
 
-export async function action({ request, params }: Route.ActionArgs) {
+export async function action({ request }: Route.ActionArgs) {
+    const session = await getSession(request.headers.get("Cookie"));
+    if (!session.has("userId")) {
+        return redirect("/login");
+    }
+    const token = session.get("userId");
+    let player_id;
+    try {
+        player_id = await authToken(token as string);
+    } catch(err) {
+        throw new Response("Error in createTable", { status: 400 });
+    }
+
     const formData = await request.formData();
     const updates = Object.fromEntries(formData);
 
@@ -36,11 +68,15 @@ export async function action({ request, params }: Route.ActionArgs) {
                 name: updates.name,
                 sb: updates.sb,
                 bb: updates.bb,
-                player_id: params.player_id,
+                player_id: player_id,
             }
         );
 
-        return redirect(`/table/${params.player_id}/${res.data.table_id}`);
+        return redirect(`/table/${res.data.table_id}`, {
+            headers: {
+                "Set-Cookie": await commitSession(session),
+            },
+        });
     } catch(err) {
         throw new Response("Page not found", { status: 404 });
     }
@@ -65,7 +101,7 @@ export default function CreateTable({ loaderData }: Route.ComponentProps) {
 
                 <button type="submit">Create</button><br />
             </Form>
-            Want to join a table? Click <button onClick={() => navigate(`/joinTable/${loaderData.player_id}`)}>HERE</button><br />
+            Want to join a table? Click <button onClick={() => navigate(`/joinTable`)}>HERE</button><br />
         </>
     );
 }

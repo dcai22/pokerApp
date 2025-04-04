@@ -1,11 +1,31 @@
-import { Form, redirect, useNavigate } from "react-router";
+import { data, Form, redirect, useNavigate } from "react-router";
 import type { Route } from "../+types/root";
 import axios from "axios";
+import { commitSession, getSession } from "~/sessions.server";
+
+export async function loader({ request }: Route.LoaderArgs) {
+    const session = await getSession(request.headers.get("Cookie"));
+    if (session.has("userId")) {
+        return redirect("/joinTable");
+    }
+
+    return data(
+        { error: session.get("error") },
+        {
+            headers: {
+                "Set-Cookie": await commitSession(session),
+            },
+        }
+    );
+}
 
 export async function action({ request }: Route.ActionArgs) {
+    const session = await getSession(request.headers.get("Cookie"));
+
     const formData = await request.formData();
     const updates = Object.fromEntries(formData);
-
+    
+    let token;
     try {
         const res = await axios.post(
             "http://localhost:3000/login",
@@ -14,18 +34,31 @@ export async function action({ request }: Route.ActionArgs) {
                 password: updates.password,
             }
         );
-
+        
         if (res.status === 200) {
-            return redirect(`/joinTable/${res.data.player_id}`);
+            token = res.data.token;
         } else {
-            throw new Response("username or password incorrect", { status: 400 });
+            session.flash("error", "Invalid username/password");
+            return redirect("/login", {
+                headers: {
+                    "Set-Cookie": await commitSession(session),
+                },
+            });
         }
     } catch(err) {
         throw new Response("Page not found", { status: 404 });
     }
+    
+    session.set("userId", token);
+    return redirect("/joinTable", {
+        headers: {
+            "Set-Cookie": await commitSession(session),
+        },
+    });
 }
 
-export default function Login() {
+// TODO: error message from loaderData
+export default function Login({ loaderData }: Route.ComponentProps) {
     const navigate = useNavigate();
 
     return (
