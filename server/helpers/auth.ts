@@ -11,7 +11,6 @@ export async function genHash(str: string) {
 }
 
 // generates and returns (unique) token after adding to database
-// TODO: ensure inserted token is unique
 export async function genToken(player_id: number) {
     while (true) {
         const token = crypto.randomBytes(64).toString('hex');

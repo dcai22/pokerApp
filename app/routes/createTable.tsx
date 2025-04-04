@@ -3,6 +3,7 @@ import type { Route } from "../+types/root";
 import axios from "axios";
 import { commitSession, destroySession, getSession } from "~/sessions.server";
 import { authToken } from "server/helpers/auth";
+import Logout from "~/components/Logout";
 
 export async function loader({ request }: Route.LoaderArgs) {
     const session = await getSession(request.headers.get("Cookie"));
@@ -38,7 +39,7 @@ export async function loader({ request }: Route.LoaderArgs) {
         throw new Response("Player does not exist", { status: 400 });
     }
 
-    return { player_id, username };
+    return { player_id, username, token };
 }
 
 export async function action({ request }: Route.ActionArgs) {
@@ -102,6 +103,7 @@ export default function CreateTable({ loaderData }: Route.ComponentProps) {
                 <button type="submit">Create</button><br />
             </Form>
             Want to join a table? Click <button onClick={() => navigate(`/joinTable`)}>HERE</button><br />
+            <Logout player_id={loaderData.player_id} token={loaderData.token} /><br />
         </>
     );
 }

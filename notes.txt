@@ -79,4 +79,6 @@ NOTES:
  - session.flash(...) can be used to set a value temporarily, useful for errors
 
 05/04/2025
-TODO: Logout button on home
+TODO: Logout button on home                                                 (DONE)
+Since Logout is a component, it can't access action, loader and header.
+Those are linked to the server, while Logout is linked to the client.

@@ -3,6 +3,7 @@ import type { Route } from "../+types/root";
 import { Form, redirect, useNavigate } from "react-router";
 import { commitSession, destroySession, getSession } from "~/sessions.server";
 import { authToken } from "server/helpers/auth";
+import Logout from "~/components/Logout";
 
 export async function loader({ request }: Route.LoaderArgs) {
     const session = await getSession(request.headers.get("Cookie"));
@@ -38,7 +39,7 @@ export async function loader({ request }: Route.LoaderArgs) {
         throw new Response("Player does not exist", { status: 400 });
     }
 
-    return { player_id, username };
+    return { player_id, username, token };
 }
 
 export async function action({ request }: Route.ActionArgs) {
@@ -82,7 +83,6 @@ export async function action({ request }: Route.ActionArgs) {
     }
 }
 
-// TODO: logout button
 function JoinTable({ loaderData }: Route.ComponentProps) {
     const navigate = useNavigate();
 
@@ -97,6 +97,7 @@ function JoinTable({ loaderData }: Route.ComponentProps) {
             </Form>
 
             Don't have a table? Create one <button onClick={() => navigate(`/createTable`)}>HERE</button><br />
+            <Logout player_id={loaderData.player_id} token={loaderData.token} /><br />
         </>
     );
 }
