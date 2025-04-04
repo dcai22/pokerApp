@@ -16,7 +16,7 @@ export default function Home() {
     <>
       Welcome to my app!
       <RandomButton />
-      <p><button onClick={() => navigate(`/register`)}>get me out</button></p>
+      <p><button onClick={() => navigate(`/login`)}>get me out</button></p>
     </>
   )
 }
