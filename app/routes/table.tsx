@@ -3,6 +3,9 @@ import type { Route } from "../+types/root";
 import { redirect, useNavigate } from "react-router";
 import { getSession } from "~/sessions.server";
 import { authToken } from "server/helpers/auth";
+import Greeting from "~/components/Greeting";
+import { Button } from "~/components/ui/button";
+import TableWelcome from "~/components/TableWelcome";
 
 export async function loader({ request, params }: Route.LoaderArgs) {
     const session = await getSession(request.headers.get("Cookie"));
@@ -30,7 +33,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
                 data: { player_id },
             }
         );
-        username = res.data.name;
+        username = res.data.username;
     } catch(err) {
         throw new Response("Player does not exist", { status: 400 });
     }
@@ -77,12 +80,11 @@ export default function Table({ loaderData }: Route.ComponentProps) {
     // window.addEventListener("beforeunload", leaveTable);
 
     return (
-        <>
-            Hi {loaderData.username},<br />
-            Welcome to table {loaderData.table_name}!<br />
-            Join code: {loaderData.table_id}<br />
-            <br />
-            <h1 onClick={leaveTable}>leave</h1><br />
-        </>
+        <div className="flex flex-col justify-center items-center w-screen h-screen">
+            <Greeting name={loaderData.username} />
+            <TableWelcome name={loaderData.table_name} code={loaderData.table_id} />
+            
+            <Button onClick={leaveTable}>Leave table</Button>
+        </div>
     );
 }
