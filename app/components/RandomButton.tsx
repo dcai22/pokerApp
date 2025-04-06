@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { Button } from "./ui/button";
 
 function RandomButton() {
     let [numYes, setNumYes] = useState(0);
@@ -46,13 +47,13 @@ function RandomButton() {
 
     return (
         // Yes percentage edge case when numYes = numNo = 0
-        <>
-            <h1 onClick={onVoteYes}>VOTE YES</h1>
-            <h1 onClick={onVoteNo}>VOTE NO</h1>
-            <h1>Yes Votes: {numYes} / {numNo + numYes}</h1>
-            <h1>Yes Percentage: {getPercentage().toFixed(2)}%</h1>
-            <h1 onClick={onVoteReset}>RESET</h1>
-        </>
+        <div className="flex flex-col">
+            <Button onClick={onVoteYes} className="mb-1">VOTE YES</Button>
+            <Button onClick={onVoteNo} className="mb-1">VOTE NO</Button>
+            <div className="flex justify-center mb-1">Yes Votes: {numYes} / {numNo + numYes}</div>
+            <div className="flex justify-center mb-2">Yes Percentage: {getPercentage().toFixed(2)}%</div>
+            <Button onClick={onVoteReset} className="mb-1">RESET</Button>
+        </div>
     );
 }
 

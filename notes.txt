@@ -82,3 +82,6 @@ NOTES:
 TODO: Logout button on home                                                 (DONE)
 Since Logout is a component, it can't access action, loader and header.
 Those are linked to the server, while Logout is linked to the client.
+
+06/04/2025
+Using shadcn for frontend
