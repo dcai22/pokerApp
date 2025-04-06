@@ -6,6 +6,7 @@ import { authToken } from "server/helpers/auth";
 import Logout from "~/components/Logout";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
+import Greeting from "~/components/Greeting";
 
 export async function loader({ request }: Route.LoaderArgs) {
     const session = await getSession(request.headers.get("Cookie"));
@@ -91,7 +92,7 @@ function JoinTable({ loaderData }: Route.ComponentProps) {
     return (
         <div className="flex flex-col justify-center items-center w-screen h-screen">
             <div className="flex flex-col">
-                <h1 className="mb-4">Hi <span className="font-bold">{loaderData.username}</span>!</h1>
+                <Greeting name={loaderData.username} />
                 <h1 className="mb-2">Join a table:</h1>
                 <Form className="flex flex-col" method="put">
                     <Input placeholder="Table ID" name="table_id" type="text" className="mb-2"></Input>
