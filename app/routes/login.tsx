@@ -65,7 +65,7 @@ export default function Login({ loaderData }: Route.ComponentProps) {
 
     return (
         <div className="flex flex-col justify-center items-center w-screen h-screen">
-            <div className="flex flex-col justify-center">
+            <div className="flex flex-col">
                 <h1 className="mb-2">PokerApp login:</h1>
                 <Form className="flex flex-col" method="post">
                     <Input placeholder="Username" name="username" type="text" className="mb-2"></Input>

@@ -4,6 +4,8 @@ import { Form, redirect, useNavigate } from "react-router";
 import { commitSession, destroySession, getSession } from "~/sessions.server";
 import { authToken } from "server/helpers/auth";
 import Logout from "~/components/Logout";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
 
 export async function loader({ request }: Route.LoaderArgs) {
     const session = await getSession(request.headers.get("Cookie"));
@@ -87,18 +89,20 @@ function JoinTable({ loaderData }: Route.ComponentProps) {
     const navigate = useNavigate();
 
     return (
-        <>
-            Hi {loaderData.username}!<br />
+        <div className="flex flex-col justify-center items-center w-screen h-screen">
+            <div className="flex flex-col">
+                <h1 className="mb-4">Hi <span className="font-bold">{loaderData.username}</span>!</h1>
+                <h1 className="mb-2">Join a table:</h1>
+                <Form className="flex flex-col" method="put">
+                    <Input placeholder="Table ID" name="table_id" type="text" className="mb-2"></Input>
+                    <Button type="submit" className="mb-10">Join table</Button>
+                </Form>
 
-            <Form method="put">
-                Please enter the table id:<br />
-                <input name="table_id" type="text"></input><br />
-                <button type="submit">Join</button><br />
-            </Form>
-
-            Don't have a table? Create one <button onClick={() => navigate(`/createTable`)}>HERE</button><br />
-            <Logout player_id={loaderData.player_id} token={loaderData.token} /><br />
-        </>
+                <h1 className="mb-2">Don't have a table?</h1>
+                <Button onClick={() => navigate(`/createTable`)} className="mb-10">Create a new table</Button>
+                <Logout player_id={loaderData.player_id} token={loaderData.token} />
+            </div>
+        </div>
     );
 }
 

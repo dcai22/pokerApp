@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router";
 import axios from "axios";
+import { Button } from "./ui/button";
 
 interface LogoutProps {
     player_id: number,
@@ -25,7 +26,7 @@ export default function Logout({ player_id, token }: LogoutProps) {
 
     return (
     <>
-        <h1 onClick={onClick}>LOG OUT</h1>
+        <Button onClick={onClick}>Log out</Button>
     </>
     )
 }
