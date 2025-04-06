@@ -2,6 +2,8 @@ import { data, Form, redirect, useNavigate } from "react-router";
 import type { Route } from "../+types/root";
 import axios from "axios";
 import { commitSession, getSession } from "~/sessions.server";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
 
 export async function loader({ request }: Route.LoaderArgs) {
     const session = await getSession(request.headers.get("Cookie"));
@@ -62,17 +64,18 @@ export default function Login({ loaderData }: Route.ComponentProps) {
     const navigate = useNavigate();
 
     return (
-        <>
-            Log in to your account<br />
-            <Form method="post">
-                <label htmlFor="username">Username:</label><br />
-                <input name="username" id="username" type="text"></input><br />
-                <label htmlFor="password">Password:</label><br />
-                <input name="password" id="password" type="password"></input><br />
-                <button type="submit">LOGIN</button>
-            </Form>
+        <div className="flex flex-col justify-center items-center w-screen h-screen">
+            <div className="flex flex-col justify-center">
+                <h1 className="mb-2">Log in to your account:</h1>
+                <Form className="flex flex-col" method="post">
+                    <Input placeholder="Username" name="username" type="text" className="mb-2"></Input>
+                    <Input placeholder="Password" name="password" type="password" className="mb-2"></Input>
+                    <Button type="submit" className="mb-10">Login</Button>
+                </Form>
 
-            Don't have an account? Register <button onClick={() => navigate("/register")}>HERE</button><br />
-        </>
+                <h1 className="mb-1">Don't have an account?</h1>
+                <Button onClick={() => navigate("/register")}>Register an account</Button>
+            </div>
+        </div>
     );
 }
