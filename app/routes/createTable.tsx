@@ -4,6 +4,9 @@ import axios from "axios";
 import { commitSession, destroySession, getSession } from "~/sessions.server";
 import { authToken } from "server/helpers/auth";
 import Logout from "~/components/Logout";
+import Greeting from "~/components/Greeting";
+import { Input } from "~/components/ui/input";
+import { Button } from "~/components/ui/button";
 
 export async function loader({ request }: Route.LoaderArgs) {
     const session = await getSession(request.headers.get("Cookie"));
@@ -87,23 +90,20 @@ export default function CreateTable({ loaderData }: Route.ComponentProps) {
     const navigate = useNavigate();
 
     return (
-        <>
-            Hi {loaderData.username}!<br />
-            Create a new table!<br />
-            <Form method="post">
-                <label htmlFor="name">Table name:</label><br />
-                <input name="name" id="name" type="text"></input><br />
-
-                <label htmlFor="sb">Small Blind:</label><br />
-                <input name="sb" type="number"></input><br />
-
-                <label htmlFor="bb">Big Blind:</label><br />
-                <input name="bb" type="number"></input><br />
-
-                <button type="submit">Create</button><br />
-            </Form>
-            Want to join a table? Click <button onClick={() => navigate(`/joinTable`)}>HERE</button><br />
-            <Logout player_id={loaderData.player_id} token={loaderData.token} /><br />
-        </>
+        <div className="flex flex-col justify-center items-center w-screen h-screen">
+            <div className="flex flex-col">
+                <Greeting name={loaderData.username} />
+                <h1 className="mb-2">Create a new table!</h1>
+                <Form className="flex flex-col" method="post">
+                    <Input placeholder="Table name" name="name" id="name" type="text" className="mb-2"></Input>
+                    <Input placeholder="Small blind" name="sb" type="number" className="mb-2"></Input>
+                    <Input placeholder="Big blind" name="bb" type="number" className="mb-2"></Input>
+                    <Button type="submit" className="mb-10">Create table</Button>
+                </Form>
+                <h1 className="mb-2">Already have a table?</h1>
+                <Button onClick={() => navigate(`/joinTable`)} className="mb-10">Join an existing table</Button>
+                <Logout player_id={loaderData.player_id} token={loaderData.token} />
+            </div>
+        </div>
     );
 }
