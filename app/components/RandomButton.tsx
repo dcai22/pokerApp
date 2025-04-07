@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Button } from "./ui/button";
+import { socket } from "app/root";
 
 function RandomButton() {
     let [numYes, setNumYes] = useState(0);
@@ -24,6 +25,8 @@ function RandomButton() {
         setNumYes(newYes);
         setNumNo(newNo);
         axios.put("http://localhost:3000/updateVotes", { numYes: newYes, numNo: newNo });
+
+        socket.emit("newVote", newYes, newNo);
     }
 
     function onVoteNo() {
@@ -31,6 +34,8 @@ function RandomButton() {
         setNumYes(newYes);
         setNumNo(newNo);
         axios.put("http://localhost:3000/updateVotes", { numYes: newYes, numNo: newNo });
+
+        socket.emit("newVote", newYes, newNo);
     }
 
     function onVoteReset() {
@@ -38,12 +43,19 @@ function RandomButton() {
         setNumYes(newYes);
         setNumNo(newNo);
         axios.put("http://localhost:3000/updateVotes", { numYes: newYes, numNo: newNo });
+
+        socket.emit("newVote", newYes, newNo);
     }
 
     function getPercentage() {
         const numTotal = numNo + numYes;
         return 100 * (numYes / (numTotal || 1));
     }
+
+    socket.on("newVote", (newYes, newNo) => {
+        setNumYes(newYes);
+        setNumNo(newNo);
+    });
 
     return (
         // Yes percentage edge case when numYes = numNo = 0

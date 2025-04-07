@@ -10,6 +10,13 @@ import {
 import type { Route } from "./+types/root";
 import "./app.css";
 
+import io from "socket.io-client";
+export const socket = io("http://localhost:3000");
+// You can now listen for events from the server
+socket.on("connect", () => {
+  console.log("Connected to the server!");
+});
+
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
   {

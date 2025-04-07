@@ -52,7 +52,7 @@ NOTE: parameter checks will be done with tokens stored in localStorage
       Token is purged upon loading the register and login routes (DONE)
       Token is created after successful register/login (DONE)
       all other routes will verify the token in their loader
-TODO: change all names `hash` to either `hashedPassword` or `hashedToken`
+TODO: change all names `hash` to either `hashedPassword` or `hashedToken`   (DONE)
 
 04/04/2025
 Many methods of dealing with tokens don't work due to this app using Server Side Rendering (SSR)
@@ -85,3 +85,24 @@ Those are linked to the server, while Logout is linked to the client.
 
 06/04/2025
 Using shadcn for frontend
+
+07/04/2025
+Using socket.io for live updates
+https://dev.to/novu/building-a-chat-app-with-socketio-and-react-2edj?comments_sort=top
+```
+const io = new Server(server, {
+    cors: {
+        origin: "http://localhost:5173",
+        methods: ["GET", "POST", "PUT", "DELETE"],
+    }
+});
+```
+```
+app.use(cors({
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type"],
+}));
+```
+Note the origins use `localhost` rather than `127.0.0.1`
+This is actually important for what URL to open in a browser

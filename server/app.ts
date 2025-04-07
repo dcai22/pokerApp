@@ -8,7 +8,11 @@ import { genToken } from './helpers/auth';
 const app = express();
 
 app.use(json());
-app.use(cors());
+app.use(cors({
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type"],
+}));
 
 module.exports = app;
 
@@ -33,7 +37,7 @@ app.post('/registerPlayer', async (req: Request, res: Response) => {
         if (dbRes.rowCount) {
             const player_id = dbRes.rows[0].id;
             const token = await genToken(player_id);
-            res.json({ player_id, token })
+            res.json({ player_id, token });
             return;
         } else {
             res.status(400).json();
