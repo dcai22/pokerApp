@@ -106,3 +106,25 @@ app.use(cors({
 ```
 Note the origins use `localhost` rather than `127.0.0.1`
 This is actually important for what URL to open in a browser
+
+08/04/2025
+After successfully using sockets yesterday, today's goal is to work on the actual table.
+Here is the general plan for the app functionality:
+
+Players can join the room, and the room lobby should show a list of all players.
+Before the game starts, there should be a button to randomise the positions of all players.
+ - Roll positions button
+ - Reroll and confirm buttons
+A player should be able to join the game mid-session.
+Their position should be randomised upon joining.
+
+Each player's current buyin should be displayed.
+A 'buyin' button should be present.
+
+Each table plays multiple rounds of poker, each of which is called a 'hand'.
+In each hand:
+ - Each player inputs their hand which then gets hidden
+ - Each player then gets an option to VPIP
+After everyone has input their hand and VPIP, the owner can press a 'next hand' button.
+
+There should be a button to display hand stats -- vpip, hand history, etc.
