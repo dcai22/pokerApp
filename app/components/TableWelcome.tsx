@@ -1,5 +1,3 @@
-import type { Table } from "server/interface";
-
 interface TableWelcomeProps {
     name: string,
     code: number,
