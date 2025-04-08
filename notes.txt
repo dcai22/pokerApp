@@ -120,6 +120,7 @@ Their position should be randomised upon joining.
 
 Each player's current buyin should be displayed.
 A 'buyin' button should be present.
+Buyin history can be showed with a button.
 
 Each table plays multiple rounds of poker, each of which is called a 'hand'.
 In each hand:
@@ -128,3 +129,17 @@ In each hand:
 After everyone has input their hand and VPIP, the owner can press a 'next hand' button.
 
 There should be a button to display hand stats -- vpip, hand history, etc.
+
+Limitations:
+My implementation will only work with one active table.
+
+ERRORS:
+For some reason, sockets open multiple times, so the socket `addPlayer` is reached twice.
+There is an issue with my sessions where different tabs will be logged into the same user,
+even on incognito mode.
+
+It turns out I can use sessionStorage etc. as long as I do not have loader/action functions.
+Those functions are useful for Server Side Rendering (SSR) but are problematic for Client
+Side Rendering (CSR). If necessary, the alternative functions `clientLoader` etc. can be used.
+This will allow me to store cookies properly, and resolve the issue of session cookies being
+the same throughout multiple tabs, which made testing very difficult / impossible.

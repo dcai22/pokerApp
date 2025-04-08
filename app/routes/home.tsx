@@ -19,6 +19,7 @@ export default function Home() {
         <div className="flex justify-center mb-10">Welcome to my app!</div>
         <div className="mb-10"><RandomButton /></div>
         <Button onClick={() => navigate(`/login`)}>get me out</Button>
+        <Button onClick={() => navigate(`/test`)}>test page</Button>
       </div>
     </div>
   )
