@@ -1,7 +1,6 @@
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import pool from "../db";
-import axios from "axios";
 
 export async function genHash(str: string) {
     const saltRounds = 10;

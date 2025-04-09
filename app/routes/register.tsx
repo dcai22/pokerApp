@@ -1,79 +1,51 @@
-import { data, Form, redirect, useNavigate } from "react-router";
-import type { Route } from "../+types/root";
+import { useNavigate } from "react-router";
 import axios from "axios";
-import { genHash } from "server/helpers/auth";
-import { commitSession, getSession } from "~/sessions.server";
-import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
-
-export async function loader({ request }: Route.LoaderArgs) {
-    const session = await getSession(request.headers.get("Cookie"));
-    if (session.has("userId")) {
-        return redirect("/joinTable");
-    }
-
-    return data(
-        { error: session.get("error") },
-        {
-            headers: {
-                "Set-Cookie": await commitSession(session),
-            },
-        }
-    );
-}
-
-export async function action({ request }: Route.ActionArgs) {
-    const session = await getSession(request.headers.get("Cookie"));
-
-    const formData = await request.formData();
-    const updates = Object.fromEntries(formData);
-
-    const hashedPassword = await genHash(updates.password as string);
-
-    let token;
-    try {
-        const res = await axios.post(
-            "http://localhost:3000/registerPlayer",
-            {
-                username: updates.username,
-                hashedPassword: hashedPassword,
-            }
-        );
-        if (res.status === 200) {
-            token = res.data.token;
-        } else {
-            session.flash("error", "Player with that username already exists");
-            return redirect("/register", {
-                headers: {
-                    "Set-Cookie": await commitSession(session),
-                },
-            });
-        }
-    } catch(err) {
-        throw new Response("user with that name already exists", { status: 400 });
-    }
-
-    session.set("userId", token);
-    return redirect("/joinTable", {
-        headers: {
-            "Set-Cookie": await commitSession(session),
-        },
-    });
-}
+import { Input } from "~/components/ui/input";
+import { useEffect, useState } from "react";
+import { genHash } from "~/helpers";
 
 // TODO: error message from loaderData
 export default function Register() {
     const navigate = useNavigate();
 
+    const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
+
+    useEffect(() => {
+        const token = sessionStorage.getItem("token");
+        if (token) navigate("/joinTable");
+    }, []);
+
+    async function handleRegister() {
+        const hashedPassword = await genHash(password);
+        try {
+            const res = await axios.post(
+                "http://localhost:3000/registerPlayer",
+                {
+                    username,
+                    hashedPassword,
+                }
+            );
+            if (res.status === 200) {
+                sessionStorage.setItem("token", res.data.token);
+                navigate("/joinTable");
+            } else {
+                window.alert("register error");
+            }
+        } catch (err) {
+            window.alert("username is taken")
+        }
+    }
+
     return (
         <div className="flex flex-col justify-center items-center w-screen h-screen">
             <div className="flex flex-col">
                 <h1 className="mb-2">Register a PokerApp account:</h1>
-                <Form className="flex flex-col" method="post">
-                    <Input placeholder="Username" name="username" type="text" className="mb-2"></Input>
-                    <Input placeholder="Password" name="password" type="password" className="mb-2"></Input>
-                    <Button type="submit" className="mb-10">Register</Button>
-                </Form>
+                <Input placeholder="Username" name="username" type="text" className="mb-2" value={username} onChange={(e) => setUsername(e.target.value)}></Input>
+                <Input placeholder="Password" name="password" type="password" className="mb-2" value={password} onChange={(e) => setPassword(e.target.value)}></Input>
+                <Button className="mb-10" onClick={handleRegister}>Register</Button>
+
                 <h1 className="mb-1">Already have an account?</h1>
                 <Button onClick={() => navigate("/login")}>Login here</Button>
             </div>

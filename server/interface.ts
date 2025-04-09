@@ -5,6 +5,7 @@ export interface DataStore {
 
 export class Table {
     id: number;
+    name: string;
     players: number[] = [];                 // sorted by position
     sb: number;
     bb: number;
@@ -12,8 +13,9 @@ export class Table {
     ante = 0;
     numHands = 0;
 
-    constructor(id: number, sb: number, bb: number, owner: number, ante?: number) {
+    constructor(id: number, name: string, sb: number, bb: number, owner: number, ante?: number) {
         this.id = id;
+        this.name = name;
         this.sb = sb;
         this.bb = bb;
         this.owner = owner;

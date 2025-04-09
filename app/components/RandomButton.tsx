@@ -17,6 +17,8 @@ function RandomButton() {
         }
 
         initVotes();
+
+        sessionStorage.setItem("localNumYes", '0');
     }, []);
 
     function onVoteYes() {
@@ -27,6 +29,10 @@ function RandomButton() {
         axios.put("http://localhost:3000/updateVotes", { numYes: newYes, numNo: newNo });
 
         socket.emit("newVote", newYes, newNo);
+
+        const localNumYes = parseInt(sessionStorage.getItem("localNumYes") ?? '0');
+        sessionStorage.setItem("localNumYes", (localNumYes + 1).toString());
+        console.log(sessionStorage.getItem("localNumYes"));
     }
 
     function onVoteNo() {

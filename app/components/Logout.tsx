@@ -20,7 +20,8 @@ export default function Logout({ player_id, token }: LogoutProps) {
                 }
             }
         );
-    
+        sessionStorage.removeItem("token");
+
         navigate("/login");
     }
 

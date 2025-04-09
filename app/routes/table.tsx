@@ -1,62 +1,69 @@
 import axios from "axios";
-import type { Route } from "../+types/root";
-import { redirect, useNavigate } from "react-router";
-import { getSession } from "~/sessions.server";
-import { authToken } from "server/helpers/auth";
+import { useNavigate, useParams } from "react-router";
 import Greeting from "~/components/Greeting";
 import { Button } from "~/components/ui/button";
 import TableWelcome from "~/components/TableWelcome";
-
-export async function loader({ request, params }: Route.LoaderArgs) {
-    const session = await getSession(request.headers.get("Cookie"));
-    if (!session.has("userId")) {
-        return redirect("/login");
-    }
-    const token = session.get("userId");
-    let player_id;
-    try {
-        player_id = await authToken(token as string);
-    } catch(err) {
-        throw new Response("Error in joinTable", { status: 400 });
-    }
-
-    const table_id = params.table_id;
-    if (!player_id || !table_id) {
-        throw new Response("Not Found", { status: 404 });
-    }
-
-    let username;
-    try {
-        const res = await axios.get(
-            "http://localhost:3000/getPlayer",
-            {
-                data: { player_id },
-            }
-        );
-        username = res.data.username;
-    } catch(err) {
-        throw new Response("Player does not exist", { status: 400 });
-    }
-
-    let table_name;
-    try {
-        const res = await axios.get(
-            "http://localhost:3000/getTable",
-            {
-                data: { table_id },
-            }
-        );
-        table_name = res.data.name;
-    } catch(err) {
-        throw new Response("Table does not exist", { status: 400 });
-    }
-
-    return { player_id, table_id, username, table_name };
-}
+import { useEffect, useState } from "react";
+import { authToken } from "~/helpers";
 
 // TODO: remove table_players entry from database upon leaving page
-export default function Table({ loaderData }: Route.ComponentProps) {
+export default function Table() {
     const navigate = useNavigate();
+
+    const table_id = useParams().table_id as string;
+    const [player_id, setPlayer_id] = useState(-1);
+    const [username, setUsername] = useState("");
+    const [tableName, setTableName] = useState("");
+
+    // const [players, setPlayers] = useState(new Array());
+
+    // if (loaderData.isOwner) {
+    //     // TODO: fix bug of this being reached multiple times in one go
+    //     socket.on("addPlayer", (username) => {
+    //         const allPlayers = players;
+    //         const index = Math.floor(Math.random() * (players.length + 1));
+    //         if (!allPlayers.includes(username)) {
+    //             setPlayers(allPlayers.splice(index, 0, username));
+    //         }
+
+    //         socket.emit("updatePlayers", players);
+    //     });
+    // }
+
+    // socket.on("updatePlayers", (updatedPlayers) => {
+    //     setPlayers(updatedPlayers);
+    // });
+
+    // useEffect(() => {
+    //     socket.emit("addPlayer", loaderData.username);
+    // }, []);
+
+    useEffect(() => {
+        async function authAndInit() {
+            const res = await authToken();
+            if (res.navigate) {
+                navigate("/login");
+            } else {
+                setPlayer_id(res.player_id);
+                setUsername(res.username);
+            }
+
+            try {
+                const res = await axios.get(
+                    `http://localhost:3000/getTable?table_id=${table_id}`
+                );
+                if (res.status === 200) {
+                    setTableName(res.data.name);
+                } else {
+                    navigate("/joinTable");
+                }
+            } catch (err) {
+                navigate("/joinTable");
+            }
+        }
+
+        authAndInit();
+    })
 
     async function leaveTable() {
         try {
@@ -64,15 +71,15 @@ export default function Table({ loaderData }: Route.ComponentProps) {
                 "http://localhost:3000/player/leaveTable",
                 {
                     data: {
-                        player_id: loaderData.player_id,
-                        table_id: loaderData.table_id,
+                        player_id,
+                        table_id: table_id,
                     },
                 }
             );
 
             navigate(`/joinTable`);
         } catch(err) {
-            throw new Response("Page not found", { status: 404 });
+            alert("error while leaving table");
         }
     }
 
@@ -81,9 +88,11 @@ export default function Table({ loaderData }: Route.ComponentProps) {
 
     return (
         <div className="flex flex-col justify-center items-center w-screen h-screen">
-            <Greeting name={loaderData.username} />
-            <TableWelcome name={loaderData.table_name} code={loaderData.table_id} />
-            
+            <Greeting name={username} />
+            <TableWelcome name={tableName} code={parseInt(table_id)} />
+
+            {/* {loaderData.players.map((e, i) => <li key={i}>{e}</li>)} TODO: change key to NOT use {i} as it is unsafe */}
+
             <Button onClick={leaveTable}>Leave table</Button>
         </div>
     );
