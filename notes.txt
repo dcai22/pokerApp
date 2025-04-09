@@ -34,18 +34,18 @@ For the backend, pool.query(...) can throw an error that needs to be caught in a
 However you cannot simply perform res.status(400), you need to do res.status(400).json(), i.e., there must be a `.json()`
 
 03/04/2025
-Request body can be sent in axios.get(...) and axios.delete(...) as follows:
-```
-await axios.get(
-    URL,
-    {
-        data: {
-            var1: val1,
-            var2: val2,
-        },
-    }
-);
-```
+<INCORRECT: SEE 09/04/2025> Request body can be sent in axios.get(...) and axios.delete(...) as follows:
+<INCORRECT: SEE 09/04/2025> ```
+<INCORRECT: SEE 09/04/2025> await axios.get(
+<INCORRECT: SEE 09/04/2025>     URL,
+<INCORRECT: SEE 09/04/2025>     {
+<INCORRECT: SEE 09/04/2025>         data: {
+<INCORRECT: SEE 09/04/2025>             var1: val1,
+<INCORRECT: SEE 09/04/2025>             var2: val2,
+<INCORRECT: SEE 09/04/2025>         },
+<INCORRECT: SEE 09/04/2025>     }
+<INCORRECT: SEE 09/04/2025> );
+<INCORRECT: SEE 09/04/2025> ```
 
 TODO: add parameter checks to loaders
 NOTE: parameter checks will be done with tokens stored in localStorage
@@ -143,3 +143,13 @@ Those functions are useful for Server Side Rendering (SSR) but are problematic f
 Side Rendering (CSR). If necessary, the alternative functions `clientLoader` etc. can be used.
 This will allow me to store cookies properly, and resolve the issue of session cookies being
 the same throughout multiple tabs, which made testing very difficult / impossible.
+SSR can be turned on/off via react-router.config.ts
+
+09/04/2025
+The goal for today is to use session storage for cookies.
+All loader and action functions will be moved to the Component.
+This way, sessionStorage and window can be used without any issues.
+
+For get requests:
+In Component.tsx:   axios.get(`URL/param=${param}`);
+In app.ts:          const param = req.query.param;

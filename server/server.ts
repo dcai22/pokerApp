@@ -23,6 +23,15 @@ io.on("connection", (socket) => {
         console.log(`Yes votes is now ${newYes}, No votes is now ${newNo}`);
         io.emit("newVote", newYes, newNo);
     });
+
+    socket.on("addPlayer", (username) => {
+        console.log(`Player ${username} has joined the table`);
+        io.emit("addPlayer", username);
+    });
+
+    socket.on("updatePlayers", (players) => {
+        io.emit("updatePlayers", players);
+    });
 });
 
 // Start server

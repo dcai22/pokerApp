@@ -1,9 +1,9 @@
-import express, { json, type NextFunction, type Request, type Response } from 'express';
+import express, { json, type Request, type Response } from 'express';
 import cors from 'cors';
 
 import pool from "./db";
 import bcrypt from 'bcryptjs';
-import { genToken } from './helpers/auth';
+import { authToken, genToken } from './helpers/auth';
 
 const app = express();
 
@@ -107,6 +107,12 @@ app.delete('/deleteToken', async (req: Request, res: Response) => {
     res.json();
 });
 
+app.post('/authToken', async (req: Request, res: Response) => {
+    const token = req.body.token;
+    const player_id = await authToken(token);
+    res.json({ player_id });
+});
+
 // PLAYER //
 app.post('/player/createTable', async (req: Request, res: Response) => {
     const table_name = req.body.name;
@@ -201,13 +207,13 @@ app.get('/player/handStats', (req: Request, res: Response) => {
 
 // GETTERS //
 app.get('/getPlayer', async (req: Request, res: Response) => {
-    const player_id = req.body.player_id;
+    const player_id = req.query.player_id;
     try {
         const dbRes = await pool.query(
             "SELECT * FROM players WHERE id=$1",
             [player_id]
         );
-        
+
         if (dbRes.rowCount) {
             res.json(dbRes.rows[0]);
             return;
@@ -222,7 +228,7 @@ app.get('/getPlayer', async (req: Request, res: Response) => {
 });
 
 app.get('/getTable', async (req: Request, res: Response) => {
-    const table_id = req.body.table_id;
+    const table_id = req.query.table_id;
     try {
         const dbRes = await pool.query(
             "SELECT * FROM tables WHERE id=$1",
