@@ -38,6 +38,7 @@ CREATE TABLE Table_Players (
     stack DECIMAL(10, 2) DEFAULT 0,
     buyin DECIMAL(10, 2) DEFAULT 0,
     is_playing BOOLEAN DEFAULT FALSE,
+    position INT,
     FOREIGN KEY (table_id) REFERENCES Tables(id),
     FOREIGN KEY (player_id) REFERENCES Players(id)
 );

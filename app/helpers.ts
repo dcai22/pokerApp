@@ -14,28 +14,14 @@ export async function authToken() {
     if (!token) return { navigate: true };
 
     let player_id;
+    let username;
     try {
         const res = await axios.post(
             "http://localhost:3000/authToken",
             { token }
         );
-        if (!res.data.player_id) {
-            sessionStorage.removeItem("token");
-            return { navigate: true };
-        } else {
-            player_id = res.data.player_id
-        }
-    } catch (err) {
-        sessionStorage.removeItem("token");
-        return { navigate: true };
-    }
-
-    let username;
-    try {
-        const res = await axios.get(
-            `http://localhost:3000/getPlayer?player_id=${player_id}`,
-        );
-        if (res.status === 200) {
+        if (res.data.player_id) {
+            player_id = res.data.player_id;
             username = res.data.username;
         } else {
             sessionStorage.removeItem("token");
@@ -45,6 +31,24 @@ export async function authToken() {
         sessionStorage.removeItem("token");
         return { navigate: true };
     }
+
+    // let username;
+    // try {
+    //     const res = await axios.get(
+    //         `http://localhost:3000/getPlayer?player_id=${player_id}`,
+    //     );
+    //     if (res.status === 200) {
+    //         username = res.data.username;
+    //     } else {
+    //         sessionStorage.removeItem("token");
+    //         return { navigate: true };
+    //     }
+    // } catch (err) {
+    //     sessionStorage.removeItem("token");
+    //     return { navigate: true };
+    // }
+    console.log(player_id);
+    console.log(username);
 
     return {
         navigate: false,
