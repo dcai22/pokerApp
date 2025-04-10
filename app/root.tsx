@@ -11,8 +11,8 @@ import type { Route } from "./+types/root";
 import "./app.css";
 
 import io from "socket.io-client";
-export const socket = io("http://localhost:3000");
-// You can now listen for events from the server
+export const socket = io("http://localhost:3000", { autoConnect: false });
+// // You can now listen for events from the server
 socket.on("connect", () => {
   console.log("Connected to the server!");
 });

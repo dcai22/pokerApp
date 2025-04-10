@@ -153,3 +153,14 @@ This way, sessionStorage and window can be used without any issues.
 For get requests:
 In Component.tsx:   axios.get(`URL/param=${param}`);
 In app.ts:          const param = req.query.param;
+
+10/04/2025
+io.emit replies to all sockets
+socket.emit replies to the single socket
+
+To prevent automatically connecting:
+socket = io.connect("URL", { autoConnect: false });
+And in the component, run `socket.connect()` inside useEffect.
+If you run it in the component instead of in useEffect, it may duplicate.
+
+array.splice(...) changes array itself. It does not return the new array.

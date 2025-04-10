@@ -14,7 +14,7 @@ app.use(cors({
     allowedHeaders: ["Content-Type"],
 }));
 
-module.exports = app;
+export { app };
 
 // Routes
 app.get('/', (req: Request, res: Response) => {
