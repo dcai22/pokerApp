@@ -28,6 +28,7 @@ CREATE TABLE Tables (
     ante DECIMAL(10, 2) DEFAULT 0,
     num_hands INT DEFAULT 0,
     owner INT,
+    has_started BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (owner) REFERENCES Players(id)
 );
 

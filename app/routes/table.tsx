@@ -19,10 +19,15 @@ export default function Table() {
     const [tableName, setTableName] = useState("");
     const [players, setPlayers] = useState(new Array());
     const [ownerName, setOwnerName] = useState("");
+    const [hasStarted, setHasStarted] = useState(false);
     
     socket.on("updatePlayers", (updatedPlayers) => {
         setPlayers(updatedPlayers);
     });
+
+    socket.on("startGame", () => {
+        setHasStarted(true);
+    })
     
     useEffect(() => {
         async function authAndInit() {
@@ -95,6 +100,14 @@ export default function Table() {
         return ownerName !== "" && ownerName === username;
     }
 
+    function handleStart() {
+        if (players.length < 2) {
+            window.alert("Not enough players to start");
+        }
+
+        socket.emit("startGame", table_id);
+    }
+
     // SSR doesn't allow access to window
     // window.addEventListener("beforeunload", handleLeave);
 
@@ -122,7 +135,7 @@ export default function Table() {
             </div>
             <div className="flex w-screen items-center justify-center h-screen">
                 <div>
-                    {isOwner() ? <Button className="h-20 w-40 text-xl">Start game</Button> : <div className="text-xl text-center">Waiting for owner to start game...</div>}
+                    {isOwner() ? <Button className="h-20 w-40 text-xl" onClick={handleStart}>Start game</Button> : <div className="text-xl text-center">Waiting for owner to start game...</div>}
                 </div>
             </div>
         </div>

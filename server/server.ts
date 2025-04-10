@@ -49,6 +49,19 @@ io.on("connection", (socket) => {
             console.log("error in socket.on(joinTable)");
         }
     });
+
+    socket.on("startGame", async (table_id) => {
+        try {
+            await pool.query(
+                "UPDATE tables SET has_started=true WHERE id=$1",
+                [table_id]
+            );
+            io.emit("startGame");
+            console.log(`Game started on table with id=${table_id}`);
+        } catch (err) {
+            console.log("error in socket.on(startGame)");
+        }
+    });
 });
 
 // Start server
