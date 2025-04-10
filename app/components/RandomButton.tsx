@@ -1,9 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { Button } from "./ui/button";
 import { socket } from "app/root";
 
 function RandomButton() {
+    const hasRun = useRef(false);
+
     let [numYes, setNumYes] = useState(0);
     let [numNo, setNumNo] = useState(0);
 
@@ -14,11 +16,18 @@ function RandomButton() {
                 setNumYes(res.data.num_yes);
                 setNumNo(res.data.num_no);
             }
+
+            sessionStorage.setItem("localNumYes", '0');
+            socket.connect();
+            console.log("A user has connected in RandomButton!");
         }
 
-        initVotes();
-
-        sessionStorage.setItem("localNumYes", '0');
+        if (!hasRun.current) {
+            hasRun.current = true;
+            initVotes();
+        } else {
+            console.log("effect was skipped to prevent double activation");
+        }
     }, []);
 
     function onVoteYes() {

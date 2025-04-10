@@ -1,13 +1,13 @@
 import { createServer } from "http";
 import { Server } from "socket.io";
 
-const app = require("./app");
+import { app } from "./app";
 const port = 3000;
 
 const server = createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: "http://localhost:5173",
+        origin: ["http://localhost:5173"],
         methods: ["GET", "POST", "PUT", "DELETE"],
     }
 });
@@ -26,10 +26,11 @@ io.on("connection", (socket) => {
 
     socket.on("addPlayer", (username) => {
         console.log(`Player ${username} has joined the table`);
-        io.emit("addPlayer", username);
+        io.emit("addPlayerToOwner", username);
     });
 
     socket.on("updatePlayers", (players) => {
+        console.log(`Players are now: ${players}`);
         io.emit("updatePlayers", players);
     });
 });

@@ -53,3 +53,19 @@ export async function authToken() {
         username,
     };
 }
+
+const positions = [ "SB", "BB", "UTG", "UTG1", "UTG2", "LJ", "HJ", "CO", "BTN" ]
+
+// returns string corresponding to the name of position i (0-indexed) on an n-handed table
+// requires 2 <= n <= 9, 0 <= i < n;
+export function calcPosition(i: number, n: number) {
+    if (i < 2) {
+        return positions[i];
+    }
+
+    if (n - i <= 4) {
+        return positions[9 - (n - i)];
+    }
+
+    return positions[i];
+}
