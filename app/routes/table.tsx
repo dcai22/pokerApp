@@ -55,16 +55,6 @@ export default function Table() {
                     }
 
                     setTableName(tableRes.data.name);
-
-                    if (tableRes.data.owner === newPlayerId) {
-                        socket.on("addPlayerToOwner", (newUsername) => {
-                            let allPlayers = players;
-                            const index = Math.floor(Math.random() * (allPlayers.length + 1));
-                            if (!allPlayers.includes(newUsername)) allPlayers.splice(index, 0, newUsername);
-
-                            socket.emit("updatePlayers", allPlayers);
-                        });
-                    }
                 } else {
                     navigate("/joinTable");
                 }
@@ -72,7 +62,7 @@ export default function Table() {
                 navigate("/joinTable");
             }
 
-            socket.emit("addPlayer", newUsername);
+            socket.emit("joinTable", table_id);
         }
 
         if (!hasRun.current) {
@@ -127,8 +117,6 @@ export default function Table() {
                         )}
                     </ol>
                 </div>
-
-                {isOwner() ? <Button className="mb-10">Start game</Button> : <></>}
 
                 <Button onClick={handleLeave}>Leave table</Button>
             </div>

@@ -4,11 +4,13 @@ import Logout from "~/components/Logout";
 import Greeting from "~/components/Greeting";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { authToken } from "~/helpers";
 
 export default function CreateTable() {
     const navigate = useNavigate();
+
+    const hasRun = useRef(false);
 
     const [token, setToken] = useState("");
     const [player_id, setPlayer_id] = useState(-1);
@@ -29,7 +31,12 @@ export default function CreateTable() {
             }
         }
 
-        authAndInit();
+        if (!hasRun.current) {
+            hasRun.current = true;
+            authAndInit();
+        } else {
+            console.log("effect was skipped to prevent double activation");
+        }
     }, []);
 
     async function handleCreate() {

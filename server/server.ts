@@ -2,6 +2,8 @@ import { createServer } from "http";
 import { Server } from "socket.io";
 
 import { app } from "./app";
+import axios from "axios";
+import pool from "./db";
 const port = 3000;
 
 const server = createServer(app);
@@ -24,14 +26,28 @@ io.on("connection", (socket) => {
         io.emit("newVote", newYes, newNo);
     });
 
-    socket.on("addPlayer", (username) => {
-        console.log(`Player ${username} has joined the table`);
-        io.emit("addPlayerToOwner", username);
-    });
+    socket.on("joinTable", async (table_id) => {
+        console.log(`New player has joined table with id=${table_id}`);
 
-    socket.on("updatePlayers", (players) => {
-        console.log(`Players are now: ${players}`);
-        io.emit("updatePlayers", players);
+        try {
+            const allTablePlayers = await pool.query(
+                "SELECT * FROM table_players WHERE table_id=$1",
+                [table_id]
+            );
+            const tablePlayers = allTablePlayers.rows;
+
+            const allPlayers = await pool.query(
+                "SELECT * FROM players"
+            );
+            const players = allPlayers.rows;
+
+            const newPlayers = tablePlayers
+                .sort((a, b) => a.position -  b.position)
+                .map((tp) => players.find((p) => p.id === tp.player_id).username);
+            io.emit("updatePlayers", newPlayers);
+        } catch (err) {
+            console.log("error in socket.on(joinTable)");
+        }
     });
 });
 

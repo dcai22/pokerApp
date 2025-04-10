@@ -107,10 +107,11 @@ app.delete('/deleteToken', async (req: Request, res: Response) => {
     res.json();
 });
 
+// returns { player_id, username } of player corresponding to token
 app.post('/authToken', async (req: Request, res: Response) => {
     const token = req.body.token;
-    const player_id = await authToken(token);
-    res.json({ player_id });
+    const authRes = await authToken(token);
+    res.json(authRes);
 });
 
 // PLAYER //
@@ -141,9 +142,23 @@ app.post('/player/createTable', async (req: Request, res: Response) => {
 
     // add player to table
     try {
+        const dbRes = await pool.query(
+            "SELECT * FROM table_players WHERE table_id=$1",
+            [table_id]
+        );
+        const positions = dbRes.rows.map((e) => e.position);
+        if (positions.length >= 9) {
+            res.status(400).json();
+            return;
+        }
+        let position;
+        do {
+            position = Math.floor(Math.random() * (9));
+        } while (positions.includes(position))
+
         await pool.query(
-            "INSERT INTO table_players(table_id, player_id) VALUES($1, $2)",
-            [table_id, player_id]
+            "INSERT INTO table_players(table_id, player_id, position) VALUES($1, $2, $3)",
+            [table_id, player_id, position]
         );
         res.json({ table_id });
         return;
@@ -158,9 +173,23 @@ app.post('/player/joinTable', async (req: Request, res: Response) => {
     const table_id = req.body.table_id;
 
     try {
+        const dbRes = await pool.query(
+            "SELECT * FROM table_players WHERE table_id=$1",
+            [table_id]
+        );
+        const positions = dbRes.rows.map((e) => e.position);
+        if (positions.length >= 9) {
+            res.status(400).json();
+            return;
+        }
+        let position;
+        do {
+            position = Math.floor(Math.random() * (9));
+        } while (positions.includes(position))
+
         await pool.query(
-            "INSERT INTO table_players(table_id, player_id) VALUES($1, $2)",
-            [table_id, player_id]
+            "INSERT INTO table_players(table_id, player_id, position) VALUES($1, $2, $3)",
+            [table_id, player_id, position]
         );
         res.json();
         return;
