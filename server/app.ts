@@ -173,11 +173,20 @@ app.post('/player/joinTable', async (req: Request, res: Response) => {
     const table_id = req.body.table_id;
 
     try {
-        const dbRes = await pool.query(
+        const tableRes = await pool.query(
+            "SELECT * FROM tables WHERE id=$1",
+            [table_id]
+        );
+        if (tableRes.rows[0].has_started) {
+            res.status(400).json();
+            return;
+        }
+
+        const tablePlayersRes = await pool.query(
             "SELECT * FROM table_players WHERE table_id=$1",
             [table_id]
         );
-        const positions = dbRes.rows.map((e) => e.position);
+        const positions = tablePlayersRes.rows.map((e) => e.position);
         if (positions.length >= 9) {
             res.status(400).json();
             return;
