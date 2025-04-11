@@ -164,3 +164,61 @@ And in the component, run `socket.connect()` inside useEffect.
 If you run it in the component instead of in useEffect, it may duplicate.
 
 array.splice(...) changes array itself. It does not return the new array.
+
+12/04/2025
+I will talk about my plan to achieve each of the goals laid out on 08/04/2025:
+
+```
+Players can join the room, and the room lobby should show a list of all players.
+Before the game starts, there should be a button to randomise the positions of all players.
+ - Roll positions button
+ - Reroll and confirm buttons
+```
+This has been reworked into a room that has positions automatically randomised.
+There is no rerolling to prevent abuse of the system.
+DONE.
+
+```
+A player should be able to join the game mid-session.
+Their position should be randomised upon joining.
+```
+This is essentially automatic.
+The only detail is that hasStarted must be fetched from the db.
+
+```
+Each player's current buyin should be displayed.
+A 'buyin' button should be present.
+Buyin history can be showed with a button.
+```
+Buyin is stored in table_player.
+There is a list of names at the top of the screen with their total buyins listed below.
+The player's name in the list is annotated with '(You)'.
+A buyin button will give a pop-up where you can enter a buyin amount.
+This buyin will be added to the database with a timestamp, and sockets will be used to
+update the total buyin of this player on all screens.
+
+```
+Each table plays multiple rounds of poker, each of which is called a 'hand'.
+In each hand:
+ - Each player inputs their hand which then gets hidden
+ - Each player then gets an option to VPIP
+After everyone has input their hand and VPIP, the owner can press a 'next hand' button.
+```
+There is an 'enter hand' button which gives a pop-up where you can select your hand,
+probably through selecting rank and suit of the cards given in a table.
+The player then 'confirm's their hand, exiting the pop-up and disabling the 'enter hand'
+button until the next hand starts.
+.
+There is a 'VPIP' button which gives a pop-up for 'yes' or 'no'.
+The player then 'confirm's their choice, exiting the pop-up and disabling the 'VPIP'
+button until the next hand starts.
+.
+The owner has access to a 'next hand' button.
+This button is disabled by default, but is enabled when every player has VPIP'd.
+This button resets the hands and VPIPs, and moves the positions.
+The hand no. should be displayed somewhere on screen e.g. `Hand no. 12`.
+
+```
+There should be a button to display hand stats -- vpip, hand history, etc.
+```
+I will aim to have an export option for this info somehow.
