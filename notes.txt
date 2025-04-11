@@ -27,11 +27,15 @@ The index route is the route corresponding to "/"
 
 Routes depending on an id must export loader and action functions
 
+
+
 02/04/2025
 There was a problem in register.tsx where calling axios.put(...) with a duplicate username would cause an uncaught 400 error
 I thought this was a problem with my backend route, but the solution was to wrap the axios.put(...) call with a try-catch block
 For the backend, pool.query(...) can throw an error that needs to be caught in a try-catch block
 However you cannot simply perform res.status(400), you need to do res.status(400).json(), i.e., there must be a `.json()`
+
+
 
 03/04/2025
 <INCORRECT: SEE 09/04/2025> Request body can be sent in axios.get(...) and axios.delete(...) as follows:
@@ -53,6 +57,8 @@ NOTE: parameter checks will be done with tokens stored in localStorage
       Token is created after successful register/login (DONE)
       all other routes will verify the token in their loader
 TODO: change all names `hash` to either `hashedPassword` or `hashedToken`   (DONE)
+
+
 
 04/04/2025
 Many methods of dealing with tokens don't work due to this app using Server Side Rendering (SSR)
@@ -78,13 +84,19 @@ TODO:
 NOTES:
  - session.flash(...) can be used to set a value temporarily, useful for errors
 
+
+
 05/04/2025
 TODO: Logout button on home                                                 (DONE)
 Since Logout is a component, it can't access action, loader and header.
 Those are linked to the server, while Logout is linked to the client.
 
+
+
 06/04/2025
 Using shadcn for frontend
+
+
 
 07/04/2025
 Using socket.io for live updates
@@ -106,6 +118,8 @@ app.use(cors({
 ```
 Note the origins use `localhost` rather than `127.0.0.1`
 This is actually important for what URL to open in a browser
+
+
 
 08/04/2025
 After successfully using sockets yesterday, today's goal is to work on the actual table.
@@ -145,6 +159,8 @@ This will allow me to store cookies properly, and resolve the issue of session c
 the same throughout multiple tabs, which made testing very difficult / impossible.
 SSR can be turned on/off via react-router.config.ts
 
+
+
 09/04/2025
 The goal for today is to use session storage for cookies.
 All loader and action functions will be moved to the Component.
@@ -153,6 +169,8 @@ This way, sessionStorage and window can be used without any issues.
 For get requests:
 In Component.tsx:   axios.get(`URL/param=${param}`);
 In app.ts:          const param = req.query.param;
+
+
 
 10/04/2025
 io.emit replies to all sockets
@@ -164,6 +182,8 @@ And in the component, run `socket.connect()` inside useEffect.
 If you run it in the component instead of in useEffect, it may duplicate.
 
 array.splice(...) changes array itself. It does not return the new array.
+
+
 
 12/04/2025
 I will talk about my plan to achieve each of the goals laid out on 08/04/2025:
