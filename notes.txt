@@ -245,4 +245,5 @@ I will aim to have an export option for this info somehow.
 
 
 HTML input components return strings by default, even if type="number".
-To fix this, set onChange={(e) => field.onChange(e.target.value)}.
+To fix this, set onChange={(e) => field.onChange(Number(e.target.value))}.
+Alternatively, you can use z.coerce.number() as the type, rathern than z.number().

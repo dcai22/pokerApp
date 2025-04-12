@@ -6,27 +6,44 @@ import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { useEffect, useRef, useState } from "react";
 import { authToken } from "~/helpers";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "~/components/ui/form";
+
+const formSchema = z.object({
+    tableName: z.string().min(1, { message: "*required field" }),
+    sb: z.coerce.number({ message: "invalid: please enter a number" }).multipleOf(0.01, { message: "invalid: please enter to the nearest cent" }),
+    bb: z.coerce.number({ message: "invalid: please enter a number" }).multipleOf(0.01, { message: "invalid: please enter to the nearest cent" }),
+});
 
 export default function CreateTable() {
     const navigate = useNavigate();
+    const form = useForm<z.infer<typeof formSchema>>({
+        resolver: zodResolver(formSchema),
+        defaultValues: {
+            tableName: "",
+            sb: 0.5,
+            bb: 1,
+        }
+    })
 
     const hasRun = useRef(false);
 
     const [token, setToken] = useState("");
-    const [player_id, setPlayer_id] = useState(-1);
+    const [playerId, setPlayerId] = useState(-1);
     const [username, setUsername] = useState("");
-    const [tableName, setTableName] = useState("");
-    const [smallBlind, setSmallBlind] = useState(1);
-    const [bigBlind, setBigBlind] = useState(1);
 
     useEffect(() => {
         async function authAndInit() {
             const res = await authToken();
             if (res.navigate) {
+                sessionStorage.removeItem("token");
+                sessionStorage.removeItem("playerId");
                 navigate("/login");
             } else {
                 setToken(res.token as string);
-                setPlayer_id(res.player_id);
+                setPlayerId(res.playerId as number);
                 setUsername(res.username);
             }
         }
@@ -39,8 +56,12 @@ export default function CreateTable() {
         }
     }, []);
 
-    async function handleCreate() {
-        if (smallBlind > bigBlind) {
+    async function onSubmit(values: z.infer<typeof formSchema>) {
+        const tableName = values.tableName;
+        const sb = values.sb;
+        const bb = values.sb;
+
+        if (sb > bb) {
             window.alert("small blind cannot be larger than big blind");
             return;
         }
@@ -49,14 +70,13 @@ export default function CreateTable() {
             const res = await axios.post(
                 "http://localhost:3000/player/createTable",
                 {
-                    name: tableName,
-                    sb: smallBlind,
-                    bb: bigBlind,
-                    player_id,
+                    tableName,
+                    sb,
+                    bb,
+                    playerId,
                 }
             );
-
-            navigate(`/table/${res.data.table_id}`);
+            navigate(`/table/${res.data.tableId}`);
         } catch(err) {
             window.alert("cannot create table");
         }
@@ -67,14 +87,55 @@ export default function CreateTable() {
             <div className="flex flex-col">
                 <Greeting name={username} />
                 <h1 className="mb-2">Create a new table!</h1>
-                <Input placeholder="Table name" name="name" type="text" className="mb-2" value={tableName} onChange={(e) => setTableName(e.target.value)}></Input>
-                <Input placeholder="Small blind" name="sb" type="number" className="mb-2" value={smallBlind} onChange={(e) => setSmallBlind(parseInt(e.target.value))}></Input>
-                <Input placeholder="Big blind" name="bb" type="number" className="mb-2" value={bigBlind} onChange={(e) => setBigBlind(parseInt(e.target.value))}></Input>
-                <Button className="mb-10" onClick={handleCreate}>Create table</Button>
+
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col mb-10">
+                        <FormField
+                            control={form.control}
+                            name="tableName"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel />
+                                    <FormControl>
+                                        <Input placeholder="Table name" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="sb"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel />
+                                    <FormControl>
+                                        <Input placeholder="Small blind" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="bb"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel />
+                                    <FormControl>
+                                        <Input placeholder="Big blind" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <Button type="submit" className="mt-2">Create table</Button>
+                    </form>
+                </Form>
 
                 <h1 className="mb-2">Already have a table?</h1>
                 <Button onClick={() => navigate(`/joinTable`)} className="mb-10">Join an existing table</Button>
-                <Logout player_id={player_id} token={token} />
+                <Logout player_id={playerId} token={token} />
             </div>
         </div>
     );

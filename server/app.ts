@@ -110,33 +110,34 @@ app.delete('/deleteToken', async (req: Request, res: Response) => {
 // returns { player_id, username } of player corresponding to token
 app.post('/authToken', async (req: Request, res: Response) => {
     const token = req.body.token;
-    const authRes = await authToken(token);
+    const playerId = req.body.playerId;
+    const authRes = await authToken(token, playerId);
     res.json(authRes);
 });
 
 // PLAYER //
 app.post('/player/createTable', async (req: Request, res: Response) => {
-    const table_name = req.body.name;
+    const tableName = req.body.tableName;
     const sb = req.body.sb;
     const bb = req.body.bb;
-    const player_id = req.body.player_id;
+    const playerId = req.body.playerId;
 
     // create table
-    let table_id;
+    let tableId;
     try {
         const dbRes = await pool.query(
             "INSERT INTO tables(name, sb, bb, owner) VALUES($1, $2, $3, $4) RETURNING id;",
-            [table_name, sb, bb, player_id]
+            [tableName, sb, bb, playerId]
         );
 
         if (dbRes.rowCount) {
-            table_id = dbRes.rows[0].id;
+            tableId = dbRes.rows[0].id;
         } else {
             res.status(400).json();
             return;
         }
     } catch(err) {
-        res.status(400).json({ table_id: table_id });
+        res.status(400).json();
         return;
     }
 
@@ -144,7 +145,7 @@ app.post('/player/createTable', async (req: Request, res: Response) => {
     try {
         const dbRes = await pool.query(
             "SELECT * FROM table_players WHERE table_id=$1",
-            [table_id]
+            [tableId]
         );
         const positions = dbRes.rows.map((e) => e.position);
         if (positions.length >= 9) {
@@ -158,9 +159,9 @@ app.post('/player/createTable', async (req: Request, res: Response) => {
 
         await pool.query(
             "INSERT INTO table_players(table_id, player_id, position) VALUES($1, $2, $3)",
-            [table_id, player_id, position]
+            [tableId, playerId, position]
         );
-        res.json({ table_id });
+        res.json({ tableId });
         return;
     } catch(err) {
         res.status(400).json();

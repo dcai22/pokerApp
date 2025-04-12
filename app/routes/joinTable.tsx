@@ -6,25 +6,40 @@ import { Input } from "~/components/ui/input";
 import Greeting from "~/components/Greeting";
 import { useEffect, useRef, useState } from "react";
 import { authToken } from "~/helpers";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "~/components/ui/form";
+
+const formSchema = z.object({
+    tableId: z.string(),
+})
 
 function JoinTable() {
     const navigate = useNavigate();
+    const form = useForm<z.infer<typeof formSchema>>({
+        resolver: zodResolver(formSchema),
+        defaultValues: {
+            tableId: "",
+        }
+    });
 
     const hasRun = useRef(false);
 
     const [token, setToken] = useState("");
-    const [player_id, setPlayer_id] = useState(-1);
+    const [playerId, setPlayerId] = useState(-1);
     const [username, setUsername] = useState("");
-    const [table_id, setTable_id] = useState("");
 
     useEffect(() => {
         async function authAndInit() {
             const res = await authToken();
             if (res.navigate) {
+                sessionStorage.removeItem("token");
+                sessionStorage.removeItem("playerId");
                 navigate("/login");
             } else {
                 setToken(res.token as string);
-                setPlayer_id(res.player_id);
+                setPlayerId(res.playerId as number);
                 setUsername(res.username);
             }
         }
@@ -37,18 +52,24 @@ function JoinTable() {
         }
     }, []);
 
-    async function handleJoin() {
+    async function onSubmit(values: z.infer<typeof formSchema>) {
+        const tableId = parseInt(values.tableId);
+        if (!tableId) {
+            window.alert("Invalid Table ID");
+            return;
+        }
+
         try {
             const res = await axios.post(
                 "http://localhost:3000/player/joinTable",
                 {
-                    player_id,
-                    table_id: parseInt(table_id),
+                    playerId,
+                    tableId,
                 }
             );
     
             if (res.status === 200) {
-                navigate(`/table/${table_id}`);
+                navigate(`/table/${tableId}`);
             } else {
                 window.alert("table does not exist");
             }
@@ -61,13 +82,30 @@ function JoinTable() {
         <div className="flex flex-col justify-center items-center w-screen h-screen">
             <div className="flex flex-col">
                 <Greeting name={username} />
-                <h1 className="mb-2">Join a table:</h1>
-                <Input placeholder="Table ID" name="table_id" type="text" className="mb-2" value={table_id} onChange={(e) => setTable_id(e.target.value)}></Input>
-                <Button className="mb-10" onClick={handleJoin}>Join table</Button>
+                <h1>Join a table:</h1>
 
-                <h1 className="mb-2">Don't have a table?</h1>
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col mb-10">
+                        <FormField 
+                            control={form.control}
+                            name="tableId"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel />
+                                    <FormControl>
+                                        <Input placeholder="Table ID" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <Button type="submit" className="mt-2">Join table</Button>
+                    </form>
+                </Form>
+
+                <h1 className="mb-1">Don't have a table?</h1>
                 <Button onClick={() => navigate(`/createTable`)} className="mb-10">Create a new table</Button>
-                <Logout player_id={player_id} token={token} />
+                <Logout player_id={playerId} token={token} />
             </div>
         </div>
     );

@@ -25,13 +25,13 @@ export default function Login() {
     });
 
     useEffect(() => {
-        const token = sessionStorage.getItem("token");
-        if (token) navigate("/joinTable");
+        if (sessionStorage.getItem("token")) navigate("/joinTable");
     }, []);
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
         const username = values.username;
         const password = values.password;
+
         try {
             const res = await axios.post(
                 "http://localhost:3000/login",
@@ -43,6 +43,7 @@ export default function Login() {
             
             if (res.status === 200) {
                 sessionStorage.setItem("token", res.data.token);
+                sessionStorage.setItem("playerId", res.data.player_id)
                 navigate("/joinTable");
             } else {
                 window.alert("login error");
@@ -55,7 +56,7 @@ export default function Login() {
     return (
         <div className="flex flex-col justify-center items-center w-screen h-screen">
             <div className="flex flex-col">
-                <h1 className="mb-2">PokerApp login:</h1>
+                <h1>PokerApp login:</h1>
 
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col mb-10">

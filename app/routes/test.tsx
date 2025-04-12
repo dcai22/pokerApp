@@ -67,6 +67,8 @@ export default function Test({ loaderData }: Route.ComponentProps) {
         console.log(randomReq);
     }
 
+    const p = sessionStorage.getItem("playerId");
+
     return (
         <>
             <Button onClick={() => navigate("/")}>Back</Button>
@@ -93,6 +95,7 @@ export default function Test({ loaderData }: Route.ComponentProps) {
                     <Button type="submit">Submit</Button>
                 </form>
             </Form>
+            <div>{p as (number | null)}</div>
         </>
     );
 }
