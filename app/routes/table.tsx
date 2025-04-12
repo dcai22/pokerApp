@@ -23,7 +23,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem } from "~/components/ui/form";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
-import { Terminal } from "lucide-react";
 
 const formSchema = z.object({
     amount: z.coerce.number({ message: "invalid: please enter a number" }).multipleOf(0.01, { message: "invalid: please enter to the nearest cent" }),
@@ -41,8 +40,8 @@ export default function Table() {
 
     const hasRun = useRef(false);
 
-    const table_id = useParams().table_id as string;
-    const [player_id, setPlayer_id] = useState(-1);
+    const tableId = useParams().tableId as string;
+    const [playerId, setPlayerId] = useState(-1);
     const [username, setUsername] = useState("");
     const [tableName, setTableName] = useState("");
     const [players, setPlayers] = useState(new Array());
@@ -77,7 +76,7 @@ export default function Table() {
             } else {
                 newPlayerId = res.playerId as number;
                 newUsername = res.username;
-                setPlayer_id(newPlayerId);
+                setPlayerId(newPlayerId);
                 setUsername(newUsername);
             }
 
@@ -86,7 +85,7 @@ export default function Table() {
 
             try {
                 const tableRes = await axios.get(
-                    `http://localhost:3000/getTable?table_id=${table_id}`
+                    `http://localhost:3000/getTable?table_id=${tableId}`
                 );
                 if (tableRes.status === 200) {
                     const ownerRes = await axios.get(
@@ -104,7 +103,7 @@ export default function Table() {
                 navigate("/joinTable");
             }
 
-            socket.emit("joinTable", table_id);
+            socket.emit("joinTable", tableId);
         }
 
         if (!hasRun.current) {
@@ -121,8 +120,8 @@ export default function Table() {
                 "http://localhost:3000/player/leaveTable",
                 {
                     data: {
-                        player_id,
-                        table_id: table_id,
+                        player_id: playerId,
+                        table_id: tableId,
                     },
                 }
             );
@@ -140,9 +139,10 @@ export default function Table() {
     function handleStart() {
         if (players.length < 2) {
             window.alert("Not enough players to start");
+            return;
         }
 
-        socket.emit("startGame", table_id);
+        socket.emit("startGame", tableId);
     }
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -159,7 +159,28 @@ export default function Table() {
 
         const buyinTime = (new Date()).toISOString();
         setLastBuyinTime(buyinTime);
-        socket.emit("newBuyin", buyinTime, table_id, player_id);
+
+        try {
+            const res = await axios.post(
+                "http://localhost:3000/player/buyin",
+                {
+                    amount,
+                    buyinTime,
+                    tableId,
+                    playerId,
+                }
+            );
+
+            if (res.status !== 200) {
+                window.alert("Error: couldn't buy in");
+                return;
+            }
+        } catch (err) {
+            window.alert("Error: couldn't buy in");
+            return;
+        }
+
+        socket.emit("newBuyin", buyinTime, tableId, playerId);
     }
 
     // SSR doesn't allow access to window
@@ -169,7 +190,7 @@ export default function Table() {
         <div className="flex">
             <div className="flex flex-col justify-center w-50 ml-10 mt-10">
                 <Greeting name={username} />
-                <TableWelcome name={tableName} code={parseInt(table_id)} />
+                <TableWelcome name={tableName} code={parseInt(tableId)} />
 
                 Starting positions:
                 <div className="mb-10">
@@ -196,7 +217,7 @@ export default function Table() {
                                 <Button>Buyin</Button>
                             </DialogTrigger>
                             <Form {...form}>
-                                <DialogContent>
+                                <DialogContent className="w-1/5">
                                     <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col">
                                         <DialogHeader>
                                             <DialogTitle>
@@ -212,12 +233,12 @@ export default function Table() {
                                             render={({ field }) => (
                                                 <FormItem>
                                                     <FormControl>
-                                                        <Input placeholder="amount" {...field} />
+                                                        <Input placeholder="e.g. 25" {...field} />
                                                     </FormControl>
                                                 </FormItem>
                                             )}
                                         />
-                                        <DialogFooter>
+                                        <DialogFooter className="mt-1">
                                             <DialogClose asChild>
                                                 <Button type="submit">Confirm</Button>
                                             </DialogClose>

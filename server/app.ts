@@ -3,7 +3,8 @@ import cors from 'cors';
 
 import pool from "./db";
 import bcrypt from 'bcryptjs';
-import { authToken, genToken } from './helpers/auth';
+import { authToken, genToken } from './helper';
+import { RESERVED_EVENTS } from 'node_modules/socket.io/dist/socket-types';
 
 const app = express();
 
@@ -226,6 +227,28 @@ app.delete('/player/leaveTable', async (req: Request, res: Response) => {
         return;
     }
 });
+
+app.post('/player/buyin', async (req: Request, res: Response) => {
+    const amount = req.body.amount;
+    const buyinTime = req.body.buyinTime;
+    const tableId = req.body.tableId;
+    const playerId = req.body.playerId;
+
+    try {
+        const dbRes = await pool.query(
+            "INSERT INTO buyins(player_id, table_id, time, amount) VALUES($1, $2, $3, $4)",
+            [playerId, tableId, buyinTime, amount]
+        );
+
+        if (dbRes.rowCount) {
+            res.json();
+        } else {
+            res.status(400).json({ message: "Error creating new buyin" });
+        }
+    } catch (err) {
+        res.status(400).json({ message: "Error creating new buyin" });
+    }
+})
 
 app.put('/player/addHand', (req: Request, res: Response) => {
     // TODO
