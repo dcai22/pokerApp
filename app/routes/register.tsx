@@ -4,20 +4,38 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { useEffect, useState } from "react";
 import { genHash } from "~/helpers";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "~/components/ui/form";
+
+const formSchema = z.object({
+    // username: z.string().min(1, { message: "Username must be at least 1 character" }),
+    // password: z.string().min(1, { message: "Password must be at least 1 character"}),
+    username: z.string(),
+    password: z.string(),
+});
 
 // TODO: error message from loaderData
 export default function Register() {
     const navigate = useNavigate();
-
-    const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");
+    const form = useForm<z.infer<typeof formSchema>>({
+        resolver: zodResolver(formSchema),
+        defaultValues: {
+            username: "",
+            password: "",
+        },
+    });
 
     useEffect(() => {
         const token = sessionStorage.getItem("token");
         if (token) navigate("/joinTable");
     }, []);
 
-    async function handleRegister() {
+    async function onSubmit(values: z.infer<typeof formSchema>) {
+        const username = values.username;
+        const password = values.password;
+
         const hashedPassword = await genHash(password);
         try {
             const res = await axios.post(
@@ -41,10 +59,39 @@ export default function Register() {
     return (
         <div className="flex flex-col justify-center items-center w-screen h-screen">
             <div className="flex flex-col">
-                <h1 className="mb-2">Register a PokerApp account:</h1>
-                <Input placeholder="Username" name="username" type="text" className="mb-2" value={username} onChange={(e) => setUsername(e.target.value)}></Input>
-                <Input placeholder="Password" name="password" type="password" className="mb-2" value={password} onChange={(e) => setPassword(e.target.value)}></Input>
-                <Button className="mb-10" onClick={handleRegister}>Register</Button>
+                <h1>Register a PokerApp account:</h1>
+
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col mb-10">
+                        <FormField
+                            control={form.control}
+                            name="username"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel />
+                                    <FormControl>
+                                        <Input placeholder="Username" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="password"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel />
+                                    <FormControl>
+                                        <Input placeholder="Password" type="password" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <Button type="submit" className="mt-2">Register</Button>
+                    </form>
+                </Form>
 
                 <h1 className="mb-1">Already have an account?</h1>
                 <Button onClick={() => navigate("/login")}>Login here</Button>

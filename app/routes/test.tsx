@@ -20,7 +20,7 @@ import { Input } from "~/components/ui/input"
  
 const formSchema = z.object({
   amount: z.number().int().gt(0),
-})
+});
 
 export async function clientLoader() {
     return { value: 0 };
