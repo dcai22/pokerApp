@@ -59,3 +59,12 @@ CREATE TABLE Tokens (
     player_id INT,
     FOREIGN KEY (player_id) REFERENCES Players(id)
 );
+
+CREATE TABLE Buyins {
+    player_id INT,
+    table_id INT,
+    amount INT,
+    time DATETIME,
+    FOREIGN KEY (player_id) REFERENCES Players(id),
+    FOREIGN KEY (table_id) REFERENCES Tables(id)
+}

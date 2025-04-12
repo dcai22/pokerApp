@@ -43,7 +43,10 @@ io.on("connection", (socket) => {
 
             const newPlayers = tablePlayers
                 .sort((a, b) => a.position -  b.position)
-                .map((tp) => players.find((p) => p.id === tp.player_id).username);
+                .map((tp) => players.find((p) => p.id === tp.player_id).username)
+                .map((p) => {
+                    return { name: p, buyin: 0 };
+                });
             io.emit("updatePlayers", newPlayers);
         } catch (err) {
             console.log("error in socket.on(joinTable)");

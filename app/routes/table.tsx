@@ -6,6 +6,16 @@ import TableWelcome from "~/components/TableWelcome";
 import { useEffect, useRef, useState } from "react";
 import { authToken, calcPosition } from "~/helpers";
 import { socket } from "~/root";
+import Buyins from "~/components/Buyins";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+  } from "~/components/ui/dialog"
+import { Input } from "~/components/ui/input";
 
 // TODO: remove table_players entry from database upon leaving page
 export default function Table() {
@@ -23,6 +33,7 @@ export default function Table() {
     
     socket.on("updatePlayers", (updatedPlayers) => {
         setPlayers(updatedPlayers);
+        console.log(updatedPlayers);
     });
 
     socket.on("startGame", () => {
@@ -123,9 +134,9 @@ export default function Table() {
                         {/* TODO: change key to NOT use {i} as it is unsafe */}
                         {players.map((e, i) => 
                             <li key={i} className="flex">
-                                <span className="w-7">{e === ownerName ? "⭐" : ""}</span>
+                                <span className="w-7">{e.name === ownerName ? "⭐" : ""}</span>
                                 <span className="font-bold w-15">{calcPosition(i, players.length)}</span>
-                                {e}
+                                {e.name}
                             </li>
                         )}
                     </ol>
@@ -133,10 +144,31 @@ export default function Table() {
 
                 <Button onClick={handleLeave}>Leave table</Button>
             </div>
-            <div className="flex w-screen items-center justify-center h-screen">
-                <div>
-                    {isOwner() ? <Button className="h-20 w-40 text-xl" onClick={handleStart}>Start game</Button> : <div className="text-xl text-center">Waiting for owner to start game...</div>}
-                </div>
+            <div className="flex w-screen justify-center h-screen">
+                {hasStarted
+                    ? <div className="flex flex-col">
+                        <Buyins players={players} username={username} />
+                        <Dialog>
+                            <DialogTrigger asChild>
+                                <Button>Buyin</Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle>
+                                        Buyin
+                                    </DialogTitle>
+                                    <DialogDescription>
+                                        Enter an amount to buyin:
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <Input placeholder="" name="buyin" type="number" />
+                                <Button>Confirm</Button>
+                            </DialogContent>
+                        </Dialog>
+                    </div>
+                    : <div className="flex items-center">{isOwner() ? <Button className="h-20 w-40 text-xl" onClick={handleStart}>Start game</Button> : <div className="text-xl text-center">Waiting for owner to start game...</div>}</div>
+                    // : <div className="flex items-center"><Button className="h-20 w-40 text-xl" onClick={handleStart} disabled={!isOwner()}>Start game</Button></div>
+                }
             </div>
         </div>
     );

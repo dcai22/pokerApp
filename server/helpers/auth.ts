@@ -33,7 +33,6 @@ export async function genToken(player_id: number) {
             );
 
             if (dbRes.rowCount) {
-                // localStorage.set("token", token);
                 return token;
             } else {
                 throw new Response("Error in auth.ts", { status: 400 });
