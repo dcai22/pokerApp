@@ -2,18 +2,16 @@ import { useNavigate } from "react-router";
 import axios from "axios";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { genHash } from "~/helpers";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "~/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "~/components/ui/form";
 
 const formSchema = z.object({
-    // username: z.string().min(1, { message: "Username must be at least 1 character" }),
-    // password: z.string().min(1, { message: "Password must be at least 1 character"}),
-    username: z.string(),
-    password: z.string(),
+    username: z.string().min(1, { message: "*required field" }),
+    password: z.string().min(1, { message: "*required field" }),
 });
 
 // TODO: error message from loaderData
