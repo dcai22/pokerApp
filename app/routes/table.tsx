@@ -51,6 +51,7 @@ export default function Table() {
     const [buyinAlert, setBuyinAlert] = useState(<></>);
     const [lastBuyinTime, setLastBuyinTime] = useState(null as (string | null));
     const [buyinHistory, setBuyinHistory] = useState([] as Buyin[]);
+    const [handNumber, setHandNumber] = useState(1);
     
     socket.on("updatePlayers", async (updatedPlayers) => {
         setPlayers(updatedPlayers);
@@ -224,7 +225,7 @@ export default function Table() {
 
     return (
         <div className="flex">
-            <div className="flex flex-col justify-center w-50 ml-10 mt-10">
+            <div className="flex flex-col justify-center w-50 mx-5">
                 <Greeting name={username} />
                 <TableWelcome name={tableName} code={parseInt(tableId)} />
 
@@ -244,70 +245,82 @@ export default function Table() {
 
                 <Button onClick={handleLeave}>Leave table</Button>
             </div>
-            <div className="flex w-screen justify-center h-screen">
+            <div className="h-screen w-screen">
                 {hasStarted
-                    ? <div className="flex flex-col mt-10">
-                        <Buyins players={players} username={username} />
-                        <Dialog>
-                            <DialogTrigger asChild>
-                                <Button>Buyin</Button>
-                            </DialogTrigger>
-                            <Form {...form}>
-                                <DialogContent className="w-1/5">
-                                    <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col">
-                                        <DialogHeader>
-                                            <DialogTitle>
-                                                Buyin
-                                            </DialogTitle>
-                                            <DialogDescription>
-                                                Enter an amount to buyin:
-                                            </DialogDescription>
-                                        </DialogHeader>
-                                        <FormField
-                                            control={form.control}
-                                            name="amount"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormControl>
-                                                        <Input placeholder="e.g. 25" {...field} />
-                                                    </FormControl>
-                                                </FormItem>
-                                            )}
-                                        />
-                                        <DialogFooter className="mt-1">
-                                            <DialogClose asChild>
-                                                <Button type="submit">Confirm</Button>
-                                            </DialogClose>
-                                        </DialogFooter>
-                                    </form>
+                    ? <div className="flex w-full h-full mx-5">
+                        <div className="flex justify-center flex-col mt-10 w-50">
+                            <Buyins players={players} username={username} />
+                            <Dialog>
+                                <DialogTrigger asChild>
+                                    <Button className="my-2">Buyin</Button>
+                                </DialogTrigger>
+                                <Form {...form}>
+                                    <DialogContent className="w-1/5">
+                                        <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col">
+                                            <DialogHeader>
+                                                <DialogTitle>
+                                                    Buyin
+                                                </DialogTitle>
+                                                <DialogDescription>
+                                                    Enter an amount to buyin:
+                                                </DialogDescription>
+                                            </DialogHeader>
+                                            <FormField
+                                                control={form.control}
+                                                name="amount"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormControl>
+                                                            <Input placeholder="e.g. 25" {...field} />
+                                                        </FormControl>
+                                                    </FormItem>
+                                                )}
+                                            />
+                                            <DialogFooter className="mt-1">
+                                                <DialogClose asChild>
+                                                    <Button type="submit">Confirm</Button>
+                                                </DialogClose>
+                                            </DialogFooter>
+                                        </form>
+                                    </DialogContent>
+                                </Form>
+                            </Dialog>
+                            <Dialog>
+                                <DialogTrigger asChild>
+                                    <Button>Buyin history</Button>
+                                </DialogTrigger>
+                                <DialogContent className="max-h-7/8 overflow-auto">
+                                    <DialogHeader>
+                                        <DialogTitle>
+                                            Buyin History
+                                        </DialogTitle>
+                                        <DialogDescription />
+                                    </DialogHeader>
+                                    {getBuyinHistoryComponent()}
+                                    <DialogFooter className="mt-1">
+                                        <DialogClose asChild>
+                                            <Button type="button">Close</Button>
+                                        </DialogClose>
+                                    </DialogFooter>
                                 </DialogContent>
-                            </Form>
-                        </Dialog>
-                        <Dialog>
-                            <DialogTrigger asChild>
-                                <Button>Buyin history</Button>
-                            </DialogTrigger>
-                            <DialogContent className="max-h-7/8 overflow-auto">
-                                <DialogHeader>
-                                    <DialogTitle>
-                                        Buyin History
-                                    </DialogTitle>
-                                    <DialogDescription />
-                                </DialogHeader>
-                                {getBuyinHistoryComponent()}
-                                <DialogFooter className="mt-1">
-                                    <DialogClose asChild>
-                                        <Button type="button">Close</Button>
-                                    </DialogClose>
-                                </DialogFooter>
-                            </DialogContent>
-                        </Dialog>
+                            </Dialog>
+                        </div>
+                        <div className="flex flex-col w-full">
+                            <div className="flex justify-center w-full h-20 text-7xl">
+                                Hand {handNumber}
+                            </div>
+                            <Button className="my-5">
+                                Enter hand (optional)
+                            </Button>
+                            <Button className="my-5">
+                                VPIP
+                            </Button>
+                        </div>
                     </div>
-                    : <div className="flex items-center">{isOwner() ? <Button className="h-20 w-40 text-xl" onClick={handleStart}>Start game</Button> : <div className="text-xl text-center">Waiting for owner to start game...</div>}</div>
-                    // : <div className="flex items-center"><Button className="h-20 w-40 text-xl" onClick={handleStart} disabled={!isOwner()}>Start game</Button></div>
+                    : <div className="flex w-full h-full justify-center items-center">{isOwner() ? <Button className="h-20 w-40 text-xl" onClick={handleStart}>Start game</Button> : <div className="text-xl text-center">Waiting for owner to start game...</div>}</div>
                 }
-                {buyinAlert}
             </div>
+            {buyinAlert}
         </div>
     );
 }
