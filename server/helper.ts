@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
-import pool from "../db";
+import pool from "./db";
 
 export async function genHash(str: string) {
     const saltRounds = 10;
@@ -67,31 +67,34 @@ export async function authToken(token: string, playerId: number) {
     } else {
         return { message: "error: player not found" };
     }
-
-
-    // let player_id;
-    // for (const dbToken of allTokens) {
-    //     if (await bcrypt.compare(token, dbToken.hash)) {
-    //         player_id = dbToken.player_id;
-    //         break;
-    //     }
-    // }
-    // if (!player_id) {
-    //     return null;
-    // }
-
-    // let username;
-    // const playerRes = await pool.query(
-    //     "SELECT * FROM players WHERE id=$1",
-    //     [player_id]
-    // );
-    // if (playerRes.rowCount) {
-    //     username = playerRes.rows[0].username;
-    //     return { player_id, username };
-    // } else {
-    //     return null;
-    // }
 }
 
-export async function deleteLocalTokens() {
+export async function getTablePlayers(tableId: number) {
+    const allTablePlayers = await pool.query(
+        "SELECT * FROM table_players WHERE table_id=$1 ORDER BY position",
+        [tableId]
+    );
+    const tablePlayers = allTablePlayers.rows;
+
+    const allPlayers = await pool.query(
+        "SELECT * FROM players"
+    );
+    const players = allPlayers.rows;
+
+    const allBuyins = await pool.query(
+        "SELECT player_id, SUM(amount) AS total_buyin FROM buyins WHERE table_id=$1 GROUP BY player_id",
+        [tableId]
+    );
+    const buyins = allBuyins.rows;
+
+    const newPlayers = tablePlayers
+        .sort((a, b) => a.position -  b.position)
+        .map((tp) => {
+            const buyin = buyins.find((b) => b.player_id === tp.player_id);
+            return {
+                name: players.find((p) => p.id === tp.player_id).username,
+                buyin: buyin === undefined ? 0 : buyin.total_buyin,
+            };
+        });
+    return newPlayers;
 }
