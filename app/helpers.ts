@@ -13,47 +13,32 @@ export async function authToken() {
     const token = sessionStorage.getItem("token");
     if (!token) return { navigate: true };
 
-    let player_id;
+    // converts playerId to int
+    const pidString = sessionStorage.getItem("playerId");
+    if (pidString === null || Number.isNaN(parseInt(pidString))) return { navigate: true };
+    const playerId = parseInt(pidString);
+
     let username;
     try {
         const res = await axios.post(
             "http://localhost:3000/authToken",
-            { token }
+            { token, playerId }
         );
-        if (res.data.player_id) {
-            player_id = res.data.player_id;
-            username = res.data.username;
-        } else {
-            sessionStorage.removeItem("token");
+        if (res.data.message) {
+            console.log(res.data.message);
             return { navigate: true };
+        } else {
+            username = res.data.username;
+            console.log(username);
         }
     } catch (err) {
-        sessionStorage.removeItem("token");
         return { navigate: true };
     }
-
-    // let username;
-    // try {
-    //     const res = await axios.get(
-    //         `http://localhost:3000/getPlayer?player_id=${player_id}`,
-    //     );
-    //     if (res.status === 200) {
-    //         username = res.data.username;
-    //     } else {
-    //         sessionStorage.removeItem("token");
-    //         return { navigate: true };
-    //     }
-    // } catch (err) {
-    //     sessionStorage.removeItem("token");
-    //     return { navigate: true };
-    // }
-    console.log(player_id);
-    console.log(username);
 
     return {
         navigate: false,
         token,
-        player_id,
+        playerId,
         username,
     };
 }

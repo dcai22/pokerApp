@@ -26,8 +26,7 @@ export default function Register() {
     });
 
     useEffect(() => {
-        const token = sessionStorage.getItem("token");
-        if (token) navigate("/joinTable");
+        if (sessionStorage.getItem("token")) navigate("/joinTable");
     }, []);
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -45,6 +44,7 @@ export default function Register() {
             );
             if (res.status === 200) {
                 sessionStorage.setItem("token", res.data.token);
+                sessionStorage.setItem("playerId", res.data.player_id);
                 navigate("/joinTable");
             } else {
                 window.alert("register error");

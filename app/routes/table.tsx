@@ -49,7 +49,7 @@ export default function Table() {
             if (res.navigate) {
                 navigate("/login");
             } else {
-                newPlayerId = res.player_id;
+                newPlayerId = res.playerId as number;
                 newUsername = res.username;
                 setPlayer_id(newPlayerId);
                 setUsername(newUsername);
