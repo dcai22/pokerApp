@@ -9,17 +9,35 @@ import { socket } from "~/root";
 import Buyins from "~/components/Buyins";
 import {
     Dialog,
+    DialogClose,
     DialogContent,
     DialogDescription,
+    DialogFooter,
     DialogHeader,
     DialogTitle,
     DialogTrigger,
   } from "~/components/ui/dialog"
 import { Input } from "~/components/ui/input";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Form, FormControl, FormField, FormItem } from "~/components/ui/form";
+import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
+import { Terminal } from "lucide-react";
+
+const formSchema = z.object({
+    amount: z.coerce.number({ message: "invalid: please enter a number" }).multipleOf(0.01, { message: "invalid: please enter to the nearest cent" }),
+});
 
 // TODO: remove table_players entry from database upon leaving page
 export default function Table() {
     const navigate = useNavigate();
+    const form = useForm<z.infer<typeof formSchema>>({
+        resolver: zodResolver(formSchema),
+        defaultValues: {
+            amount: 25,
+        },
+    });
 
     const hasRun = useRef(false);
 
@@ -30,6 +48,8 @@ export default function Table() {
     const [players, setPlayers] = useState(new Array());
     const [ownerName, setOwnerName] = useState("");
     const [hasStarted, setHasStarted] = useState(false);
+    const [buyinAlert, setBuyinAlert] = useState(<></>);
+    const [lastBuyinTime, setLastBuyinTime] = useState(null as (string | null));
     
     socket.on("updatePlayers", (updatedPlayers) => {
         setPlayers(updatedPlayers);
@@ -39,6 +59,12 @@ export default function Table() {
     socket.on("startGame", () => {
         setHasStarted(true);
     })
+
+    socket.on("removeBuyinAlert", (buyinTime) => {
+        if (lastBuyinTime === buyinTime) setBuyinAlert(<></>);
+        console.log(lastBuyinTime);
+        console.log(buyinTime);
+    });
     
     useEffect(() => {
         async function authAndInit() {
@@ -119,6 +145,23 @@ export default function Table() {
         socket.emit("startGame", table_id);
     }
 
+    async function onSubmit(values: z.infer<typeof formSchema>) {
+        const amount = values.amount;
+        const newBuyinAlert = (
+            <Alert className="fixed bottom-4 right-4 z-50 w-50" onClick={() => setBuyinAlert(<></>)}>
+            <AlertTitle>Success!</AlertTitle>
+            <AlertDescription>
+                <div><span className="font-bold">{username}</span> bought in for ${amount}</div>
+            </AlertDescription>
+            </Alert>
+        );
+        setBuyinAlert(newBuyinAlert);
+
+        const buyinTime = (new Date()).toISOString();
+        setLastBuyinTime(buyinTime);
+        socket.emit("newBuyin", buyinTime, table_id, player_id);
+    }
+
     // SSR doesn't allow access to window
     // window.addEventListener("beforeunload", handleLeave);
 
@@ -152,23 +195,42 @@ export default function Table() {
                             <DialogTrigger asChild>
                                 <Button>Buyin</Button>
                             </DialogTrigger>
-                            <DialogContent>
-                                <DialogHeader>
-                                    <DialogTitle>
-                                        Buyin
-                                    </DialogTitle>
-                                    <DialogDescription>
-                                        Enter an amount to buyin:
-                                    </DialogDescription>
-                                </DialogHeader>
-                                <Input placeholder="" name="buyin" type="number" />
-                                <Button>Confirm</Button>
-                            </DialogContent>
+                            <Form {...form}>
+                                <DialogContent>
+                                    <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col">
+                                        <DialogHeader>
+                                            <DialogTitle>
+                                                Buyin
+                                            </DialogTitle>
+                                            <DialogDescription>
+                                                Enter an amount to buyin:
+                                            </DialogDescription>
+                                        </DialogHeader>
+                                        <FormField
+                                            control={form.control}
+                                            name="amount"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormControl>
+                                                        <Input placeholder="amount" {...field} />
+                                                    </FormControl>
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <DialogFooter>
+                                            <DialogClose asChild>
+                                                <Button type="submit">Confirm</Button>
+                                            </DialogClose>
+                                        </DialogFooter>
+                                    </form>
+                                </DialogContent>
+                            </Form>
                         </Dialog>
                     </div>
                     : <div className="flex items-center">{isOwner() ? <Button className="h-20 w-40 text-xl" onClick={handleStart}>Start game</Button> : <div className="text-xl text-center">Waiting for owner to start game...</div>}</div>
                     // : <div className="flex items-center"><Button className="h-20 w-40 text-xl" onClick={handleStart} disabled={!isOwner()}>Start game</Button></div>
                 }
+                {buyinAlert}
             </div>
         </div>
     );
