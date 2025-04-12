@@ -202,8 +202,8 @@ DONE.
 A player should be able to join the game mid-session.
 Their position should be randomised upon joining.
 ```
-This is essentially automatic.
-The only detail is that hasStarted must be fetched from the db.
+EDIT: a player should NOT be able to join a table once it has started.
+Will have to think about how the `Leave Table` button will interact with table_players;
 
 ```
 Each player's current buyin should be displayed.
@@ -242,3 +242,7 @@ The hand no. should be displayed somewhere on screen e.g. `Hand no. 12`.
 There should be a button to display hand stats -- vpip, hand history, etc.
 ```
 I will aim to have an export option for this info somehow.
+
+
+HTML input components return strings by default, even if type="number".
+To fix this, set onChange={(e) => field.onChange(e.target.value)}.
