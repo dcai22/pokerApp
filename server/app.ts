@@ -248,6 +248,21 @@ app.post('/player/buyin', async (req: Request, res: Response) => {
     } catch (err) {
         res.status(400).json({ message: "Error creating new buyin" });
     }
+});
+
+app.get('/player/getBuyins', async (req: Request, res: Response) => {
+    const playerId = req.query.playerId;
+    const tableId = req.query.tableId;
+
+    try {
+        const dbRes = await pool.query(
+            "SELECT * FROM buyins WHERE player_id=$1 AND table_id=$2 ORDER BY time DESC",
+            [playerId, tableId]
+        );
+        res.json({ buyins: dbRes.rows });
+    } catch (err) {
+        res.status(400).json({ message: "Error fetching buyins" });
+    }
 })
 
 app.put('/player/addHand', (req: Request, res: Response) => {

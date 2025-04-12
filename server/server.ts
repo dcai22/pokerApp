@@ -2,7 +2,6 @@ import { createServer } from "http";
 import { Server } from "socket.io";
 
 import { app } from "./app";
-import axios from "axios";
 import pool from "./db";
 import { getTablePlayers } from "./helper";
 const port = 3000;
@@ -31,6 +30,7 @@ io.on("connection", (socket) => {
         console.log(`New player has joined table with id=${tableId}`);
 
         try {
+            // TODO: emit only to the table
             io.emit("updatePlayers", await getTablePlayers(tableId));
         } catch (err) {
             console.log("error in socket.on(joinTable)");
@@ -43,6 +43,7 @@ io.on("connection", (socket) => {
                 "UPDATE tables SET has_started=true WHERE id=$1",
                 [tableId]
             );
+            // TODO: emit only to the table
             io.emit("startGame");
             console.log(`Game started on table with id=${tableId}`);
         } catch (err) {
@@ -50,7 +51,8 @@ io.on("connection", (socket) => {
         }
     });
 
-    socket.on("newBuyin", async (buyinTime, tableId, playerId) => {
+    socket.on("newBuyin", async (buyinTime, tableId) => {
+        // TODO: emit only to the table
         io.emit("updatePlayers", await getTablePlayers(tableId));
 
         await new Promise(r => setTimeout(r, 2000));

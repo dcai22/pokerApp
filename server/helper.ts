@@ -93,7 +93,7 @@ export async function getTablePlayers(tableId: number) {
             const buyin = buyins.find((b) => b.player_id === tp.player_id);
             return {
                 name: players.find((p) => p.id === tp.player_id).username,
-                buyin: buyin === undefined ? 0 : buyin.total_buyin,
+                buyin: buyin === undefined ? '0' : buyin.total_buyin,
             };
         });
     return newPlayers;
