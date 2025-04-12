@@ -188,7 +188,7 @@ app.post('/player/joinTable', async (req: Request, res: Response) => {
         );
         const positions = tablePlayersRes.rows.map((e) => e.position);
         if (positions.length >= 9) {
-            res.status(400).json();
+            res.status(400).json({ error: `Cannot join table ${table_id}: table is full` });
             return;
         }
         let position;
