@@ -2,21 +2,36 @@ import { useNavigate } from "react-router";
 import axios from "axios";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "~/components/ui/form";
+
+const formSchema = z.object({
+    username: z.string().min(1),
+    password: z.string().min(1),
+});
 
 // TODO: error message from loaderData
 export default function Login() {
     const navigate = useNavigate();
-
-    const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");
+    const form = useForm<z.infer<typeof formSchema>>({
+        resolver: zodResolver(formSchema),
+        defaultValues: {
+            username: "",
+            password: "",
+        },
+    });
 
     useEffect(() => {
         const token = sessionStorage.getItem("token");
         if (token) navigate("/joinTable");
     }, []);
 
-    async function handleLogin() {
+    async function onSubmit(values: z.infer<typeof formSchema>) {
+        const username = values.username;
+        const password = values.password;
         try {
             const res = await axios.post(
                 "http://localhost:3000/login",
@@ -41,9 +56,38 @@ export default function Login() {
         <div className="flex flex-col justify-center items-center w-screen h-screen">
             <div className="flex flex-col">
                 <h1 className="mb-2">PokerApp login:</h1>
-                <Input placeholder="Username" name="username" type="text" className="mb-2" value={username} onChange={(e) => setUsername(e.target.value)}></Input>
-                <Input placeholder="Password" name="password" type="password" className="mb-2" value={password} onChange={(e) => setPassword(e.target.value)}></Input>
-                <Button className="mb-10" onClick={handleLogin}>Login</Button>
+
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col mb-10">
+                        <FormField
+                            control={form.control}
+                            name="username"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel />
+                                    <FormControl>
+                                        <Input placeholder="Username" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="password"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel />
+                                    <FormControl>
+                                        <Input placeholder="Password" type="password" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <Button type="submit" className="mt-2">Login</Button>
+                    </form>
+                </Form>
 
                 <h1 className="mb-1">Don't have an account?</h1>
                 <Button onClick={() => navigate("/register")}>Register an account</Button>
