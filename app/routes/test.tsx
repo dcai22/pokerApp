@@ -17,6 +17,7 @@ import {
     FormMessage,
 } from "~/components/ui/form"
 import { Input } from "~/components/ui/input"
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "~/components/ui/dialog";
  
 const formSchema = z.object({
   amount: z.coerce.number().int().gt(0),
@@ -74,27 +75,40 @@ export default function Test({ loaderData }: Route.ComponentProps) {
             <Button onClick={() => navigate("/")}>Back</Button>
             <Button onClick={update}>Increase value</Button>
             <div>Value is: {value}</div>
-            <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="w-50">
-                    <FormField 
-                        control={form.control}
-                        name="amount"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Amount</FormLabel>
-                                <FormControl>
-                                    <Input placeholder="amount" {...field} />
-                                </FormControl>
-                                <FormDescription>
-                                    Enter a positive integer
-                                </FormDescription>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <Button type="submit">Submit</Button>
-                </form>
-            </Form>
+
+            <Dialog>
+                <DialogTrigger asChild>
+                    <Button>Set Value</Button>
+                </DialogTrigger>
+                <Form {...form}>
+                    <DialogContent>
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col">
+                            <DialogHeader>
+                                <DialogTitle className="mb-2">Set amount</DialogTitle>
+                                <DialogDescription>Enter amount</DialogDescription>
+                            </DialogHeader>
+                            <FormField
+                                control={form.control}
+                                name="amount"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormControl>
+                                            <Input placeholder="amount" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <DialogFooter className="mt-2">
+                                <DialogClose asChild>
+                                    <Button type="submit">Submit</Button>
+                                </DialogClose>
+                            </DialogFooter>
+                        </form>
+                    </DialogContent>
+                </Form>
+            </Dialog>
+
             <div>{p as (number | null)}</div>
         </>
     );
