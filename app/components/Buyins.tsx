@@ -7,9 +7,16 @@ interface BuyinsProps {
 }
 
 export default function Buyins({ players, username }: BuyinsProps) {
+    function getTableTotal() {
+        let tableTotal = 0;
+        players.forEach((e) => tableTotal += Number(e.buyin));
+        return tableTotal;
+    }
+
     return (
         <div>
-            Total buyin:
+            There is <span className="font-bold">${getTableTotal()}</span> on the table<br />
+            Total buyins:
             <ul>
                 {players.map((e, i) => 
                     <li key={i}>

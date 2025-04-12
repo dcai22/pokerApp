@@ -167,8 +167,8 @@ All loader and action functions will be moved to the Component.
 This way, sessionStorage and window can be used without any issues.
 
 For get requests:
-In Component.tsx:   axios.get(`URL/param=${param}`);
-In app.ts:          const param = req.query.param;
+In Component.tsx:   axios.get(`URL?param1=${val1}&param2=${val2}`);
+In app.ts:          const param1 = req.query.param1; const param2 = req.query.param2;
 
 
 

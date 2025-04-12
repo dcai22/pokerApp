@@ -65,7 +65,7 @@ CREATE TABLE Buyins (
     table_id INT,
     time TIMESTAMP,
     PRIMARY KEY (player_id, table_id, time),
-    amount DECIMAL(10, 2) DEFAULT 0,
+    amount DECIMAL(10, 2) DEFAULT 0,                -- STORED AS A STRING
     FOREIGN KEY (player_id) REFERENCES Players(id),
     FOREIGN KEY (table_id) REFERENCES Tables(id)
 );

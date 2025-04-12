@@ -133,3 +133,17 @@ export class Card {
         return false;
     }
 }
+
+export class Buyin {
+    playerId: number;
+    tableId: number;
+    time: string;
+    amount: number;
+
+    constructor(playerId: number, tableId: number, time: Date, amount: number) {
+        this.playerId = playerId;
+        this.tableId = tableId;
+        this.time = time.toISOString();
+        this.amount = amount;
+    }
+}

@@ -23,6 +23,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem } from "~/components/ui/form";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
+import type { Buyin } from "server/interface";
 
 const formSchema = z.object({
     amount: z.coerce.number({ message: "invalid: please enter a number" }).multipleOf(0.01, { message: "invalid: please enter to the nearest cent" }),
@@ -46,13 +47,15 @@ export default function Table() {
     const [tableName, setTableName] = useState("");
     const [players, setPlayers] = useState(new Array());
     const [ownerName, setOwnerName] = useState("");
-    const [hasStarted, setHasStarted] = useState(false);
+    const [hasStarted, setHasStarted] = useState(false);    // TODO: initiate properly
     const [buyinAlert, setBuyinAlert] = useState(<></>);
     const [lastBuyinTime, setLastBuyinTime] = useState(null as (string | null));
+    const [buyinHistory, setBuyinHistory] = useState([] as Buyin[]);
     
-    socket.on("updatePlayers", (updatedPlayers) => {
+    socket.on("updatePlayers", async (updatedPlayers) => {
         setPlayers(updatedPlayers);
         console.log(updatedPlayers);
+        await updateBuyinHistory();
     });
 
     socket.on("startGame", () => {
@@ -104,6 +107,7 @@ export default function Table() {
             }
 
             socket.emit("joinTable", tableId);
+            await updateBuyinHistory();
         }
 
         if (!hasRun.current) {
@@ -183,6 +187,38 @@ export default function Table() {
         socket.emit("newBuyin", buyinTime, tableId, playerId);
     }
 
+    async function updateBuyinHistory() {
+        try {
+            const res = await axios.get(`http://localhost:3000/player/getBuyins?playerId=${playerId}&tableId=${tableId}`);
+            if (res.status === 200) {
+                setBuyinHistory(res.data.buyins);
+            } else {
+                console.log("Error fetching buyin history");
+            }
+        } catch (err) {
+            console.log("Error fetching buyin history");
+        }
+    }
+
+    function getBuyinHistoryComponent() {
+        return (
+            <ul className="divide-y divide-gray-500">
+                {buyinHistory.map((e, i) => <li key={i} className="py-2">
+                    <ul>
+                        <li key="amount" className="flex"><span className="w-26">Amount:</span>${e.amount}</li>
+                        <li key="time" className="flex"><span className="w-26">Timestamp:</span>{
+                            (new Date(e.time)).toLocaleString("en-GB", {
+                                dateStyle: "long",
+                                timeStyle: "short",
+                                timeZone: "Australia/Sydney",
+                            })
+                        }</li>
+                    </ul>
+                </li>)}
+            </ul>
+        );
+    }
+
     // SSR doesn't allow access to window
     // window.addEventListener("beforeunload", handleLeave);
 
@@ -210,7 +246,7 @@ export default function Table() {
             </div>
             <div className="flex w-screen justify-center h-screen">
                 {hasStarted
-                    ? <div className="flex flex-col">
+                    ? <div className="flex flex-col mt-10">
                         <Buyins players={players} username={username} />
                         <Dialog>
                             <DialogTrigger asChild>
@@ -246,6 +282,25 @@ export default function Table() {
                                     </form>
                                 </DialogContent>
                             </Form>
+                        </Dialog>
+                        <Dialog>
+                            <DialogTrigger asChild>
+                                <Button>Buyin history</Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-h-7/8 overflow-auto">
+                                <DialogHeader>
+                                    <DialogTitle>
+                                        Buyin History
+                                    </DialogTitle>
+                                    <DialogDescription />
+                                </DialogHeader>
+                                {getBuyinHistoryComponent()}
+                                <DialogFooter className="mt-1">
+                                    <DialogClose asChild>
+                                        <Button type="button">Close</Button>
+                                    </DialogClose>
+                                </DialogFooter>
+                            </DialogContent>
                         </Dialog>
                     </div>
                     : <div className="flex items-center">{isOwner() ? <Button className="h-20 w-40 text-xl" onClick={handleStart}>Start game</Button> : <div className="text-xl text-center">Waiting for owner to start game...</div>}</div>
