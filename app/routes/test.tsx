@@ -19,7 +19,7 @@ import {
 import { Input } from "~/components/ui/input"
  
 const formSchema = z.object({
-  amount: z.number().int().gt(0),
+  amount: z.coerce.number().int().gt(0),
 });
 
 export async function clientLoader() {
@@ -81,7 +81,7 @@ export default function Test({ loaderData }: Route.ComponentProps) {
                             <FormItem>
                                 <FormLabel>Amount</FormLabel>
                                 <FormControl>
-                                    <Input type="number" placeholder="amount" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
+                                    <Input placeholder="amount" {...field} />
                                 </FormControl>
                                 <FormDescription>
                                     Enter a positive integer
