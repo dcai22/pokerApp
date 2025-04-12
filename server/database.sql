@@ -60,11 +60,12 @@ CREATE TABLE Tokens (
     FOREIGN KEY (player_id) REFERENCES Players(id)
 );
 
-CREATE TABLE Buyins {
+CREATE TABLE Buyins (
     player_id INT,
     table_id INT,
-    amount INT,
-    time DATETIME,
+    time TIMESTAMP,
+    PRIMARY KEY (player_id, table_id, time),
+    amount DECIMAL(10, 2) DEFAULT 0,
     FOREIGN KEY (player_id) REFERENCES Players(id),
     FOREIGN KEY (table_id) REFERENCES Tables(id)
-}
+);

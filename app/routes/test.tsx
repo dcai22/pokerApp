@@ -10,17 +10,15 @@ import { z } from "zod"
 import {
     Form,
     FormControl,
-    FormDescription,
     FormField,
     FormItem,
-    FormLabel,
     FormMessage,
 } from "~/components/ui/form"
 import { Input } from "~/components/ui/input"
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "~/components/ui/dialog";
  
 const formSchema = z.object({
-  amount: z.coerce.number().int().gt(0),
+  amount: z.coerce.number({ message: "please enter a number "}).int().gte(0, { message: "please enter an amount greater than 0" }),
 });
 
 export async function clientLoader() {
@@ -38,6 +36,7 @@ export default function Test({ loaderData }: Route.ComponentProps) {
 
     function onSubmit(values: z.infer<typeof formSchema>) {
         setValue(values.amount.toString());
+        return <div>Hi</div>;
     }
 
     const [value, setValue] = useState(loaderData.value);

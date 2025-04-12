@@ -67,7 +67,7 @@ function JoinTable() {
                     tableId,
                 }
             );
-    
+
             if (res.status === 200) {
                 navigate(`/table/${tableId}`);
             } else {

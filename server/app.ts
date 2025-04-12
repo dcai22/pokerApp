@@ -170,13 +170,13 @@ app.post('/player/createTable', async (req: Request, res: Response) => {
 });
 
 app.post('/player/joinTable', async (req: Request, res: Response) => {
-    const player_id = req.body.player_id;
-    const table_id = req.body.table_id;
+    const playerId = req.body.playerId;
+    const tableId = req.body.tableId;
 
     try {
         const tableRes = await pool.query(
             "SELECT * FROM tables WHERE id=$1",
-            [table_id]
+            [tableId]
         );
         if (tableRes.rows[0].has_started) {
             res.status(400).json();
@@ -185,11 +185,11 @@ app.post('/player/joinTable', async (req: Request, res: Response) => {
 
         const tablePlayersRes = await pool.query(
             "SELECT * FROM table_players WHERE table_id=$1",
-            [table_id]
+            [tableId]
         );
         const positions = tablePlayersRes.rows.map((e) => e.position);
         if (positions.length >= 9) {
-            res.status(400).json({ error: `Cannot join table ${table_id}: table is full` });
+            res.status(400).json({ error: `Cannot join table ${tableId}: table is full` });
             return;
         }
         let position;
@@ -199,7 +199,7 @@ app.post('/player/joinTable', async (req: Request, res: Response) => {
 
         await pool.query(
             "INSERT INTO table_players(table_id, player_id, position) VALUES($1, $2, $3)",
-            [table_id, player_id, position]
+            [tableId, playerId, position]
         );
         res.json();
         return;

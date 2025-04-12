@@ -65,6 +65,13 @@ io.on("connection", (socket) => {
             console.log("error in socket.on(startGame)");
         }
     });
+
+    socket.on("newBuyin", async (buyinTime, table_id, player_id) => {
+        // DO STUFF WITH DB
+
+        await new Promise(r => setTimeout(r, 2000));
+        socket.emit("removeBuyinAlert", buyinTime);
+    });
 });
 
 // Start server
