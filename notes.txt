@@ -216,6 +216,7 @@ The player's name in the list is annotated with '(You)'.
 A buyin button will give a pop-up where you can enter a buyin amount.
 This buyin will be added to the database with a timestamp, and sockets will be used to
 update the total buyin of this player on all screens.
+DONE.
 
 ```
 Each table plays multiple rounds of poker, each of which is called a 'hand'.
@@ -260,3 +261,11 @@ To have a Form inside a Dialog:
     </Form>
 </Dialog>
 ```
+
+
+
+13/04/2025
+To fix up later:
+ - Security in tables
+    - Figure out when tables should let someone join, either through
+      joinTable or directly through URL (e.g. on refresh)
