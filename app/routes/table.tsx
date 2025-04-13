@@ -21,21 +21,52 @@ import { Input } from "~/components/ui/input";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, FormControl, FormField, FormItem } from "~/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel } from "~/components/ui/form";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
-import type { Buyin } from "server/interface";
+import { Card, Hand, type Buyin } from "server/interface";
+import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
+import RankSelect from "~/components/RankSelect";
+import SuitSelect from "~/components/SuitSelect";
 
-const formSchema = z.object({
+const buyinFormSchema = z.object({
     amount: z.coerce.number({ message: "invalid: please enter a number" }).multipleOf(0.01, { message: "invalid: please enter to the nearest cent" }),
+});
+
+const vpipFormSchema = z.object({
+    option: z.enum(["yes", "no"], {
+        required_error: "Select one of the options",
+    }),
+});
+
+const handFormSchema = z.object({
+    rank1: z.enum(["", ...Card.ranks]),
+    suit1: z.enum(["", ...Card.suits]),
+    rank2: z.enum(["", ...Card.ranks]),
+    suit2: z.enum(["", ...Card.suits]),
 });
 
 // TODO: remove table_players entry from database upon leaving page
 export default function Table() {
     const navigate = useNavigate();
-    const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
+    const buyinForm = useForm<z.infer<typeof buyinFormSchema>>({
+        resolver: zodResolver(buyinFormSchema),
         defaultValues: {
             amount: 25,
+        },
+    });
+    const vpipForm = useForm<z.infer<typeof vpipFormSchema>>({
+        resolver: zodResolver(vpipFormSchema),
+        defaultValues: {
+            option: "no",
+        },
+    });
+    const handForm = useForm<z.infer<typeof handFormSchema>>({
+        resolver: zodResolver(handFormSchema),
+        defaultValues: {
+            rank1: "",
+            suit1: "",
+            rank2: "",
+            suit2: "",
         },
     });
 
@@ -52,6 +83,10 @@ export default function Table() {
     const [lastBuyinTime, setLastBuyinTime] = useState(null as (string | null));
     const [buyinHistory, setBuyinHistory] = useState([] as Buyin[]);
     const [handNumber, setHandNumber] = useState(1);
+    const [hasEnteredHand, setHasEnteredHand] = useState(false);
+    const [hasVpip, setHasVpip] = useState(false);
+    const [vpipOption, setVpipOption] = useState("no");
+    const [curHand, setCurHand] = useState(new Hand(null, null));
     
     socket.on("updatePlayers", async (updatedPlayers) => {
         setPlayers(updatedPlayers);
@@ -61,7 +96,9 @@ export default function Table() {
 
     socket.on("startGame", () => {
         setHasStarted(true);
-    })
+        setHasEnteredHand(false);
+        setHasVpip(false);
+    });
 
     socket.on("removeBuyinAlert", (buyinTime) => {
         if (lastBuyinTime === buyinTime) setBuyinAlert(<></>);
@@ -100,6 +137,7 @@ export default function Table() {
                     }
 
                     setTableName(tableRes.data.name);
+                    setHandNumber(tableRes.data.num_hands + 1);
                 } else {
                     navigate("/joinTable");
                 }
@@ -150,7 +188,7 @@ export default function Table() {
         socket.emit("startGame", tableId);
     }
 
-    async function onSubmit(values: z.infer<typeof formSchema>) {
+    async function onBuyin(values: z.infer<typeof buyinFormSchema>) {
         const amount = values.amount;
         const newBuyinAlert = (
             <Alert className="fixed bottom-4 right-4 z-50 w-50" onClick={() => setBuyinAlert(<></>)}>
@@ -220,6 +258,29 @@ export default function Table() {
         );
     }
 
+    function onVpip(data: z.infer<typeof vpipFormSchema>) {
+        setVpipOption(data.option);
+        setHasVpip(true);
+        console.log("hi from onVpip");
+    }
+
+    function onEnterHand(data: z.infer<typeof handFormSchema>) {
+        const rank1 = data.rank1;
+        const suit1 = data.suit1;
+        const rank2 = data.rank2;
+        const suit2 = data.suit2;
+
+        if ([rank1, suit1, rank2, suit2].includes("")) {
+            console.log("Error selecting hand");
+            setCurHand(new Hand(null, null));
+        } else {
+            console.log("Hand successfully set!");
+            const newHand = new Hand(new Card(rank1, suit1), new Card(rank2, suit2));
+            setCurHand(newHand);
+        }
+        setHasEnteredHand(true);
+    }
+
     // SSR doesn't allow access to window
     // window.addEventListener("beforeunload", handleLeave);
 
@@ -254,9 +315,9 @@ export default function Table() {
                                 <DialogTrigger asChild>
                                     <Button className="my-2">Buyin</Button>
                                 </DialogTrigger>
-                                <Form {...form}>
+                                <Form {...buyinForm}>
                                     <DialogContent className="w-1/5">
-                                        <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col">
+                                        <form onSubmit={buyinForm.handleSubmit(onBuyin)} className="flex flex-col">
                                             <DialogHeader>
                                                 <DialogTitle>
                                                     Buyin
@@ -266,7 +327,7 @@ export default function Table() {
                                                 </DialogDescription>
                                             </DialogHeader>
                                             <FormField
-                                                control={form.control}
+                                                control={buyinForm.control}
                                                 name="amount"
                                                 render={({ field }) => (
                                                     <FormItem>
@@ -309,11 +370,152 @@ export default function Table() {
                             <div className="flex justify-center w-full h-20 text-7xl">
                                 Hand {handNumber}
                             </div>
-                            <Button className="my-5">
-                                Enter hand (optional)
-                            </Button>
-                            <Button className="my-5">
-                                VPIP
+                            <Dialog>
+                                <DialogTrigger asChild>
+                                    <Button className="my-2" disabled={hasEnteredHand}>Enter hand (optional)</Button>
+                                </DialogTrigger>
+                                <Form {...handForm}>
+                                    <DialogContent className="w-400">
+                                        <form onSubmit={handForm.handleSubmit(onEnterHand)} className="flex flex-col">
+                                            <DialogHeader>
+                                                <DialogTitle>
+                                                    Enter Hand
+                                                </DialogTitle>
+                                                <DialogDescription />
+                                            </DialogHeader>
+                                            <div className="flex w-full h-full">
+                                                <div className="flex flex-col w-full">
+                                                    <FormLabel className="my-4">
+                                                        Card 1: rank
+                                                    </FormLabel>
+                                                    <FormField
+                                                        control={handForm.control}
+                                                        name="rank1"
+                                                        render={({ field }) => (
+                                                            <FormItem>
+                                                                <FormControl>
+                                                                    <RankSelect onValueChange={field.onChange} />
+                                                                </FormControl>
+                                                            </FormItem>
+                                                        )}
+                                                    />
+                                                </div>
+                                                <div className="flex flex-col w-full">
+                                                    <FormLabel className="my-4">
+                                                        Card 1: suit
+                                                    </FormLabel>
+                                                    <FormField
+                                                        control={handForm.control}
+                                                        name="suit1"
+                                                        render={({ field }) => (
+                                                            <FormItem>
+                                                                <FormControl>
+                                                                    <SuitSelect onValueChange={field.onChange} />
+                                                                </FormControl>
+                                                            </FormItem>
+                                                        )}
+                                                    />
+                                                </div>
+                                                <div className="flex flex-col w-full">
+                                                    <FormLabel className="my-4">
+                                                        Card 2: rank
+                                                    </FormLabel>
+                                                    <FormField
+                                                        control={handForm.control}
+                                                        name="rank2"
+                                                        render={({ field }) => (
+                                                            <FormItem>
+                                                                <FormControl>
+                                                                    <RankSelect onValueChange={field.onChange} />
+                                                                </FormControl>
+                                                            </FormItem>
+                                                        )}
+                                                    />
+                                                </div>
+                                                <div className="flex flex-col w-full">
+                                                    <FormLabel className="my-4">
+                                                        Card 2: suit
+                                                    </FormLabel>
+                                                    <FormField
+                                                        control={handForm.control}
+                                                        name="suit2"
+                                                        render={({ field }) => (
+                                                            <FormItem>
+                                                                <FormControl>
+                                                                    <SuitSelect onValueChange={field.onChange} />
+                                                                </FormControl>
+                                                            </FormItem>
+                                                        )}
+                                                    />
+                                                </div>
+                                            </div>
+                                            <DialogFooter className="mt-1">
+                                                <DialogClose asChild>
+                                                    <Button type="submit">Confirm</Button>
+                                                </DialogClose>
+                                            </DialogFooter>
+                                        </form>
+                                    </DialogContent>
+                                </Form>
+                            </Dialog>
+                            <Dialog>
+                                <DialogTrigger asChild>
+                                    <Button className="my-2" disabled={hasVpip}>VPIP</Button>
+                                </DialogTrigger>
+                                <Form {...vpipForm}>
+                                    <DialogContent className="w-1/5">
+                                        <form onSubmit={vpipForm.handleSubmit(onVpip)} className="flex flex-col">
+                                            <DialogHeader>
+                                                <DialogTitle>
+                                                    VPIP
+                                                </DialogTitle>
+                                                <DialogDescription>
+                                                    Select an option:
+                                                </DialogDescription>
+                                            </DialogHeader>
+                                            <FormField
+                                                control={vpipForm.control}
+                                                name="option"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormControl>
+                                                            <RadioGroup
+                                                                onValueChange={field.onChange}
+                                                                defaultValue="no"
+                                                                className="flex flex-col space-y-1"
+                                                            >
+                                                                <FormItem className="flex items-center space-x-3 space-y-0">
+                                                                    <FormControl>
+                                                                    <RadioGroupItem value="no" />
+                                                                    </FormControl>
+                                                                    <FormLabel className="font-normal">
+                                                                    No
+                                                                    </FormLabel>
+                                                                </FormItem>
+                                                                <FormItem className="flex items-center space-x-3 space-y-0">
+                                                                    <FormControl>
+                                                                    <RadioGroupItem value="yes" />
+                                                                    </FormControl>
+                                                                    <FormLabel className="font-normal">
+                                                                    Yes
+                                                                    </FormLabel>
+                                                                </FormItem>
+                                                            </RadioGroup>
+                                                        </FormControl>
+                                                    </FormItem>
+                                                )}
+                                            />
+                                            <DialogFooter className="mt-1">
+                                                <DialogClose asChild>
+                                                    <Button type="submit">Confirm</Button>
+                                                </DialogClose>
+                                            </DialogFooter>
+                                        </form>
+                                    </DialogContent>
+                                </Form>
+                            </Dialog>
+                            <Button>
+                                Next Hand
                             </Button>
                         </div>
                     </div>
