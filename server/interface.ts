@@ -51,11 +51,14 @@ export class Player {
 
 export class Hand {
     // card1 > card2
-    card1: Card;
-    card2: Card;
+    card1: Card | null;
+    card2: Card | null;
 
-    constructor(card1: Card, card2: Card) {
-        if (card1.isLargerThan(card2)) {
+    constructor(card1: Card | null, card2: Card | null) {
+        if (card1 === null || card2 === null) {
+            this.card1 = null;
+            this.card2 = null;
+        } else if (card1.isLargerThan(card2)) {
             this.card1 = card1;
             this.card2 = card2;
         } else {
@@ -64,33 +67,66 @@ export class Hand {
         }
     }
 
+    isNull() {
+        return this.card1 === null || this.card2 === null;
+    }
+
     isSuited() {
-        return this.card1.suit === this.card2.suit;
+        if (this.isNull()) {
+            return false;
+        }
+        const card1 = this.card1 as Card;
+        const card2 = this.card2 as Card;
+        return card1.suit === card2.suit;
     }
 
     isPaired() {
-        return this.card1.rank === this.card2.rank;
+        if (this.isNull()) {
+            return false;
+        }
+        const card1 = this.card1 as Card;
+        const card2 = this.card2 as Card;
+        return card1.rank === card2.rank;
     }
 
     isConnected() {
-        return (this.card1.rank === 'A' && this.card2.rank === '2') ||
-               (this.card1.rank === '2' && this.card2.rank === 'A') ||
-               (Math.abs(this.card1.rankVal() - this.card2.rankVal()) === 1);
+        if (this.isNull()) {
+            return false;
+        }
+        const card1 = this.card1 as Card;
+        const card2 = this.card2 as Card;
+        return (card1.rank === 'A' && card2.rank === '2') ||
+               (card1.rank === '2' && card2.rank === 'A') ||
+               (Math.abs(card1.rankVal() - card2.rankVal()) === 1);
     }
 
     isSuitedConnector() {
         return this.isSuited() && this.isConnected();
     }
 
+    displayName() {
+        if (this.isNull()) return "unknown";
+        const card1 = this.card1 as Card;
+        const card2 = this.card2 as Card;
+        return `${card1.rank}${card1.suit}${card2.rank}${card2.suit}`;
+    }
+
     // to combination_id
     cid() {
-        const card1_id = 4 * this.card1.rankVal() + this.card1.suitVal();
-        const card2_id = 4 * this.card2.rankVal() + this.card2.suitVal();
+        if (this.isNull()) {
+            return -1;
+        }
+        const card1 = this.card1 as Card;
+        const card2 = this.card2 as Card;
+        const card1_id = 4 * card1.rankVal() + card1.suitVal();
+        const card2_id = 4 * card2.rankVal() + card2.suitVal();
         return 52 * card1_id + card2_id;
     }
 
     // from combination_id
     static fromCid(cid: number) {
+        if (cid < 0) return new Hand(null, null);
+
         const card1_id = cid / 52;
         const card1_rank = card1_id / 4;
         const card1_suit = card1_id % 4;
@@ -131,6 +167,36 @@ export class Card {
         if (this.rankVal() < other.rankVal()) return false;
         if (this.suitVal() > other.suitVal()) return true;
         return false;
+    }
+
+    static expandSuit(suitChar: string) {
+        if (suitChar === "c") {
+            return "Clubs";
+        }
+        if (suitChar === "d") {
+            return "Diamonds";
+        }
+        if (suitChar === "h") {
+            return "Hearts";
+        }
+        if (suitChar === "s") {
+            return "Spades";
+        }
+    }
+
+    static prettySuit(suitChar: string) {
+        if (suitChar === "c") {
+            return "♣";
+        }
+        if (suitChar === "d") {
+            return "♦";
+        }
+        if (suitChar === "h") {
+            return "♥";
+        }
+        if (suitChar === "s") {
+            return "♠";
+        }
     }
 }
 

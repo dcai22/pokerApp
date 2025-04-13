@@ -21,11 +21,7 @@ const formSchema = z.object({
   amount: z.coerce.number({ message: "please enter a number "}).int().gte(0, { message: "please enter an amount greater than 0" }),
 });
 
-export async function clientLoader() {
-    return { value: 0 };
-}
-
-export default function Test({ loaderData }: Route.ComponentProps) {
+export default function Test() {
     const navigate = useNavigate();
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -34,40 +30,30 @@ export default function Test({ loaderData }: Route.ComponentProps) {
         }
     });
 
-    function onSubmit(values: z.infer<typeof formSchema>) {
-        setValue(values.amount.toString());
-        return <div>Hi</div>;
-    }
-
-    const [value, setValue] = useState(loaderData.value);
-    // const [value, setValue] = useState(0);
+    const [value, setValue] = useState(0);
+    const [playerId, setPlayerId] = useState("");
 
     useEffect(() => {
-        const value = sessionStorage.getItem("value");
-        if (value === null) {
-            sessionStorage.setItem("value", "0");
-        } else {
-            setValue(parseInt(value));
+        setPlayerId(sessionStorage.getItem("playerId") ?? "");
+        if (sessionStorage.getItem("value")) {
+            setValue(parseInt(sessionStorage.getItem("value") as string));
         }
-    }, []);
+    })
+
+    function onSubmit(values: z.infer<typeof formSchema>) {
+        const newValue = values.amount;
+        setValue(newValue);
+        sessionStorage.setItem("value", newValue.toString());
+    }
 
     async function update() {
-        const value = sessionStorage.getItem("value");
-        if (value === null) {
-            sessionStorage.setItem("value", "0");
-        } else {
-            const valueInt = parseInt(value);
-            sessionStorage.setItem("value", (valueInt + 1).toString());
-        }
-
-        const newValue = sessionStorage.getItem("value") ?? "0";
-        setValue(parseInt(newValue));
+        const newValue =value + 1;
+        setValue(newValue);
+        sessionStorage.setItem("value", newValue.toString());
 
         const randomReq = await axios.get('http://localhost:3000/numVotes');
         console.log(randomReq);
     }
-
-    const p = sessionStorage.getItem("playerId");
 
     return (
         <>
@@ -108,7 +94,7 @@ export default function Test({ loaderData }: Route.ComponentProps) {
                 </Form>
             </Dialog>
 
-            <div>{p as (number | null)}</div>
+            <div>{playerId}</div>
         </>
     );
 }

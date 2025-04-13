@@ -45,10 +45,11 @@ CREATE TABLE Table_Players (
 );
 
 CREATE TABLE Hands (
-    id SERIAL PRIMARY KEY,
-    combination_id INT,
     player_id INT,
     table_id INT,
+    hand_num INT,
+    PRIMARY KEY (player_id, table_id, hand_num),
+    combination_id INT,
     vpip BOOLEAN,
     FOREIGN KEY (player_id) REFERENCES Players(id),
     FOREIGN KEY (table_id) REFERENCES Tables(id)
