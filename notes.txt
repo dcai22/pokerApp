@@ -295,13 +295,15 @@ More detail about security
  - Players can change between active and inactive status when in the table lobby (DONE)
  - This status takes effect immediately
     - Except if they have already VPIP'd, and then become inactive; this takes effect next hand
+    - hasEnteredHand and hasVpip must be set on pageload in case they have already submitted their hand,
+      then leave the table, rejoin, and set their status to active again
  - Upon socket disconnect, the player's status becomes inactive
- - A hand cannot be played with < 2 active players; a 'Waiting...' screen will be shown
+ - A hand cannot be played with < 2 active players; a 'Waiting...' screen will be shown (DONE)
 
- - Any user can join an inactive table (until it's full) with default active status
- - A user can join an active table if they are already in it
- - A user on the '/tables' page will be kicked out if they are not on the table
- - If a user enters the '/tables' page and they are on the table, fetch their status from db
+ - A new user can join an inactive table (until it's full) with default active status (DONE)
+ - A user can join an active table if they are already in it (DONE)
+ - A user on the '/tables' page will be kicked out if they are not on the table (DONE)
+ - If a user enters the '/tables' page and they are on the table, fetch their status from db (DONE)
 
  - 'Next Hand' button will only require all ACTIVE players to have VPIP'd
 

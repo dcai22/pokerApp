@@ -364,6 +364,28 @@ app.get('/getTable', async (req: Request, res: Response) => {
     }
 });
 
+app.get('/getTablePlayer', async (req: Request, res: Response) => {
+    const tableId = req.query.tableId;
+    const playerId = req.query.playerId;
+    try {
+        const dbRes = await pool.query(
+            "SELECT * FROM table_players WHERE table_id=$1 AND player_id=$2",
+            [tableId, playerId]
+        );
+
+        if (dbRes.rowCount) {
+            res.json(dbRes.rows[0]);
+            return;
+        } else {
+            res.status(400).json({ err: "Player does not exist on table" });
+            return;
+        }
+    } catch(err) {
+        res.status(400).json({ err });
+        return;
+    }
+});
+
 
 // FOR TESTING
 app.get('/numVotes', async (req: Request, res: Response) => {
