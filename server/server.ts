@@ -108,6 +108,19 @@ io.on("connection", (socket) => {
             console.log(err);
         }
     });
+
+    socket.on("leaveTable", async (tableId, playerId) => {
+        try {
+            await pool.query(
+                "UPDATE table_players SET is_active=false WHERE table_id=$1 AND player_id=$2",
+                [tableId, playerId]
+            );
+            
+            io.emit("updatePlayers", await getTablePlayers(tableId));
+        } catch(err) {
+            console.log(err);
+        }
+    })
 });
 
 // Start server
