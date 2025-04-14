@@ -91,6 +91,7 @@ export default function Table() {
     const [suit1Randomiser, setSuit1Randomiser] = useState(Array.from({ length: 4 }, () => Math.random()));
     const [rank2Randomiser, setRank2Randomiser] = useState(Array.from({ length: 13 }, () => Math.random()));
     const [suit2Randomiser, setSuit2Randomiser] = useState(Array.from({ length: 4 }, () => Math.random()));
+    const [isActive, setIsActive] = useState(false);
     
     async function socketHandleUpdatePlayers(updatedPlayers: SetStateAction<any[]>) {
         setPlayers(updatedPlayers);
@@ -198,7 +199,14 @@ export default function Table() {
         setSuit1Randomiser(Array.from({ length: 4 }, () => Math.random()));
         setRank2Randomiser(Array.from({ length: 13 }, () => Math.random()));
         setSuit2Randomiser(Array.from({ length: 4 }, () => Math.random()));
-    }, [handNum])
+    }, [handNum]);
+
+    useEffect(() => {
+        const player = players.find((e) => e.name === username);
+        if (player) {
+            setIsActive(player.isActive);
+        }
+    }, [players]);
 
     async function handleLeave() {
         try {
@@ -467,7 +475,7 @@ export default function Table() {
                                 </div>
                                 <Dialog>
                                     <DialogTrigger asChild>
-                                        <Button className="my-2" disabled={hasEnteredHand}>Enter hand (optional)</Button>
+                                        <Button className="my-2" disabled={hasEnteredHand || !isActive}>Enter hand (optional)</Button>
                                     </DialogTrigger>
                                     <Form {...handForm}>
                                         <DialogContent className="w-400">
@@ -557,7 +565,7 @@ export default function Table() {
                                 </Dialog>
                                 <Dialog>
                                     <DialogTrigger asChild>
-                                        <Button className="my-2" disabled={hasVpip}>VPIP</Button>
+                                        <Button className="my-2" disabled={hasVpip || !isActive}>VPIP</Button>
                                     </DialogTrigger>
                                     <Form {...vpipForm}>
                                         <DialogContent className="w-1/5">
@@ -612,7 +620,7 @@ export default function Table() {
                                     </Form>
                                 </Dialog>
                                 <Button onClick={() => socket.emit("changeStatus", tableId, playerId)}>
-                                    {players.find((e) => e.name === username).isActive ? "Sit out" : "Deal me in"}
+                                    {isActive ? "Sit out" : "Deal me in"}
                                 </Button>
                                 {isOwner()
                                     ? <Button disabled={!isHandDone} onClick={handleNext}>
