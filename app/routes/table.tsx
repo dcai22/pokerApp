@@ -85,8 +85,8 @@ export default function Table() {
     const [handNum, setHandNum] = useState(1);
     const [hasEnteredHand, setHasEnteredHand] = useState(false);
     const [hasVpip, setHasVpip] = useState(false);
-    const [vpipOption, setVpipOption] = useState("no");
     const [curHand, setCurHand] = useState(new Hand(null, null));
+    const [isHandDone, setIsHandDone] = useState(false);
     
     socket.on("updatePlayers", async (updatedPlayers) => {
         setPlayers(updatedPlayers);
@@ -104,6 +104,10 @@ export default function Table() {
         if (lastBuyinTime === buyinTime) setBuyinAlert(<></>);
         console.log(lastBuyinTime);
         console.log(buyinTime);
+    });
+
+    socket.on("handDone", () => {
+        setIsHandDone(true);
     });
     
     useEffect(() => {
@@ -273,9 +277,8 @@ export default function Table() {
                 }
             );
             if (res.status === 200) {
-                setVpipOption(option);
                 setHasVpip(true);
-                socket.emit("vpip");
+                socket.emit("vpip", tableId, handNum);
             } else {
                 console.log(res.data.err);
             }
@@ -562,12 +565,24 @@ export default function Table() {
                                     </DialogContent>
                                 </Form>
                             </Dialog>
-                            <Button>
-                                Next Hand
-                            </Button>
+                            {isOwner()
+                                ? <Button disabled={!isHandDone}>
+                                    Next Hand
+                                </Button>
+                                : <></>
+                            }
                         </div>
                     </div>
-                    : <div className="flex w-full h-full justify-center items-center">{isOwner() ? <Button className="h-20 w-40 text-xl" onClick={handleStart}>Start game</Button> : <div className="text-xl text-center">Waiting for owner to start game...</div>}</div>
+                    : <div className="flex w-full h-full justify-center items-center">
+                        {isOwner() 
+                            ? <Button className="h-20 w-40 text-xl" onClick={handleStart}>
+                                Start game
+                            </Button>
+                            : <div className="text-xl text-center">
+                                Waiting for owner to start game...
+                            </div>
+                        }
+                    </div>
                 }
             </div>
             {buyinAlert}
