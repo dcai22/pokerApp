@@ -58,6 +58,26 @@ io.on("connection", (socket) => {
         await new Promise(r => setTimeout(r, 2000));
         socket.emit("removeBuyinAlert", buyinTime);
     });
+
+    socket.on("vpip", async (tableId, handNum) => {
+        try {            
+            const playerCountRes = await pool.query(
+                "SELECT COUNT(*) FROM table_players WHERE table_id=$1",
+                [tableId]
+            );
+
+            const readyCountRes = await pool.query(
+                "SELECT COUNT(*) FROM hands WHERE table_id=$1 AND hand_num=$2",
+                [tableId, handNum]
+            );
+
+            if (playerCountRes.rows[0].count === readyCountRes.rows[0].count) {
+                io.emit("handDone");
+            }
+        } catch (err) {
+            console.log(err);
+        }
+    })
 });
 
 // Start server
