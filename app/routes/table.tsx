@@ -448,7 +448,9 @@ export default function Table() {
                                                     <DialogTitle>
                                                         Enter Hand
                                                     </DialogTitle>
-                                                    <DialogDescription />
+                                                    <DialogDescription>
+                                                        Fields are randomised to prevent cheating
+                                                    </DialogDescription>
                                                 </DialogHeader>
                                                 <div className="flex w-full h-full">
                                                     <div className="flex flex-col w-full">

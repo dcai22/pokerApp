@@ -280,3 +280,4 @@ improve the aesthetic of the app.
 
 On top of the security concern mentioned yesterday, I need sockets to communicate
 to other sockets within the same table.
+Also, the rank and suit selections should be randomised to prevent cheating.
