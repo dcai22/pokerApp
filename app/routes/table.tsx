@@ -109,6 +109,10 @@ export default function Table() {
     socket.on("handDone", () => {
         setIsHandDone(true);
     });
+
+    socket.on("nextHand", (newHandNum) => {
+        setHandNum(newHandNum);
+    });
     
     useEffect(() => {
         async function authAndInit() {
@@ -160,6 +164,13 @@ export default function Table() {
             console.log("effect was skipped to prevent double activation");
         }
     }, []);
+
+    useEffect(() => {
+        setHasEnteredHand(false);
+        setHasVpip(false);
+        setCurHand(new Hand(null, null));
+        setIsHandDone(false);
+    }, [handNum])
 
     async function handleLeave() {
         try {
@@ -330,6 +341,10 @@ export default function Table() {
         } catch (err) {
             console.log(err);
         }
+    }
+
+    function handleNext() {
+        socket.emit("alertNextHand", tableId, handNum);
     }
     
     // SSR doesn't allow access to window
@@ -566,7 +581,7 @@ export default function Table() {
                                 </Form>
                             </Dialog>
                             {isOwner()
-                                ? <Button disabled={!isHandDone}>
+                                ? <Button disabled={!isHandDone} onClick={handleNext}>
                                     Next Hand
                                 </Button>
                                 : <></>
