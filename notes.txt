@@ -282,3 +282,20 @@ improve the aesthetic of the app.
 On top of the security concern mentioned yesterday, I need sockets to communicate
 to other sockets within the same table.
 Also, the rank and suit selections should be randomised to prevent cheating.
+
+
+
+15/04/2025
+More detail about security
+ - Players in the table lobby can be active or inactive
+ - Players join with inactive status by default (sockets should take care of this)
+ - Players can change between active and inactive status when in the table lobby
+ - This status takes effect immediately
+    - Except if they have already VPIP'd, and then become inactive; this takes effect next hand
+ - Upon socket disconnect, the player's status becomes inactive
+ - A hand cannot be played with < 2 active players
+
+ - Any user can join an inactive table (until it's full)
+ - A user can join an active table if they are already in it
+ - A user on the '/tables' page will be kicked out if they are not on the table
+ - If a user enters the '/tables' page and they are on the table, they are inactive by default
