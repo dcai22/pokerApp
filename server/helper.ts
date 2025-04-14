@@ -94,6 +94,7 @@ export async function getTablePlayers(tableId: number) {
             return {
                 name: players.find((p) => p.id === tp.player_id).username,
                 buyin: buyin === undefined ? '0' : buyin.total_buyin,
+                isActive: tp.is_active,
             };
         });
     return newPlayers;
