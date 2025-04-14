@@ -77,7 +77,19 @@ io.on("connection", (socket) => {
         } catch (err) {
             console.log(err);
         }
-    })
+    });
+
+    socket.on("alertNextHand", async (tableId, numHands) => {
+        try {
+            await pool.query(
+                "UPDATE tables SET num_hands=$1 WHERE id=$2",
+                [numHands, tableId]
+            );
+            io.emit("nextHand", numHands + 1);
+        } catch (err) {
+            console.log(err);
+        }
+    });
 });
 
 // Start server
