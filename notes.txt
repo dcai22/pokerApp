@@ -269,3 +269,14 @@ To fix up later:
  - Security in tables
     - Figure out when tables should let someone join, either through
       joinTable or directly through URL (e.g. on refresh)
+
+
+
+
+14/04/2025
+I finished making the table fully functional.
+Now I just need to implement more security features (as mentioned yesterday), and
+improve the aesthetic of the app.
+
+On top of the security concern mentioned yesterday, I need sockets to communicate
+to other sockets within the same table.
