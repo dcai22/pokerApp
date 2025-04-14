@@ -118,7 +118,7 @@ export default function Table() {
     socket.on("nextHand", (newHandNum) => {
         setHandNum(newHandNum);
     });
-    
+
     useEffect(() => {
         async function authAndInit() {
             let newPlayerId;
@@ -151,6 +151,7 @@ export default function Table() {
 
                     setTableName(tableRes.data.name);
                     setHandNum(tableRes.data.num_hands + 1);
+                    setHasStarted(tableRes.data.has_started);
                 } else {
                     navigate("/joinTable");
                 }
@@ -170,6 +171,7 @@ export default function Table() {
         }
     }, []);
 
+    // Reset values for new hand
     useEffect(() => {
         setHasEnteredHand(false);
         setHasVpip(false);
