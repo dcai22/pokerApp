@@ -305,7 +305,7 @@ More detail about security
  - A user on the '/tables' page will be kicked out if they are not on the table (DONE)
  - If a user enters the '/tables' page and they are on the table, fetch their status from db (DONE)
 
- - 'Next Hand' button will only require all ACTIVE players to have VPIP'd
+ - 'Next Hand' button will only require all ACTIVE players to have VPIP'd (DONE)
 
  NOTES: there was a lot of socket duplication due to socket.on() being placed outside of useEffect.
  Since the component unmounts/remounts frequently, this results in exponentially duplicating sockets.

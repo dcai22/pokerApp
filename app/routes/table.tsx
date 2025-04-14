@@ -111,8 +111,8 @@ export default function Table() {
         console.log(buyinTime);
     }
 
-    function socketHandleHandDone() {   
-        setIsHandDone(true);
+    function socketHandleUpdateHandDone(newIsHandDone: boolean | ((prevState: boolean) => boolean)) {
+        setIsHandDone(newIsHandDone);
     }
 
     function socketHandleNextHand(newHandNum: SetStateAction<number>) {
@@ -183,14 +183,14 @@ export default function Table() {
         socket.on("updatePlayers", socketHandleUpdatePlayers);
         socket.on("startGame", socketHandleStartGame);
         socket.on("removeBuyinAlert", socketHandleRemoveBuyinAlert);
-        socket.on("handDone", socketHandleHandDone);
+        socket.on("updateHandDone", socketHandleUpdateHandDone);
         socket.on("nextHand", socketHandleNextHand);
 
         return () => {
             socket.off("updatePlayers", socketHandleUpdatePlayers);
             socket.off("startGame", socketHandleStartGame);
             socket.off("removeBuyinAlert", socketHandleRemoveBuyinAlert);
-            socket.off("handDone", socketHandleHandDone);
+            socket.off("updateHandDone", socketHandleUpdateHandDone);
             socket.off("nextHand", socketHandleNextHand);
         }
     }, []);
@@ -319,7 +319,7 @@ export default function Table() {
             );
             if (res.status === 200) {
                 setHasVpip(true);
-                socket.emit("vpip", tableId, handNum);
+                socket.emit("checkHandDone", tableId, handNum);
             } else {
                 console.log(res.data.err);
             }
@@ -376,13 +376,20 @@ export default function Table() {
     function handleNext() {
         socket.emit("alertNextHand", tableId, handNum);
     }
+
+    function handleChangeStatus() {
+        socket.emit("changeStatus", tableId, playerId);
+        socket.once("changeStatusDone", () => {
+            socket.emit("checkHandDone", tableId, handNum);
+        });
+    }
     
     // SSR doesn't allow access to window
     // window.addEventListener("beforeunload", handleLeave);
     
     return (
         <div className="flex justify-center items-center h-screen w-screen">
-            <Button className="fixed top-5 left-5" onClick={() => socket.emit("changeStatus", tableId, playerId)}>
+            <Button className="fixed top-5 left-5" onClick={handleChangeStatus}>
                 {isActive ? "Sit out" : "Deal me in"}
             </Button>
             <div className="flex h-9/10 w-9/10">
