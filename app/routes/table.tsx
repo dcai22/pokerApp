@@ -82,7 +82,7 @@ export default function Table() {
     const [buyinAlert, setBuyinAlert] = useState(<></>);
     const [lastBuyinTime, setLastBuyinTime] = useState(null as (string | null));
     const [buyinHistory, setBuyinHistory] = useState([] as Buyin[]);
-    const [handNumber, setHandNumber] = useState(1);
+    const [handNum, setHandNum] = useState(1);
     const [hasEnteredHand, setHasEnteredHand] = useState(false);
     const [hasVpip, setHasVpip] = useState(false);
     const [vpipOption, setVpipOption] = useState("no");
@@ -137,7 +137,7 @@ export default function Table() {
                     }
 
                     setTableName(tableRes.data.name);
-                    setHandNumber(tableRes.data.num_hands + 1);
+                    setHandNum(tableRes.data.num_hands + 1);
                 } else {
                     navigate("/joinTable");
                 }
@@ -258,32 +258,80 @@ export default function Table() {
         );
     }
 
-    function onVpip(data: z.infer<typeof vpipFormSchema>) {
-        setVpipOption(data.option);
-        setHasVpip(true);
-        console.log("hi from onVpip");
+    async function onVpip(data: z.infer<typeof vpipFormSchema>) {
+        const option = data.option
+        
+        try {
+            const res = await axios.post(
+                "http://localhost:3000/player/vpip",
+                {
+                    playerId,
+                    tableId,
+                    handNum,
+                    handCid: curHand.cid(),
+                    vpip: option,
+                }
+            );
+            if (res.status === 200) {
+                setVpipOption(option);
+                setHasVpip(true);
+                socket.emit("vpip");
+            } else {
+                console.log(res.data.err);
+            }
+        } catch (err) {
+            console.log(err);
+        }
     }
 
-    function onEnterHand(data: z.infer<typeof handFormSchema>) {
+    async function onEnterHand(data: z.infer<typeof handFormSchema>) {
         const rank1 = data.rank1;
         const suit1 = data.suit1;
         const rank2 = data.rank2;
         const suit2 = data.suit2;
 
-        if ([rank1, suit1, rank2, suit2].includes("")) {
-            console.log("Error selecting hand");
-            setCurHand(new Hand(null, null));
-        } else {
-            console.log("Hand successfully set!");
-            const newHand = new Hand(new Card(rank1, suit1), new Card(rank2, suit2));
-            setCurHand(newHand);
+        const newHand = [rank1, suit1, rank2, suit2].includes("")
+            ? new Hand(null, null)
+            : new Hand(new Card(rank1, suit1), new Card(rank2, suit2));
+        if (rank1 === rank2 && suit1 === suit2) {
+            console.log("Error: Cards can't be the same. Please try again.");
+            return;
         }
-        setHasEnteredHand(true);
+        if (!hasVpip) {
+            setCurHand(newHand);
+            setHasEnteredHand(true);
+            console.log("Hand successfully set!");
+            return;
+        }
+        try {
+            console.log(playerId);
+            console.log(tableId);
+            console.log(handNum);
+            console.log(newHand.cid());
+            const res = await axios.put(
+                "http://localhost:3000/player/addHand",
+                {
+                    playerId,
+                    tableId,
+                    handNum,
+                    handCid: newHand.cid(),
+                }
+            );
+            if (res.status === 200) {
+                setCurHand(newHand);
+                setHasEnteredHand(true);
+                console.log("Hand successfully set!");
+            } else {
+                console.log(res.data.err);
+            }
+        } catch (err) {
+            console.log(err);
+        }
     }
-
+    
     // SSR doesn't allow access to window
     // window.addEventListener("beforeunload", handleLeave);
-
+    
     return (
         <div className="flex">
             <div className="flex flex-col justify-center w-50 mx-5">
@@ -368,7 +416,7 @@ export default function Table() {
                         </div>
                         <div className="flex flex-col w-full">
                             <div className="flex justify-center w-full h-20 text-7xl">
-                                Hand {handNumber}
+                                Hand {handNum}
                             </div>
                             <Dialog>
                                 <DialogTrigger asChild>

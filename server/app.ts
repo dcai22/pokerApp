@@ -265,12 +265,43 @@ app.get('/player/getBuyins', async (req: Request, res: Response) => {
     }
 })
 
-app.put('/player/addHand', (req: Request, res: Response) => {
-    // TODO
+// Will only be called to UPDATE the `hands` schema
+// if VPIP first: then a row is created and it is updated here
+// if hand is entered first: nothing is submitted until 'VPIP' is completed
+app.put('/player/addHand', async (req: Request, res: Response) => {
+    const playerId = req.body.playerId;
+    const tableId = req.body.tableId;
+    const handNum = req.body.handNum;
+    const handCid = req.body.handCid;
+
+    try {
+        await pool.query(
+            "UPDATE hands SET combination_id=$1 WHERE player_id=$2 AND table_id=$3 AND hand_num=$4",
+            [handCid, playerId, tableId, handNum]
+        );
+        res.json();
+    } catch (err) {
+        res.status(400).json({ err });
+    }
 });
 
-app.put('/player/vpip', (req: Request, res: Response) => {
-    // TODO
+// Adds both vpip and hand to database
+app.post('/player/vpip', async (req: Request, res: Response) => {
+    const playerId = req.body.playerId;
+    const tableId = req.body.tableId;
+    const handNum = req.body.handNum;
+    const handCid = req.body.handCid;
+    const vpip = req.body.vpip;
+
+    try {
+        await pool.query(
+            "INSERT INTO hands(player_id, table_id, hand_num, combination_id, vpip) VALUES($1, $2, $3, $4, $5)",
+            [playerId, tableId, handNum, handCid, vpip]
+        );
+        res.json();
+    } catch (err) {
+        res.status(400).json({ err });
+    }
 });
 
 app.get('/player/getVpip', (req: Request, res: Response) => {
