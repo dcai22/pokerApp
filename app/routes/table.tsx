@@ -91,7 +91,6 @@ export default function Table() {
     const [suit1Randomiser, setSuit1Randomiser] = useState(Array.from({ length: 4 }, () => Math.random()));
     const [rank2Randomiser, setRank2Randomiser] = useState(Array.from({ length: 13 }, () => Math.random()));
     const [suit2Randomiser, setSuit2Randomiser] = useState(Array.from({ length: 4 }, () => Math.random()));
-
     
     socket.on("updatePlayers", async (updatedPlayers) => {
         setPlayers(updatedPlayers);
@@ -121,9 +120,9 @@ export default function Table() {
 
     useEffect(() => {
         async function authAndInit() {
+            // authenticate, then set playerId and username
             let newPlayerId;
             let newUsername;
-            
             const res = await authToken();
             if (res.navigate) {
                 navigate("/login");
@@ -134,14 +133,17 @@ export default function Table() {
                 setUsername(newUsername);
             }
 
+            // connect socket
             socket.connect();
             console.log(`${newUsername} has connected in table!`);
 
             try {
+                // check table exists
                 const tableRes = await axios.get(
                     `http://localhost:3000/getTable?table_id=${tableId}`
                 );
                 if (tableRes.status === 200) {
+                    // check if player is owner
                     const ownerRes = await axios.get(
                         `http://localhost:3000/getPlayer?player_id=${tableRes.data.owner}`
                     );
@@ -149,6 +151,7 @@ export default function Table() {
                         setOwnerName(ownerRes.data.username);
                     }
 
+                    // set default values
                     setTableName(tableRes.data.name);
                     setHandNum(tableRes.data.num_hands + 1);
                     setHasStarted(tableRes.data.has_started);
@@ -375,7 +378,7 @@ export default function Table() {
                             {players.map((e, i) => 
                                 <li key={i} className="flex">
                                     <span className="w-7">{e.name === ownerName ? "⭐" : ""}</span>
-                                    <span className="font-bold w-15">{calcPosition(i, players.length)}</span>
+                                    <span className={`w-15 ${e.isActive ? "font-bold" : "text-gray-500"}`}>{calcPosition(i, players.length)}</span>
                                     {e.name}
                                 </li>
                             )}
