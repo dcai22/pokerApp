@@ -90,6 +90,24 @@ io.on("connection", (socket) => {
             console.log(err);
         }
     });
+
+    socket.on("changeStatus", async (tableId, playerId) => {
+        try {
+            const tablePlayerRes = await pool.query(
+                "SELECT * FROM table_players WHERE table_id=$1 AND player_id=$2",
+                [tableId, playerId]
+            );
+            const oldStatus = tablePlayerRes.rows[0].is_active;
+            await pool.query(
+                "UPDATE table_players SET is_active=$1 WHERE table_id=$2 AND player_id=$3",
+                [!oldStatus, tableId, playerId]
+            );
+
+            io.emit("updatePlayers", await getTablePlayers(tableId));
+        } catch (err) {
+            console.log(err);
+        }
+    });
 });
 
 // Start server

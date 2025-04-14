@@ -1,4 +1,4 @@
-import { redirect, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import axios from "axios";
 import Logout from "~/components/Logout";
 import Greeting from "~/components/Greeting";
