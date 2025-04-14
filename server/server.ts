@@ -59,20 +59,24 @@ io.on("connection", (socket) => {
         socket.emit("removeBuyinAlert", buyinTime);
     });
 
-    socket.on("vpip", async (tableId, handNum) => {
-        try {            
-            const playerCountRes = await pool.query(
-                "SELECT COUNT(*) FROM table_players WHERE table_id=$1",
+    socket.on("checkHandDone", async (tableId, handNum) => {
+        try {
+            const activePlayersRes = await pool.query(
+                "SELECT * FROM table_players WHERE table_id=$1 AND is_active=true",
                 [tableId]
             );
+            const activePlayerIds = activePlayersRes.rows.map((p) => p.player_id);
 
-            const readyCountRes = await pool.query(
-                "SELECT COUNT(*) FROM hands WHERE table_id=$1 AND hand_num=$2",
+            const handsRes = await pool.query(
+                "SELECT * FROM hands WHERE table_id=$1 AND hand_num=$2",
                 [tableId, handNum]
             );
+            const handPlayerIds = handsRes.rows.map((h) => h.player_id);
 
-            if (playerCountRes.rows[0].count === readyCountRes.rows[0].count) {
-                io.emit("handDone");
+            if (activePlayerIds.every((p) => handPlayerIds.includes(p))) {
+                io.emit("updateHandDone", true);
+            } else {
+                io.emit("updateHandDone", false);
             }
         } catch (err) {
             console.log(err);
@@ -104,6 +108,7 @@ io.on("connection", (socket) => {
             );
 
             io.emit("updatePlayers", await getTablePlayers(tableId));
+            socket.emit("changeStatusDone");
         } catch (err) {
             console.log(err);
         }
