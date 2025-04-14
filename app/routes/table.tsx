@@ -351,256 +351,258 @@ export default function Table() {
     // window.addEventListener("beforeunload", handleLeave);
     
     return (
-        <div className="flex">
-            <div className="flex flex-col justify-center w-50 mx-5">
-                <Greeting name={username} />
-                <TableWelcome name={tableName} code={parseInt(tableId)} />
+        <div className="flex justify-center items-center h-screen w-screen">
+            <div className="flex h-9/10 w-9/10">
+                <div className="flex flex-col justify-center w-50 mx-5">
+                    <Greeting name={username} />
+                    <TableWelcome name={tableName} code={parseInt(tableId)} />
 
-                Starting positions:
-                <div className="mb-10">
-                    <ol>
-                        {/* TODO: change key to NOT use {i} as it is unsafe */}
-                        {players.map((e, i) => 
-                            <li key={i} className="flex">
-                                <span className="w-7">{e.name === ownerName ? "⭐" : ""}</span>
-                                <span className="font-bold w-15">{calcPosition(i, players.length)}</span>
-                                {e.name}
-                            </li>
-                        )}
-                    </ol>
+                    Starting positions:
+                    <div className="mb-10">
+                        <ol>
+                            {/* TODO: change key to NOT use {i} as it is unsafe */}
+                            {players.map((e, i) => 
+                                <li key={i} className="flex">
+                                    <span className="w-7">{e.name === ownerName ? "⭐" : ""}</span>
+                                    <span className="font-bold w-15">{calcPosition(i, players.length)}</span>
+                                    {e.name}
+                                </li>
+                            )}
+                        </ol>
+                    </div>
+
+                    <Button onClick={handleLeave}>Leave table</Button>
                 </div>
-
-                <Button onClick={handleLeave}>Leave table</Button>
-            </div>
-            <div className="h-screen w-screen">
-                {hasStarted
-                    ? <div className="flex w-full h-full mx-5">
-                        <div className="flex justify-center flex-col mt-10 w-50">
-                            <Buyins players={players} username={username} />
-                            <Dialog>
-                                <DialogTrigger asChild>
-                                    <Button className="my-2">Buyin</Button>
-                                </DialogTrigger>
-                                <Form {...buyinForm}>
-                                    <DialogContent className="w-1/5">
-                                        <form onSubmit={buyinForm.handleSubmit(onBuyin)} className="flex flex-col">
-                                            <DialogHeader>
-                                                <DialogTitle>
-                                                    Buyin
-                                                </DialogTitle>
-                                                <DialogDescription>
-                                                    Enter an amount to buyin:
-                                                </DialogDescription>
-                                            </DialogHeader>
-                                            <FormField
-                                                control={buyinForm.control}
-                                                name="amount"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormControl>
-                                                            <Input placeholder="e.g. 25" {...field} />
-                                                        </FormControl>
-                                                    </FormItem>
-                                                )}
-                                            />
-                                            <DialogFooter className="mt-1">
-                                                <DialogClose asChild>
-                                                    <Button type="submit">Confirm</Button>
-                                                </DialogClose>
-                                            </DialogFooter>
-                                        </form>
+                <div className="w-full h-full">
+                    {hasStarted
+                        ? <div className="flex w-full h-full mx-5">
+                            <div className="flex justify-center flex-col w-50 mx-5">
+                                <Buyins players={players} username={username} />
+                                <Dialog>
+                                    <DialogTrigger asChild>
+                                        <Button className="my-2">Buyin</Button>
+                                    </DialogTrigger>
+                                    <Form {...buyinForm}>
+                                        <DialogContent className="w-1/5">
+                                            <form onSubmit={buyinForm.handleSubmit(onBuyin)} className="flex flex-col">
+                                                <DialogHeader>
+                                                    <DialogTitle>
+                                                        Buyin
+                                                    </DialogTitle>
+                                                    <DialogDescription>
+                                                        Enter an amount to buyin:
+                                                    </DialogDescription>
+                                                </DialogHeader>
+                                                <FormField
+                                                    control={buyinForm.control}
+                                                    name="amount"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormControl>
+                                                                <Input placeholder="e.g. 25" {...field} />
+                                                            </FormControl>
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                                <DialogFooter className="mt-1">
+                                                    <DialogClose asChild>
+                                                        <Button type="submit">Confirm</Button>
+                                                    </DialogClose>
+                                                </DialogFooter>
+                                            </form>
+                                        </DialogContent>
+                                    </Form>
+                                </Dialog>
+                                <Dialog>
+                                    <DialogTrigger asChild>
+                                        <Button>Buyin history</Button>
+                                    </DialogTrigger>
+                                    <DialogContent className="max-h-7/8 overflow-auto">
+                                        <DialogHeader>
+                                            <DialogTitle>
+                                                Buyin History
+                                            </DialogTitle>
+                                            <DialogDescription />
+                                        </DialogHeader>
+                                        {getBuyinHistoryComponent()}
+                                        <DialogFooter className="mt-1">
+                                            <DialogClose asChild>
+                                                <Button type="button">Close</Button>
+                                            </DialogClose>
+                                        </DialogFooter>
                                     </DialogContent>
-                                </Form>
-                            </Dialog>
-                            <Dialog>
-                                <DialogTrigger asChild>
-                                    <Button>Buyin history</Button>
-                                </DialogTrigger>
-                                <DialogContent className="max-h-7/8 overflow-auto">
-                                    <DialogHeader>
-                                        <DialogTitle>
-                                            Buyin History
-                                        </DialogTitle>
-                                        <DialogDescription />
-                                    </DialogHeader>
-                                    {getBuyinHistoryComponent()}
-                                    <DialogFooter className="mt-1">
-                                        <DialogClose asChild>
-                                            <Button type="button">Close</Button>
-                                        </DialogClose>
-                                    </DialogFooter>
-                                </DialogContent>
-                            </Dialog>
-                        </div>
-                        <div className="flex flex-col w-full">
-                            <div className="flex justify-center w-full h-20 text-7xl">
-                                Hand {handNum}
+                                </Dialog>
                             </div>
-                            <Dialog>
-                                <DialogTrigger asChild>
-                                    <Button className="my-2" disabled={hasEnteredHand}>Enter hand (optional)</Button>
-                                </DialogTrigger>
-                                <Form {...handForm}>
-                                    <DialogContent className="w-400">
-                                        <form onSubmit={handForm.handleSubmit(onEnterHand)} className="flex flex-col">
-                                            <DialogHeader>
-                                                <DialogTitle>
-                                                    Enter Hand
-                                                </DialogTitle>
-                                                <DialogDescription />
-                                            </DialogHeader>
-                                            <div className="flex w-full h-full">
-                                                <div className="flex flex-col w-full">
-                                                    <FormLabel className="my-4">
-                                                        Card 1: rank
-                                                    </FormLabel>
-                                                    <FormField
-                                                        control={handForm.control}
-                                                        name="rank1"
-                                                        render={({ field }) => (
-                                                            <FormItem>
-                                                                <FormControl>
-                                                                    <RankSelect onValueChange={field.onChange} />
-                                                                </FormControl>
-                                                            </FormItem>
-                                                        )}
-                                                    />
-                                                </div>
-                                                <div className="flex flex-col w-full">
-                                                    <FormLabel className="my-4">
-                                                        Card 1: suit
-                                                    </FormLabel>
-                                                    <FormField
-                                                        control={handForm.control}
-                                                        name="suit1"
-                                                        render={({ field }) => (
-                                                            <FormItem>
-                                                                <FormControl>
-                                                                    <SuitSelect onValueChange={field.onChange} />
-                                                                </FormControl>
-                                                            </FormItem>
-                                                        )}
-                                                    />
-                                                </div>
-                                                <div className="flex flex-col w-full">
-                                                    <FormLabel className="my-4">
-                                                        Card 2: rank
-                                                    </FormLabel>
-                                                    <FormField
-                                                        control={handForm.control}
-                                                        name="rank2"
-                                                        render={({ field }) => (
-                                                            <FormItem>
-                                                                <FormControl>
-                                                                    <RankSelect onValueChange={field.onChange} />
-                                                                </FormControl>
-                                                            </FormItem>
-                                                        )}
-                                                    />
-                                                </div>
-                                                <div className="flex flex-col w-full">
-                                                    <FormLabel className="my-4">
-                                                        Card 2: suit
-                                                    </FormLabel>
-                                                    <FormField
-                                                        control={handForm.control}
-                                                        name="suit2"
-                                                        render={({ field }) => (
-                                                            <FormItem>
-                                                                <FormControl>
-                                                                    <SuitSelect onValueChange={field.onChange} />
-                                                                </FormControl>
-                                                            </FormItem>
-                                                        )}
-                                                    />
-                                                </div>
-                                            </div>
-                                            <DialogFooter className="mt-1">
-                                                <DialogClose asChild>
-                                                    <Button type="submit">Confirm</Button>
-                                                </DialogClose>
-                                            </DialogFooter>
-                                        </form>
-                                    </DialogContent>
-                                </Form>
-                            </Dialog>
-                            <Dialog>
-                                <DialogTrigger asChild>
-                                    <Button className="my-2" disabled={hasVpip}>VPIP</Button>
-                                </DialogTrigger>
-                                <Form {...vpipForm}>
-                                    <DialogContent className="w-1/5">
-                                        <form onSubmit={vpipForm.handleSubmit(onVpip)} className="flex flex-col">
-                                            <DialogHeader>
-                                                <DialogTitle>
-                                                    VPIP
-                                                </DialogTitle>
-                                                <DialogDescription>
-                                                    Select an option:
-                                                </DialogDescription>
-                                            </DialogHeader>
-                                            <FormField
-                                                control={vpipForm.control}
-                                                name="option"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormControl>
-                                                            <RadioGroup
-                                                                onValueChange={field.onChange}
-                                                                defaultValue="no"
-                                                                className="flex flex-col space-y-1"
-                                                            >
-                                                                <FormItem className="flex items-center space-x-3 space-y-0">
+                            <div className="flex flex-col w-full mx-5">
+                                <div className="flex justify-center w-full h-20 text-7xl">
+                                    Hand {handNum}
+                                </div>
+                                <Dialog>
+                                    <DialogTrigger asChild>
+                                        <Button className="my-2" disabled={hasEnteredHand}>Enter hand (optional)</Button>
+                                    </DialogTrigger>
+                                    <Form {...handForm}>
+                                        <DialogContent className="w-400">
+                                            <form onSubmit={handForm.handleSubmit(onEnterHand)} className="flex flex-col">
+                                                <DialogHeader>
+                                                    <DialogTitle>
+                                                        Enter Hand
+                                                    </DialogTitle>
+                                                    <DialogDescription />
+                                                </DialogHeader>
+                                                <div className="flex w-full h-full">
+                                                    <div className="flex flex-col w-full">
+                                                        <FormLabel className="my-4">
+                                                            Card 1: rank
+                                                        </FormLabel>
+                                                        <FormField
+                                                            control={handForm.control}
+                                                            name="rank1"
+                                                            render={({ field }) => (
+                                                                <FormItem>
                                                                     <FormControl>
-                                                                    <RadioGroupItem value="no" />
+                                                                        <RankSelect onValueChange={field.onChange} />
                                                                     </FormControl>
-                                                                    <FormLabel className="font-normal">
-                                                                    No
-                                                                    </FormLabel>
                                                                 </FormItem>
-                                                                <FormItem className="flex items-center space-x-3 space-y-0">
+                                                            )}
+                                                        />
+                                                    </div>
+                                                    <div className="flex flex-col w-full">
+                                                        <FormLabel className="my-4">
+                                                            Card 1: suit
+                                                        </FormLabel>
+                                                        <FormField
+                                                            control={handForm.control}
+                                                            name="suit1"
+                                                            render={({ field }) => (
+                                                                <FormItem>
                                                                     <FormControl>
-                                                                    <RadioGroupItem value="yes" />
+                                                                        <SuitSelect onValueChange={field.onChange} />
                                                                     </FormControl>
-                                                                    <FormLabel className="font-normal">
-                                                                    Yes
-                                                                    </FormLabel>
                                                                 </FormItem>
-                                                            </RadioGroup>
-                                                        </FormControl>
-                                                    </FormItem>
-                                                )}
-                                            />
-                                            <DialogFooter className="mt-1">
-                                                <DialogClose asChild>
-                                                    <Button type="submit">Confirm</Button>
-                                                </DialogClose>
-                                            </DialogFooter>
-                                        </form>
-                                    </DialogContent>
-                                </Form>
-                            </Dialog>
-                            {isOwner()
-                                ? <Button disabled={!isHandDone} onClick={handleNext}>
-                                    Next Hand
+                                                            )}
+                                                        />
+                                                    </div>
+                                                    <div className="flex flex-col w-full">
+                                                        <FormLabel className="my-4">
+                                                            Card 2: rank
+                                                        </FormLabel>
+                                                        <FormField
+                                                            control={handForm.control}
+                                                            name="rank2"
+                                                            render={({ field }) => (
+                                                                <FormItem>
+                                                                    <FormControl>
+                                                                        <RankSelect onValueChange={field.onChange} />
+                                                                    </FormControl>
+                                                                </FormItem>
+                                                            )}
+                                                        />
+                                                    </div>
+                                                    <div className="flex flex-col w-full">
+                                                        <FormLabel className="my-4">
+                                                            Card 2: suit
+                                                        </FormLabel>
+                                                        <FormField
+                                                            control={handForm.control}
+                                                            name="suit2"
+                                                            render={({ field }) => (
+                                                                <FormItem>
+                                                                    <FormControl>
+                                                                        <SuitSelect onValueChange={field.onChange} />
+                                                                    </FormControl>
+                                                                </FormItem>
+                                                            )}
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <DialogFooter className="mt-1">
+                                                    <DialogClose asChild>
+                                                        <Button type="submit">Confirm</Button>
+                                                    </DialogClose>
+                                                </DialogFooter>
+                                            </form>
+                                        </DialogContent>
+                                    </Form>
+                                </Dialog>
+                                <Dialog>
+                                    <DialogTrigger asChild>
+                                        <Button className="my-2" disabled={hasVpip}>VPIP</Button>
+                                    </DialogTrigger>
+                                    <Form {...vpipForm}>
+                                        <DialogContent className="w-1/5">
+                                            <form onSubmit={vpipForm.handleSubmit(onVpip)} className="flex flex-col">
+                                                <DialogHeader>
+                                                    <DialogTitle>
+                                                        VPIP
+                                                    </DialogTitle>
+                                                    <DialogDescription>
+                                                        Select an option:
+                                                    </DialogDescription>
+                                                </DialogHeader>
+                                                <FormField
+                                                    control={vpipForm.control}
+                                                    name="option"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormControl>
+                                                                <RadioGroup
+                                                                    onValueChange={field.onChange}
+                                                                    defaultValue="no"
+                                                                    className="flex flex-col space-y-1"
+                                                                >
+                                                                    <FormItem className="flex items-center space-x-3 space-y-0">
+                                                                        <FormControl>
+                                                                        <RadioGroupItem value="no" />
+                                                                        </FormControl>
+                                                                        <FormLabel className="font-normal">
+                                                                        No
+                                                                        </FormLabel>
+                                                                    </FormItem>
+                                                                    <FormItem className="flex items-center space-x-3 space-y-0">
+                                                                        <FormControl>
+                                                                        <RadioGroupItem value="yes" />
+                                                                        </FormControl>
+                                                                        <FormLabel className="font-normal">
+                                                                        Yes
+                                                                        </FormLabel>
+                                                                    </FormItem>
+                                                                </RadioGroup>
+                                                            </FormControl>
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                                <DialogFooter className="mt-1">
+                                                    <DialogClose asChild>
+                                                        <Button type="submit">Confirm</Button>
+                                                    </DialogClose>
+                                                </DialogFooter>
+                                            </form>
+                                        </DialogContent>
+                                    </Form>
+                                </Dialog>
+                                {isOwner()
+                                    ? <Button disabled={!isHandDone} onClick={handleNext}>
+                                        Next Hand
+                                    </Button>
+                                    : <></>
+                                }
+                            </div>
+                        </div>
+                        : <div className="flex w-full h-full justify-center items-center">
+                            {isOwner() 
+                                ? <Button className="h-20 w-40 text-xl" onClick={handleStart}>
+                                    Start game
                                 </Button>
-                                : <></>
+                                : <div className="text-xl text-center">
+                                    Waiting for owner to start game...
+                                </div>
                             }
                         </div>
-                    </div>
-                    : <div className="flex w-full h-full justify-center items-center">
-                        {isOwner() 
-                            ? <Button className="h-20 w-40 text-xl" onClick={handleStart}>
-                                Start game
-                            </Button>
-                            : <div className="text-xl text-center">
-                                Waiting for owner to start game...
-                            </div>
-                        }
-                    </div>
-                }
+                    }
+                </div>
+                {buyinAlert}
             </div>
-            {buyinAlert}
         </div>
     );
 }
