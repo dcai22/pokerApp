@@ -302,3 +302,7 @@ More detail about security
  - A user can join an active table if they are already in it
  - A user on the '/tables' page will be kicked out if they are not on the table
  - If a user enters the '/tables' page and they are on the table, fetch their status from db
+
+ NOTES: there was a lot of socket duplication due to socket.on() being placed outside of useEffect.
+ Since the component unmounts/remounts frequently, this results in exponentially duplicating sockets.
+ FIX: Place socket.on() inside useEffect, and return () => { socket.off() } in useEffect.

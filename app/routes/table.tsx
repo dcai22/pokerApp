@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router";
 import Greeting from "~/components/Greeting";
 import { Button } from "~/components/ui/button";
 import TableWelcome from "~/components/TableWelcome";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type SetStateAction } from "react";
 import { authToken, calcPosition } from "~/helpers";
 import { socket } from "~/root";
 import Buyins from "~/components/Buyins";
@@ -92,31 +92,31 @@ export default function Table() {
     const [rank2Randomiser, setRank2Randomiser] = useState(Array.from({ length: 13 }, () => Math.random()));
     const [suit2Randomiser, setSuit2Randomiser] = useState(Array.from({ length: 4 }, () => Math.random()));
     
-    socket.on("updatePlayers", async (updatedPlayers) => {
+    async function socketHandleUpdatePlayers(updatedPlayers: SetStateAction<any[]>) {
         setPlayers(updatedPlayers);
         console.log(updatedPlayers);
         await updateBuyinHistory();
-    });
+    }
 
-    socket.on("startGame", () => {
+    function socketHandleStartGame() {
         setHasStarted(true);
         setHasEnteredHand(false);
         setHasVpip(false);
-    });
+    }
 
-    socket.on("removeBuyinAlert", (buyinTime) => {
+    function socketHandleRemoveBuyinAlert(buyinTime: string | null) {
         if (lastBuyinTime === buyinTime) setBuyinAlert(<></>);
         console.log(lastBuyinTime);
         console.log(buyinTime);
-    });
+    }
 
-    socket.on("handDone", () => {
+    function socketHandleHandDone() {   
         setIsHandDone(true);
-    });
+    }
 
-    socket.on("nextHand", (newHandNum) => {
+    function socketHandleNextHand(newHandNum: SetStateAction<number>) {
         setHandNum(newHandNum);
-    });
+    }
 
     useEffect(() => {
         async function authAndInit() {
@@ -171,6 +171,20 @@ export default function Table() {
             authAndInit();
         } else {
             console.log("effect was skipped to prevent double activation");
+        }
+
+        socket.on("updatePlayers", socketHandleUpdatePlayers);
+        socket.on("startGame", socketHandleStartGame);
+        socket.on("removeBuyinAlert", socketHandleRemoveBuyinAlert);
+        socket.on("handDone", socketHandleHandDone);
+        socket.on("nextHand", socketHandleNextHand);
+
+        return () => {
+            socket.off("updatePlayers", socketHandleUpdatePlayers);
+            socket.off("startGame", socketHandleStartGame);
+            socket.off("removeBuyinAlert", socketHandleRemoveBuyinAlert);
+            socket.off("handDone", socketHandleHandDone);
+            socket.off("nextHand", socketHandleNextHand);
         }
     }, []);
 
@@ -597,6 +611,9 @@ export default function Table() {
                                         </DialogContent>
                                     </Form>
                                 </Dialog>
+                                <Button onClick={() => socket.emit("changeStatus", tableId, playerId)}>
+                                    {players.find((e) => e.name === username).isActive ? "Sit out" : "Deal me in"}
+                                </Button>
                                 {isOwner()
                                     ? <Button disabled={!isHandDone} onClick={handleNext}>
                                         Next Hand
