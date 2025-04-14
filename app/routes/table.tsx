@@ -87,6 +87,11 @@ export default function Table() {
     const [hasVpip, setHasVpip] = useState(false);
     const [curHand, setCurHand] = useState(new Hand(null, null));
     const [isHandDone, setIsHandDone] = useState(false);
+    const [rank1Randomiser, setRank1Randomiser] = useState(Array.from({ length: 13 }, () => Math.random()));
+    const [suit1Randomiser, setSuit1Randomiser] = useState(Array.from({ length: 4 }, () => Math.random()));
+    const [rank2Randomiser, setRank2Randomiser] = useState(Array.from({ length: 13 }, () => Math.random()));
+    const [suit2Randomiser, setSuit2Randomiser] = useState(Array.from({ length: 4 }, () => Math.random()));
+
     
     socket.on("updatePlayers", async (updatedPlayers) => {
         setPlayers(updatedPlayers);
@@ -170,6 +175,10 @@ export default function Table() {
         setHasVpip(false);
         setCurHand(new Hand(null, null));
         setIsHandDone(false);
+        setRank1Randomiser(Array.from({ length: 13 }, () => Math.random()));
+        setSuit1Randomiser(Array.from({ length: 4 }, () => Math.random()));
+        setRank2Randomiser(Array.from({ length: 13 }, () => Math.random()));
+        setSuit2Randomiser(Array.from({ length: 4 }, () => Math.random()));
     }, [handNum])
 
     async function handleLeave() {
@@ -449,7 +458,7 @@ export default function Table() {
                                                         Enter Hand
                                                     </DialogTitle>
                                                     <DialogDescription>
-                                                        Fields are randomised to prevent cheating
+                                                        Fields are randomised every hand to prevent cheating
                                                     </DialogDescription>
                                                 </DialogHeader>
                                                 <div className="flex w-full h-full">
@@ -463,7 +472,7 @@ export default function Table() {
                                                             render={({ field }) => (
                                                                 <FormItem>
                                                                     <FormControl>
-                                                                        <RankSelect onValueChange={field.onChange} />
+                                                                        <RankSelect onValueChange={field.onChange} randomiser={rank1Randomiser} />
                                                                     </FormControl>
                                                                 </FormItem>
                                                             )}
@@ -479,7 +488,7 @@ export default function Table() {
                                                             render={({ field }) => (
                                                                 <FormItem>
                                                                     <FormControl>
-                                                                        <SuitSelect onValueChange={field.onChange} />
+                                                                        <SuitSelect onValueChange={field.onChange} randomiser={suit1Randomiser} />
                                                                     </FormControl>
                                                                 </FormItem>
                                                             )}
@@ -495,7 +504,7 @@ export default function Table() {
                                                             render={({ field }) => (
                                                                 <FormItem>
                                                                     <FormControl>
-                                                                        <RankSelect onValueChange={field.onChange} />
+                                                                        <RankSelect onValueChange={field.onChange} randomiser={rank2Randomiser} />
                                                                     </FormControl>
                                                                 </FormItem>
                                                             )}
@@ -511,7 +520,7 @@ export default function Table() {
                                                             render={({ field }) => (
                                                                 <FormItem>
                                                                     <FormControl>
-                                                                        <SuitSelect onValueChange={field.onChange} />
+                                                                        <SuitSelect onValueChange={field.onChange} randomiser={suit2Randomiser} />
                                                                     </FormControl>
                                                                 </FormItem>
                                                             )}

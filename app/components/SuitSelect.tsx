@@ -4,16 +4,17 @@ import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 
 interface SuitSelectProps {
     onValueChange: ((value: string) => void) | undefined,
+    randomiser: number[],
 }
 
-export default function SuitSelect({ onValueChange }: SuitSelectProps) {
+export default function SuitSelect({ onValueChange, randomiser }: SuitSelectProps) {
     return (
         <RadioGroup
             onValueChange={onValueChange}
             defaultValue=""
             className="flex flex-col space-y-1"
         >
-            {Card.suits.map(value => ({ value, sort: Math.random() }))
+            {Card.suits.map((value, i) => ({ value, sort: randomiser[i] }))
                 .sort((a, b) => a.sort - b.sort)
                 .map(({ value }) => value)
                 .map((e, i) => 

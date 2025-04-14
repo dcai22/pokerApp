@@ -238,6 +238,7 @@ The owner has access to a 'next hand' button.
 This button is disabled by default, but is enabled when every player has VPIP'd.
 This button resets the hands and VPIPs, and moves the positions.
 The hand no. should be displayed somewhere on screen e.g. `Hand no. 12`.
+DONE.
 
 ```
 There should be a button to display hand stats -- vpip, hand history, etc.
