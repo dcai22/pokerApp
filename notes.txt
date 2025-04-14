@@ -1,4 +1,5 @@
 31/03/2025
+https://www.youtube.com/watch?v=tducLYZzElo
 
 POSTGRESQL
 run psql with:
@@ -25,3 +26,246 @@ This uses the RouteConfig defined in routes.ts
 The index route is the route corresponding to "/"
 
 Routes depending on an id must export loader and action functions
+
+
+
+02/04/2025
+There was a problem in register.tsx where calling axios.put(...) with a duplicate username would cause an uncaught 400 error
+I thought this was a problem with my backend route, but the solution was to wrap the axios.put(...) call with a try-catch block
+For the backend, pool.query(...) can throw an error that needs to be caught in a try-catch block
+However you cannot simply perform res.status(400), you need to do res.status(400).json(), i.e., there must be a `.json()`
+
+
+
+03/04/2025
+<INCORRECT: SEE 09/04/2025> Request body can be sent in axios.get(...) and axios.delete(...) as follows:
+<INCORRECT: SEE 09/04/2025> ```
+<INCORRECT: SEE 09/04/2025> await axios.get(
+<INCORRECT: SEE 09/04/2025>     URL,
+<INCORRECT: SEE 09/04/2025>     {
+<INCORRECT: SEE 09/04/2025>         data: {
+<INCORRECT: SEE 09/04/2025>             var1: val1,
+<INCORRECT: SEE 09/04/2025>             var2: val2,
+<INCORRECT: SEE 09/04/2025>         },
+<INCORRECT: SEE 09/04/2025>     }
+<INCORRECT: SEE 09/04/2025> );
+<INCORRECT: SEE 09/04/2025> ```
+
+TODO: add parameter checks to loaders
+NOTE: parameter checks will be done with tokens stored in localStorage
+      Token is purged upon loading the register and login routes (DONE)
+      Token is created after successful register/login (DONE)
+      all other routes will verify the token in their loader
+TODO: change all names `hash` to either `hashedPassword` or `hashedToken`   (DONE)
+
+
+
+04/04/2025
+Many methods of dealing with tokens don't work due to this app using Server Side Rendering (SSR)
+This is why I can't use localStorage or sessionStorage
+Instead, I will store tokens in the url when redirecting
+This new strategy will limit the user to a single session at a time
+Revised plan for tokens:
+ - Tokens will be added to the url for protected sites
+    - Loader function for these sites will check the url
+ - Register and login will create a new token upon success
+ - Login will remove all other tokens from the database
+
+I notice storing tokens in the URL is a security risk, so I will try using cookies:
+https://reactrouter.com/explanation/sessions-and-cookies
+TODO:
+ - URLs should no longer have the player_id param for security purposes     (DONE)
+    - The loader can process the token and return user details              (DONE)
+ - Cookie is checked in loader of register/login                            (DONE)
+    - A redirect is performed if a token is found                           (DONE)
+ - Cookie is stored upon successful login/register                          (DONE)
+ - All redirects should use commitSession() or similar                      (DONE)
+ - Some way to automatically clear tokens from db                           **TODO**
+NOTES:
+ - session.flash(...) can be used to set a value temporarily, useful for errors
+
+
+
+05/04/2025
+TODO: Logout button on home                                                 (DONE)
+Since Logout is a component, it can't access action, loader and header.
+Those are linked to the server, while Logout is linked to the client.
+
+
+
+06/04/2025
+Using shadcn for frontend
+
+
+
+07/04/2025
+Using socket.io for live updates
+https://dev.to/novu/building-a-chat-app-with-socketio-and-react-2edj?comments_sort=top
+```
+const io = new Server(server, {
+    cors: {
+        origin: "http://localhost:5173",
+        methods: ["GET", "POST", "PUT", "DELETE"],
+    }
+});
+```
+```
+app.use(cors({
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type"],
+}));
+```
+Note the origins use `localhost` rather than `127.0.0.1`
+This is actually important for what URL to open in a browser
+
+
+
+08/04/2025
+After successfully using sockets yesterday, today's goal is to work on the actual table.
+Here is the general plan for the app functionality:
+
+Players can join the room, and the room lobby should show a list of all players.
+Before the game starts, there should be a button to randomise the positions of all players.
+ - Roll positions button
+ - Reroll and confirm buttons
+A player should be able to join the game mid-session.
+Their position should be randomised upon joining.
+
+Each player's current buyin should be displayed.
+A 'buyin' button should be present.
+Buyin history can be showed with a button.
+
+Each table plays multiple rounds of poker, each of which is called a 'hand'.
+In each hand:
+ - Each player inputs their hand which then gets hidden
+ - Each player then gets an option to VPIP
+After everyone has input their hand and VPIP, the owner can press a 'next hand' button.
+
+There should be a button to display hand stats -- vpip, hand history, etc.
+
+Limitations:
+My implementation will only work with one active table.
+
+ERRORS:
+For some reason, sockets open multiple times, so the socket `addPlayer` is reached twice.
+There is an issue with my sessions where different tabs will be logged into the same user,
+even on incognito mode.
+
+It turns out I can use sessionStorage etc. as long as I do not have loader/action functions.
+Those functions are useful for Server Side Rendering (SSR) but are problematic for Client
+Side Rendering (CSR). If necessary, the alternative functions `clientLoader` etc. can be used.
+This will allow me to store cookies properly, and resolve the issue of session cookies being
+the same throughout multiple tabs, which made testing very difficult / impossible.
+SSR can be turned on/off via react-router.config.ts
+
+
+
+09/04/2025
+The goal for today is to use session storage for cookies.
+All loader and action functions will be moved to the Component.
+This way, sessionStorage and window can be used without any issues.
+
+For get requests:
+In Component.tsx:   axios.get(`URL?param1=${val1}&param2=${val2}`);
+In app.ts:          const param1 = req.query.param1; const param2 = req.query.param2;
+
+
+
+10/04/2025
+io.emit replies to all sockets
+socket.emit replies to the single socket
+
+To prevent automatically connecting:
+socket = io.connect("URL", { autoConnect: false });
+And in the component, run `socket.connect()` inside useEffect.
+If you run it in the component instead of in useEffect, it may duplicate.
+
+array.splice(...) changes array itself. It does not return the new array.
+
+
+
+12/04/2025
+I will talk about my plan to achieve each of the goals laid out on 08/04/2025:
+
+```
+Players can join the room, and the room lobby should show a list of all players.
+Before the game starts, there should be a button to randomise the positions of all players.
+ - Roll positions button
+ - Reroll and confirm buttons
+```
+This has been reworked into a room that has positions automatically randomised.
+There is no rerolling to prevent abuse of the system.
+DONE.
+
+```
+A player should be able to join the game mid-session.
+Their position should be randomised upon joining.
+```
+EDIT: a player should NOT be able to join a table once it has started.
+Will have to think about how the `Leave Table` button will interact with table_players;
+
+```
+Each player's current buyin should be displayed.
+A 'buyin' button should be present.
+Buyin history can be showed with a button.
+```
+Buyin is stored in table_player.
+There is a list of names at the top of the screen with their total buyins listed below.
+The player's name in the list is annotated with '(You)'.
+A buyin button will give a pop-up where you can enter a buyin amount.
+This buyin will be added to the database with a timestamp, and sockets will be used to
+update the total buyin of this player on all screens.
+DONE.
+
+```
+Each table plays multiple rounds of poker, each of which is called a 'hand'.
+In each hand:
+ - Each player inputs their hand which then gets hidden
+ - Each player then gets an option to VPIP
+After everyone has input their hand and VPIP, the owner can press a 'next hand' button.
+```
+There is an 'enter hand' button which gives a pop-up where you can select your hand,
+probably through selecting rank and suit of the cards given in a table.
+The player then 'confirm's their hand, exiting the pop-up and disabling the 'enter hand'
+button until the next hand starts.
+.
+There is a 'VPIP' button which gives a pop-up for 'yes' or 'no'.
+The player then 'confirm's their choice, exiting the pop-up and disabling the 'VPIP'
+button until the next hand starts.
+.
+The owner has access to a 'next hand' button.
+This button is disabled by default, but is enabled when every player has VPIP'd.
+This button resets the hands and VPIPs, and moves the positions.
+The hand no. should be displayed somewhere on screen e.g. `Hand no. 12`.
+
+```
+There should be a button to display hand stats -- vpip, hand history, etc.
+```
+I will aim to have an export option for this info somehow.
+
+
+HTML input components return strings by default, even if type="number".
+To fix this, set onChange={(e) => field.onChange(Number(e.target.value))}.
+Alternatively, you can use z.coerce.number() as the type, rathern than z.number().
+
+To have a Form inside a Dialog:
+```
+<Dialog>
+    <Form>
+        <DialogContent>
+            <form>
+                ...
+            </form>
+        </DialogContent>
+    </Form>
+</Dialog>
+```
+
+
+
+13/04/2025
+To fix up later:
+ - Security in tables
+    - Figure out when tables should let someone join, either through
+      joinTable or directly through URL (e.g. on refresh)

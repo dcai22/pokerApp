@@ -3,19 +3,18 @@ import axios from "axios";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { useEffect } from "react";
-import { genHash } from "~/helpers";
 import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "~/components/ui/form";
 
 const formSchema = z.object({
-    username: z.string().min(1, { message: "*required field" }),
-    password: z.string().min(1, { message: "*required field" }),
+    username: z.string().min(1),
+    password: z.string().min(1),
 });
 
 // TODO: error message from loaderData
-export default function Register() {
+export default function Login() {
     const navigate = useNavigate();
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -33,31 +32,31 @@ export default function Register() {
         const username = values.username;
         const password = values.password;
 
-        const hashedPassword = await genHash(password);
         try {
             const res = await axios.post(
-                "http://localhost:3000/registerPlayer",
+                "http://localhost:3000/login",
                 {
                     username,
-                    hashedPassword,
+                    password,
                 }
             );
+            
             if (res.status === 200) {
                 sessionStorage.setItem("token", res.data.token);
-                sessionStorage.setItem("playerId", res.data.player_id);
+                sessionStorage.setItem("playerId", res.data.player_id)
                 navigate("/joinTable");
             } else {
-                window.alert("register error");
+                window.alert("login error");
             }
         } catch (err) {
-            window.alert("username is taken")
+            window.alert("incorrect username or password");
         }
     }
 
     return (
         <div className="flex flex-col justify-center items-center w-screen h-screen">
             <div className="flex flex-col">
-                <h1>Register a PokerApp account:</h1>
+                <h1>PokerApp login:</h1>
 
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col mb-10">
@@ -87,12 +86,12 @@ export default function Register() {
                                 </FormItem>
                             )}
                         />
-                        <Button type="submit" className="mt-2">Register</Button>
+                        <Button type="submit" className="mt-2">Login</Button>
                     </form>
                 </Form>
 
-                <h1 className="mb-1">Already have an account?</h1>
-                <Button onClick={() => navigate("/login")}>Login here</Button>
+                <h1 className="mb-1">Don't have an account?</h1>
+                <Button onClick={() => navigate("/register")}>Register an account</Button>
             </div>
         </div>
     );
