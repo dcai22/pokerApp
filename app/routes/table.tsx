@@ -209,21 +209,8 @@ export default function Table() {
     }, [players]);
 
     async function handleLeave() {
-        try {
-            await axios.delete(
-                "http://localhost:3000/player/leaveTable",
-                {
-                    data: {
-                        player_id: playerId,
-                        table_id: tableId,
-                    },
-                }
-            );
-
-            navigate(`/joinTable`);
-        } catch(err) {
-            alert("error while leaving table");
-        }
+        socket.emit("leaveTable", tableId, playerId);
+        navigate("/joinTable");
     }
 
     function isOwner() {
@@ -388,6 +375,9 @@ export default function Table() {
     
     return (
         <div className="flex justify-center items-center h-screen w-screen">
+            <Button className="fixed top-5 left-5" onClick={() => socket.emit("changeStatus", tableId, playerId)}>
+                {isActive ? "Sit out" : "Deal me in"}
+            </Button>
             <div className="flex h-9/10 w-9/10">
                 <div className="flex flex-col justify-center w-50 mx-5">
                     <Greeting name={username} />
@@ -619,9 +609,6 @@ export default function Table() {
                                         </DialogContent>
                                     </Form>
                                 </Dialog>
-                                <Button onClick={() => socket.emit("changeStatus", tableId, playerId)}>
-                                    {isActive ? "Sit out" : "Deal me in"}
-                                </Button>
                                 {isOwner()
                                     ? <Button disabled={!isHandDone} onClick={handleNext}>
                                         Next Hand
