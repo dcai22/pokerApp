@@ -14,11 +14,28 @@ const io = new Server(server, {
     }
 });
 
+var sockets = new Map();
 io.on("connection", (socket) => {
     console.log("a user has connected");
+    const _id = socket.id;
 
-    socket.on("disconnect", () => {
+    socket.on("connectToTable", (tableId, playerId) => {
+        sockets.set(_id, { playerId, tableId });
+    });
+
+    socket.on("disconnect", async () => {
         console.log("user disconnected");
+        const playerData = sockets.get(_id);
+        try {
+            await pool.query(
+                "UPDATE table_players SET is_active=false WHERE table_id=$1 AND player_id=$2",
+                [playerData.tableId, playerData.playerId]
+            );
+            io.emit("updatePlayers", await getTablePlayers(playerData.tableId));
+        } catch (err) {
+            console.log(err);
+        }
+        sockets.delete(_id);
     });
     
     socket.on("newVote", (newYes, newNo) => {
@@ -125,7 +142,7 @@ io.on("connection", (socket) => {
         } catch(err) {
             console.log(err);
         }
-    })
+    });
 });
 
 // Start server

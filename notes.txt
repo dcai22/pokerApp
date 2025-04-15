@@ -297,7 +297,7 @@ More detail about security
     - Except if they have already VPIP'd, and then become inactive; this takes effect next hand (DONE)
     - hasEnteredHand and hasVpip must be set on pageload in case they have already submitted their hand,
       then leave the table, rejoin, and set their status to active again (DONE)
- - Upon socket disconnect, the player's status becomes inactive
+ - Upon socket disconnect, the player's status becomes inactive (DONE)
  - A hand cannot be played with < 2 active players; a 'Waiting...' screen will be shown (DONE)
 
  - A new user can join an inactive table (until it's full) with default active status (DONE)
@@ -310,3 +310,8 @@ More detail about security
  NOTES: there was a lot of socket duplication due to socket.on() being placed outside of useEffect.
  Since the component unmounts/remounts frequently, this results in exponentially duplicating sockets.
  FIX: Place socket.on() inside useEffect, and return () => { socket.off() } in useEffect.
+
+
+
+ 16/04/2025
+ Completed all security features discussed yesterday
