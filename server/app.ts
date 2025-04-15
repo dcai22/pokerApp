@@ -386,6 +386,27 @@ app.get('/getTablePlayer', async (req: Request, res: Response) => {
     }
 });
 
+app.get('/getHand', async (req: Request, res: Response) => {
+    const tableId = req.query.tableId;
+    const playerId = req.query.playerId;
+    const handNum = req.query.handNum;
+
+    try {
+        const dbRes = await pool.query(
+            "SELECT * FROM hands WHERE table_id=$1 AND player_id=$2 AND hand_num=$3",
+            [tableId, playerId, handNum]
+        );
+        if (dbRes.rowCount) {
+            res.json({ handExists: true, hand: dbRes.rows[0] });
+        } else {
+            res.json({ handExists: false });
+        }
+    } catch (err) {
+        console.log(err);
+        res.status(400).json();
+    }
+});
+
 
 // FOR TESTING
 app.get('/numVotes', async (req: Request, res: Response) => {

@@ -59,7 +59,7 @@ export default function CreateTable() {
     async function onSubmit(values: z.infer<typeof formSchema>) {
         const tableName = values.tableName;
         const sb = values.sb;
-        const bb = values.sb;
+        const bb = values.bb;
 
         if (sb > bb) {
             window.alert("small blind cannot be larger than big blind");
