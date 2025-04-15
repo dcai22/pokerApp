@@ -152,6 +152,11 @@ export default function Table() {
                 const tableRes = await axios.get(
                     `http://localhost:3000/getTable?table_id=${tableId}`
                 );
+                // set default values
+                setTableName(tableRes.data.name);
+                setHandNum(tableRes.data.num_hands + 1); // must occur before setHasVpip due to handNum's useEffect hook
+                setHasStarted(tableRes.data.has_started);
+
                 // check if player is owner
                 const ownerRes = await axios.get(
                     `http://localhost:3000/getPlayer?player_id=${tableRes.data.owner}`
@@ -160,10 +165,23 @@ export default function Table() {
                     setOwnerName(ownerRes.data.username);
                 }
 
-                // set default values
-                setTableName(tableRes.data.name);
-                setHandNum(tableRes.data.num_hands + 1);
-                setHasStarted(tableRes.data.has_started);
+                // check if the player has submitted a hand and vpip
+                const newHandNum = tableRes.data.num_hands + 1;
+                const handRes = await axios.get(
+                    `http://localhost:3000/getHand?tableId=${tableId}&playerId=${newPlayerId}&handNum=${newHandNum}`
+                );
+                if (handRes.data.handExists) {
+                    console.log("successful query");
+                    console.log(handRes.data);
+                    setHasVpip(true);
+
+                    const newHandCid = handRes.data.hand.combination_id;
+                    setCurHand(Hand.fromCid(newHandCid));
+                    setHasEnteredHand(newHandCid >= 0);
+                } else {
+                    setHasVpip(false);
+                    setHasEnteredHand(false);
+                }
             } catch (err) {
                 navigate("/joinTable");
                 return;
@@ -389,7 +407,7 @@ export default function Table() {
     
     return (
         <div className="flex justify-center items-center h-screen w-screen">
-            <Button className="fixed top-5 left-5" onClick={handleChangeStatus}>
+            <Button className="fixed top-5 left-5 z-50" onClick={handleChangeStatus}>
                 {isActive ? "Sit out" : "Deal me in"}
             </Button>
             <div className="flex h-9/10 w-9/10">

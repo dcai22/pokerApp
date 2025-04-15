@@ -293,10 +293,10 @@ More detail about security
     - Their status can be stored in table_players to fetch (DONE)
     - It can also be stored in the `players` variable (DONE)
  - Players can change between active and inactive status when in the table lobby (DONE)
- - This status takes effect immediately
-    - Except if they have already VPIP'd, and then become inactive; this takes effect next hand
+ - This status takes effect immediately (DONE)
+    - Except if they have already VPIP'd, and then become inactive; this takes effect next hand (DONE)
     - hasEnteredHand and hasVpip must be set on pageload in case they have already submitted their hand,
-      then leave the table, rejoin, and set their status to active again
+      then leave the table, rejoin, and set their status to active again (DONE)
  - Upon socket disconnect, the player's status becomes inactive
  - A hand cannot be played with < 2 active players; a 'Waiting...' screen will be shown (DONE)
 
