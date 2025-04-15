@@ -137,6 +137,7 @@ export default function Table() {
             // connect socket
             socket.connect();
             console.log(`${newUsername} has connected in table!`);
+            socket.emit("connectToTable", tableId, newPlayerId);
 
             try {
                 // check player is on table (implicitly checks player and table exist)
