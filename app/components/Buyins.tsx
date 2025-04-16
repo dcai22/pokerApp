@@ -15,7 +15,7 @@ export default function Buyins({ players, username }: BuyinsProps) {
 
     return (
         <div>
-            There is <span className="font-bold">${getTableTotal()}</span> on the table<br />
+            There is <span className="font-bold">${getTableTotal()}</span> on the table.<br />
             Total buyins:
             <ul>
                 {players.map((e, i) => 

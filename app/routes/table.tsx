@@ -402,105 +402,110 @@ export default function Table() {
             socket.emit("checkHandDone", tableId, handNum);
         });
     }
+
+    function tableCanPlay() {
+        return players.filter((e) => e.isActive).length >= 2;
+    }
     
     // SSR doesn't allow access to window
     // window.addEventListener("beforeunload", handleLeave);
-    
+
     return (
-        <div className="flex justify-center items-center h-screen w-screen">
+        <div className={`flex justify-center items-center h-screen w-screen ${tableCanPlay() && isActive ? "" : "bg-gray-500/40"}`}>
             <Button className="fixed top-5 left-5 z-50" onClick={handleChangeStatus}>
                 {isActive ? "Sit out" : "Deal me in"}
             </Button>
-            <div className="flex h-9/10 w-9/10">
-                <div className="flex flex-col justify-center w-50 mx-5">
-                    <Greeting name={username} />
-                    <TableWelcome name={tableName} code={parseInt(tableId)} />
+            <div className={"flex justify-center items-center h-screen w-full max-w-120"}>
+                <div className="flex flex-col h-9/10 w-9/10">
+                    <div className="flex w-full mt-7">
+                        <div className="flex flex-col justify-center w-14/29 p-2">
+                            <Greeting name={username} />
+                            <TableWelcome name={tableName} code={parseInt(tableId)} />
 
-                    Starting positions:
-                    <div className="mb-10">
-                        <ol>
-                            {/* TODO: change key to NOT use {i} as it is unsafe */}
-                            {players.map((e, i) => 
-                                <li key={i} className="flex">
-                                    <span className="w-7">{e.name === ownerName ? "⭐" : ""}</span>
-                                    <span className={`w-15 ${e.isActive ? "font-bold" : "text-gray-500"}`}>{calcPosition(i, players.length)}</span>
-                                    {e.name}
-                                </li>
-                            )}
-                        </ol>
-                    </div>
+                            Starting positions:
+                            <div className="mb-10">
+                                <ol>
+                                    {/* TODO: change key to NOT use {i} as it is unsafe */}
+                                    {players.map((e, i) => 
+                                        <li key={i} className="flex">
+                                            <span className="w-7">{e.name === ownerName ? "⭐" : ""}</span>
+                                            <span className={`w-15 ${e.isActive ? "font-bold" : "text-gray-500"}`}>{calcPosition(i, players.length)}</span>
+                                            {e.name}
+                                        </li>
+                                    )}
+                                </ol>
+                            </div>
 
-                    <Button onClick={handleLeave}>Leave table</Button>
-                </div>
-                <div className="flex justify-center items-center w-full h-full">
-                    {hasStarted
-                        ? (players.filter((e) => e.isActive).length < 2
-                            ? <div className="text-xl text-center">Paused: at least 2 active players required</div>
-                            : <div className="flex w-full h-full mx-5">
-                                <div className="flex justify-center flex-col w-50 mx-5">
-                                    <Buyins players={players} username={username} />
-                                    <Dialog>
-                                        <DialogTrigger asChild>
-                                            <Button className="my-2">Buyin</Button>
-                                        </DialogTrigger>
-                                        <Form {...buyinForm}>
-                                            <DialogContent className="w-1/5">
-                                                <form onSubmit={buyinForm.handleSubmit(onBuyin)} className="flex flex-col">
-                                                    <DialogHeader>
-                                                        <DialogTitle>
-                                                            Buyin
-                                                        </DialogTitle>
-                                                        <DialogDescription>
-                                                            Enter an amount to buyin:
-                                                        </DialogDescription>
-                                                    </DialogHeader>
-                                                    <FormField
-                                                        control={buyinForm.control}
-                                                        name="amount"
-                                                        render={({ field }) => (
-                                                            <FormItem>
-                                                                <FormControl>
-                                                                    <Input placeholder="e.g. 25" {...field} />
-                                                                </FormControl>
-                                                            </FormItem>
-                                                        )}
-                                                    />
-                                                    <DialogFooter className="mt-1">
-                                                        <DialogClose asChild>
-                                                            <Button type="submit">Confirm</Button>
-                                                        </DialogClose>
-                                                    </DialogFooter>
-                                                </form>
-                                            </DialogContent>
-                                        </Form>
-                                    </Dialog>
-                                    <Dialog>
-                                        <DialogTrigger asChild>
-                                            <Button>Buyin history</Button>
-                                        </DialogTrigger>
-                                        <DialogContent className="max-h-7/8 overflow-auto">
+                            <Button onClick={handleLeave}>Leave table</Button>
+                        </div>
+                        <div className="flex justify-center flex-col w-15/29 p-2">
+                            <Buyins players={players} username={username} />
+                            <Dialog>
+                                <DialogTrigger asChild>
+                                    <Button className="my-2">Buyin</Button>
+                                </DialogTrigger>
+                                <Form {...buyinForm}>
+                                    <DialogContent className="w-1/5">
+                                        <form onSubmit={buyinForm.handleSubmit(onBuyin)} className="flex flex-col">
                                             <DialogHeader>
                                                 <DialogTitle>
-                                                    Buyin History
+                                                    Buyin
                                                 </DialogTitle>
-                                                <DialogDescription />
+                                                <DialogDescription>
+                                                    Enter an amount to buyin:
+                                                </DialogDescription>
                                             </DialogHeader>
-                                            {getBuyinHistoryComponent()}
+                                            <FormField
+                                                control={buyinForm.control}
+                                                name="amount"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormControl>
+                                                            <Input placeholder="e.g. 25" {...field} />
+                                                        </FormControl>
+                                                    </FormItem>
+                                                )}
+                                            />
                                             <DialogFooter className="mt-1">
                                                 <DialogClose asChild>
-                                                    <Button type="button">Close</Button>
+                                                    <Button type="submit">Confirm</Button>
                                                 </DialogClose>
                                             </DialogFooter>
-                                        </DialogContent>
-                                    </Dialog>
-                                </div>
-                                <div className="flex flex-col w-full mx-5">
-                                    <div className="flex justify-center w-full h-20 text-7xl">
+                                        </form>
+                                    </DialogContent>
+                                </Form>
+                            </Dialog>
+                            <Dialog>
+                                <DialogTrigger asChild>
+                                    <Button>Buyin history</Button>
+                                </DialogTrigger>
+                                <DialogContent className="max-h-7/8 overflow-auto">
+                                    <DialogHeader>
+                                        <DialogTitle>
+                                            Buyin History
+                                        </DialogTitle>
+                                        <DialogDescription />
+                                    </DialogHeader>
+                                    {getBuyinHistoryComponent()}
+                                    <DialogFooter className="mt-1">
+                                        <DialogClose asChild>
+                                            <Button type="button">Close</Button>
+                                        </DialogClose>
+                                    </DialogFooter>
+                                </DialogContent>
+                            </Dialog>
+                        </div>
+                    </div>
+                    <div className="flex justify-center w-full h-full">
+                        {hasStarted
+                            ? tableCanPlay() && isActive
+                                ? <div className="flex flex-col w-full pt-20 px-10">
+                                    <div className="flex justify-center w-full text-6xl">
                                         Hand {handNum}
                                     </div>
                                     <Dialog>
                                         <DialogTrigger asChild>
-                                            <Button className="my-2" disabled={hasEnteredHand || !isActive}>Enter hand (optional)</Button>
+                                            <Button className="my-1" disabled={hasEnteredHand || !isActive}>Enter hand (optional)</Button>
                                         </DialogTrigger>
                                         <Form {...handForm}>
                                             <DialogContent className="w-400">
@@ -516,7 +521,7 @@ export default function Table() {
                                                     <div className="flex w-full h-full">
                                                         <div className="flex flex-col w-full">
                                                             <FormLabel className="my-4">
-                                                                Card 1: rank
+                                                                1. Rank
                                                             </FormLabel>
                                                             <FormField
                                                                 control={handForm.control}
@@ -532,7 +537,7 @@ export default function Table() {
                                                         </div>
                                                         <div className="flex flex-col w-full">
                                                             <FormLabel className="my-4">
-                                                                Card 1: suit
+                                                                Suit
                                                             </FormLabel>
                                                             <FormField
                                                                 control={handForm.control}
@@ -548,7 +553,7 @@ export default function Table() {
                                                         </div>
                                                         <div className="flex flex-col w-full">
                                                             <FormLabel className="my-4">
-                                                                Card 2: rank
+                                                                2. Rank
                                                             </FormLabel>
                                                             <FormField
                                                                 control={handForm.control}
@@ -564,7 +569,7 @@ export default function Table() {
                                                         </div>
                                                         <div className="flex flex-col w-full">
                                                             <FormLabel className="my-4">
-                                                                Card 2: suit
+                                                                Suit
                                                             </FormLabel>
                                                             <FormField
                                                                 control={handForm.control}
@@ -579,7 +584,7 @@ export default function Table() {
                                                             />
                                                         </div>
                                                     </div>
-                                                    <DialogFooter className="mt-1">
+                                                    <DialogFooter className="mt-6">
                                                         <DialogClose asChild>
                                                             <Button type="submit">Confirm</Button>
                                                         </DialogClose>
@@ -590,18 +595,16 @@ export default function Table() {
                                     </Dialog>
                                     <Dialog>
                                         <DialogTrigger asChild>
-                                            <Button className="my-2" disabled={hasVpip || !isActive}>VPIP</Button>
+                                            <Button className="my-1" disabled={hasVpip || !isActive}>VPIP</Button>
                                         </DialogTrigger>
                                         <Form {...vpipForm}>
-                                            <DialogContent className="w-1/5">
+                                            <DialogContent className="w-50 h-45">
                                                 <form onSubmit={vpipForm.handleSubmit(onVpip)} className="flex flex-col">
-                                                    <DialogHeader>
+                                                    <DialogHeader className="mb-2">
                                                         <DialogTitle>
                                                             VPIP
                                                         </DialogTitle>
-                                                        <DialogDescription>
-                                                            Select an option:
-                                                        </DialogDescription>
+                                                        <DialogDescription />
                                                     </DialogHeader>
                                                     <FormField
                                                         control={vpipForm.control}
@@ -635,7 +638,7 @@ export default function Table() {
                                                             </FormItem>
                                                         )}
                                                     />
-                                                    <DialogFooter className="mt-1">
+                                                    <DialogFooter className="mt-5">
                                                         <DialogClose asChild>
                                                             <Button type="submit">Confirm</Button>
                                                         </DialogClose>
@@ -645,27 +648,33 @@ export default function Table() {
                                         </Form>
                                     </Dialog>
                                     {isOwner()
-                                        ? <Button disabled={!isHandDone} onClick={handleNext}>
+                                        ? <Button className="mt-3" disabled={!isHandDone} onClick={handleNext}>
                                             Next Hand
                                         </Button>
                                         : <></>
                                     }
                                 </div>
-                            </div>
-                        )
-                        : <div className="flex w-full h-full justify-center items-center">
-                            {isOwner() 
-                                ? <Button className="h-20 w-40 text-xl" onClick={handleStart}>
-                                    Start game
-                                </Button>
-                                : <div className="text-xl text-center">
-                                    Waiting for owner to start game...
+                                : <div className="flex flex-col justify-center text-center text-xl w-full h-full text-center items-center">
+                                    <span className="font-bold text-3xl">Paused</span>
+                                    {isActive
+                                        ? "At least 2 active players required"
+                                        : `Press "Deal me in" to play`
+                                    }
                                 </div>
-                            }
+                            : <div className="flex justify-center text-center w-full h-full items-center">
+                                {isOwner() 
+                                    ? <Button className="h-20 w-40 text-xl" onClick={handleStart}>
+                                        Start game
+                                    </Button>
+                                    : <div className="text-xl text-center">
+                                        Waiting for owner to start game...
+                                    </div>
+                                }
+                            </div>
+                        }
                     </div>
-                    }
+                    {buyinAlert}
                 </div>
-                {buyinAlert}
             </div>
         </div>
     );
