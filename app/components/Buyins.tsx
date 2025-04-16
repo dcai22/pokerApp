@@ -2,6 +2,7 @@ interface BuyinsProps {
     players: {
         name: string,
         buyin: number,
+        isActive: boolean,
     }[],
     username: string,
 }
