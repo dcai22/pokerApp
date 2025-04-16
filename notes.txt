@@ -51,7 +51,7 @@ However you cannot simply perform res.status(400), you need to do res.status(400
 <INCORRECT: SEE 09/04/2025> );
 <INCORRECT: SEE 09/04/2025> ```
 
-TODO: add parameter checks to loaders
+TODO: add parameter checks to loaders (DONE)
 NOTE: parameter checks will be done with tokens stored in localStorage
       Token is purged upon loading the register and login routes (DONE)
       Token is created after successful register/login (DONE)

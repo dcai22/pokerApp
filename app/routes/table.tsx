@@ -45,7 +45,6 @@ const handFormSchema = z.object({
     suit2: z.enum(["", ...Card.suits]),
 });
 
-// TODO: remove table_players entry from database upon leaving page
 export default function Table() {
     const navigate = useNavigate();
     const buyinForm = useForm<z.infer<typeof buyinFormSchema>>({
@@ -78,7 +77,7 @@ export default function Table() {
     const [tableName, setTableName] = useState("");
     const [players, setPlayers] = useState(new Array());
     const [ownerName, setOwnerName] = useState("");
-    const [hasStarted, setHasStarted] = useState(false);    // TODO: initiate properly
+    const [hasStarted, setHasStarted] = useState(false);
     const [buyinAlert, setBuyinAlert] = useState(<></>);
     const [lastBuyinTime, setLastBuyinTime] = useState(null as (string | null));
     const [buyinHistory, setBuyinHistory] = useState([] as Buyin[]);
@@ -411,7 +410,7 @@ export default function Table() {
     // window.addEventListener("beforeunload", handleLeave);
 
     return (
-        <div className={`flex justify-center items-center h-screen w-screen ${tableCanPlay() && isActive ? "" : "bg-gray-500/40"}`}>
+        <div className={`flex justify-center items-center h-screen w-screen ${(!hasStarted || tableCanPlay()) && isActive ? "" : "bg-gray-500/40"}`}>
             <Button className="fixed top-5 left-5 z-50" onClick={handleChangeStatus}>
                 {isActive ? "Sit out" : "Deal me in"}
             </Button>
@@ -424,16 +423,21 @@ export default function Table() {
 
                             Starting positions:
                             <div className="mb-10">
-                                <ol>
-                                    {/* TODO: change key to NOT use {i} as it is unsafe */}
+                                <ul>
                                     {players.map((e, i) => 
                                         <li key={i} className="flex">
                                             <span className="w-7">{e.name === ownerName ? "⭐" : ""}</span>
-                                            <span className={`w-15 ${e.isActive ? "font-bold" : "text-gray-500"}`}>{calcPosition(i, players.length)}</span>
-                                            {e.name}
+                                            <span className={`w-15 ${e.isActive ? "font-buld" : "text-gray-500"}`}>{calcPosition(i, players.length)}</span>
+                                            <span>
+                                                {e.name} {
+                                                e.name === username
+                                                    ? <span> (You)</span>
+                                                    : <></>
+                                                }
+                                            </span>
                                         </li>
                                     )}
-                                </ol>
+                                </ul>
                             </div>
 
                             <Button onClick={handleLeave}>Leave table</Button>

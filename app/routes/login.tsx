@@ -13,7 +13,6 @@ const formSchema = z.object({
     password: z.string().min(1),
 });
 
-// TODO: error message from loaderData
 export default function Login() {
     const navigate = useNavigate();
     const form = useForm<z.infer<typeof formSchema>>({

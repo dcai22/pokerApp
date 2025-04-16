@@ -21,6 +21,7 @@ io.on("connection", (socket) => {
 
     socket.on("connectToTable", (tableId, playerId) => {
         sockets.set(_id, { playerId, tableId });
+        socket.join(tableId);
     });
 
     socket.on("disconnect", async () => {
@@ -31,7 +32,7 @@ io.on("connection", (socket) => {
                 "UPDATE table_players SET is_active=false WHERE table_id=$1 AND player_id=$2",
                 [playerData.tableId, playerData.playerId]
             );
-            io.emit("updatePlayers", await getTablePlayers(playerData.tableId));
+            io.to(playerData.tableId).emit("updatePlayers", await getTablePlayers(playerData.tableId));
         } catch (err) {
             console.log(err);
         }
@@ -43,102 +44,106 @@ io.on("connection", (socket) => {
         io.emit("newVote", newYes, newNo);
     });
 
-    socket.on("joinTable", async (tableId) => {
-        console.log(`New player has joined table with id=${tableId}`);
+    socket.on("joinTable", async () => {
+        const playerData = sockets.get(_id);
+        console.log(`New player has joined table with id=${playerData.tableId}`);
 
         try {
-            // TODO: emit only to the table
-            io.emit("updatePlayers", await getTablePlayers(tableId));
+            io.to(playerData.tableId).emit("updatePlayers", await getTablePlayers(playerData.tableId));
         } catch (err) {
             console.log("error in socket.on(joinTable)");
         }
     });
 
-    socket.on("startGame", async (tableId) => {
+    socket.on("startGame", async () => {
         try {
+            const playerData = sockets.get(_id);
             await pool.query(
                 "UPDATE tables SET has_started=true WHERE id=$1",
-                [tableId]
+                [playerData.tableId]
             );
-            // TODO: emit only to the table
-            io.emit("startGame");
-            console.log(`Game started on table with id=${tableId}`);
+            io.to(playerData.tableId).emit("startGame");
+            console.log(`Game started on table with id=${playerData.tableId}`);
         } catch (err) {
             console.log("error in socket.on(startGame)");
         }
     });
 
-    socket.on("newBuyin", async (buyinTime, tableId) => {
-        // TODO: emit only to the table
-        io.emit("updatePlayers", await getTablePlayers(tableId));
+    socket.on("newBuyin", async (buyinTime) => {
+        const playerData = sockets.get(_id);
+        io.to(playerData.tableId).emit("updatePlayers", await getTablePlayers(playerData.tableId));
 
         await new Promise(r => setTimeout(r, 2000));
         socket.emit("removeBuyinAlert", buyinTime);
     });
 
-    socket.on("checkHandDone", async (tableId, handNum) => {
+    socket.on("checkHandDone", async (handNum) => {
         try {
+            const playerData = sockets.get(_id);
             const activePlayersRes = await pool.query(
                 "SELECT * FROM table_players WHERE table_id=$1 AND is_active=true",
-                [tableId]
+                [playerData.tableId]
             );
             const activePlayerIds = activePlayersRes.rows.map((p) => p.player_id);
 
             const handsRes = await pool.query(
                 "SELECT * FROM hands WHERE table_id=$1 AND hand_num=$2",
-                [tableId, handNum]
+                [playerData.tableId, handNum]
             );
             const handPlayerIds = handsRes.rows.map((h) => h.player_id);
 
             if (activePlayerIds.every((p) => handPlayerIds.includes(p))) {
-                io.emit("updateHandDone", true);
+                io.to(playerData.tableId).emit("updateHandDone", true);
             } else {
-                io.emit("updateHandDone", false);
+                io.to(playerData.tableId).emit("updateHandDone", false);
             }
         } catch (err) {
             console.log(err);
         }
     });
 
-    socket.on("alertNextHand", async (tableId, numHands) => {
+    socket.on("alertNextHand", async (numHands) => {
         try {
+            const playerData = sockets.get(_id);
             await pool.query(
                 "UPDATE tables SET num_hands=$1 WHERE id=$2",
-                [numHands, tableId]
+                [numHands, playerData.tableId]
             );
-            io.emit("nextHand", numHands + 1);
+            io.to(playerData.tableId).emit("nextHand", numHands + 1);
         } catch (err) {
             console.log(err);
         }
     });
 
-    socket.on("changeStatus", async (tableId, playerId) => {
+    socket.on("changeStatus", async () => {
         try {
+            const playerData = sockets.get(_id);
             const tablePlayerRes = await pool.query(
                 "SELECT * FROM table_players WHERE table_id=$1 AND player_id=$2",
-                [tableId, playerId]
+                [playerData.tableId, playerData.playerId]
             );
             const oldStatus = tablePlayerRes.rows[0].is_active;
             await pool.query(
                 "UPDATE table_players SET is_active=$1 WHERE table_id=$2 AND player_id=$3",
-                [!oldStatus, tableId, playerId]
+                [!oldStatus, playerData.tableId, playerData.playerId]
             );
 
-            io.emit("updatePlayers", await getTablePlayers(tableId));
+            io.emit("updatePlayers", await getTablePlayers(playerData.tableId));
             socket.emit("changeStatusDone");
         } catch (err) {
             console.log(err);
         }
     });
 
-    socket.on("leaveTable", async (tableId, playerId) => {
+    socket.on("leaveTable", async () => {
         try {
+            const playerData = sockets.get(_id);
             await pool.query(
                 "UPDATE table_players SET is_active=false WHERE table_id=$1 AND player_id=$2",
-                [tableId, playerId]
+                [playerData.tableId, playerData.playerId]
             );
             
-            io.emit("updatePlayers", await getTablePlayers(tableId));
+            io.emit("updatePlayers", await getTablePlayers(playerData.tableId));
         } catch(err) {
             console.log(err);
         }
