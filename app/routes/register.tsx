@@ -14,7 +14,6 @@ const formSchema = z.object({
     password: z.string().min(1, { message: "*required field" }),
 });
 
-// TODO: error message from loaderData
 export default function Register() {
     const navigate = useNavigate();
     const form = useForm<z.infer<typeof formSchema>>({
