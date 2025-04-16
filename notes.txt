@@ -51,7 +51,7 @@ However you cannot simply perform res.status(400), you need to do res.status(400
 <INCORRECT: SEE 09/04/2025> );
 <INCORRECT: SEE 09/04/2025> ```
 
-TODO: add parameter checks to loaders
+TODO: add parameter checks to loaders (DONE)
 NOTE: parameter checks will be done with tokens stored in localStorage
       Token is purged upon loading the register and login routes (DONE)
       Token is created after successful register/login (DONE)
@@ -238,6 +238,7 @@ The owner has access to a 'next hand' button.
 This button is disabled by default, but is enabled when every player has VPIP'd.
 This button resets the hands and VPIPs, and moves the positions.
 The hand no. should be displayed somewhere on screen e.g. `Hand no. 12`.
+DONE.
 
 ```
 There should be a button to display hand stats -- vpip, hand history, etc.
@@ -269,3 +270,48 @@ To fix up later:
  - Security in tables
     - Figure out when tables should let someone join, either through
       joinTable or directly through URL (e.g. on refresh)
+
+
+
+
+14/04/2025
+I finished making the table fully functional.
+Now I just need to implement more security features (as mentioned yesterday), and
+improve the aesthetic of the app.
+
+On top of the security concern mentioned yesterday, I need sockets to communicate
+to other sockets within the same table.
+Also, the rank and suit selections should be randomised to prevent cheating.
+
+
+
+15/04/2025
+More detail about security
+ - Players in the table lobby can be active or inactive (DONE)
+    - In a hand, there will be a 'Sit Out' or 'Deal Me In' button to change status (DONE)
+ - Players join active tables with inactive status by default (sockets should take care of this) (DONE)
+    - Their status can be stored in table_players to fetch (DONE)
+    - It can also be stored in the `players` variable (DONE)
+ - Players can change between active and inactive status when in the table lobby (DONE)
+ - This status takes effect immediately (DONE)
+    - Except if they have already VPIP'd, and then become inactive; this takes effect next hand (DONE)
+    - hasEnteredHand and hasVpip must be set on pageload in case they have already submitted their hand,
+      then leave the table, rejoin, and set their status to active again (DONE)
+ - Upon socket disconnect, the player's status becomes inactive (DONE)
+ - A hand cannot be played with < 2 active players; a 'Waiting...' screen will be shown (DONE)
+
+ - A new user can join an inactive table (until it's full) with default active status (DONE)
+ - A user can join an active table if they are already in it (DONE)
+ - A user on the '/tables' page will be kicked out if they are not on the table (DONE)
+ - If a user enters the '/tables' page and they are on the table, fetch their status from db (DONE)
+
+ - 'Next Hand' button will only require all ACTIVE players to have VPIP'd (DONE)
+
+ NOTES: there was a lot of socket duplication due to socket.on() being placed outside of useEffect.
+ Since the component unmounts/remounts frequently, this results in exponentially duplicating sockets.
+ FIX: Place socket.on() inside useEffect, and return () => { socket.off() } in useEffect.
+
+
+
+ 16/04/2025
+ Completed all security features discussed yesterday

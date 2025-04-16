@@ -179,16 +179,24 @@ app.post('/player/joinTable', async (req: Request, res: Response) => {
             "SELECT * FROM tables WHERE id=$1",
             [tableId]
         );
-        if (tableRes.rows[0].has_started) {
-            res.status(400).json();
-            return;
-        }
+        const table = tableRes.rows[0];
+        // if (tableRes.rows[0].has_started) {
+        //     res.status(400).json();
+        //     return;
+        // }
 
-        const tablePlayersRes = await pool.query(
+        const allTablePlayersRes = await pool.query(
             "SELECT * FROM table_players WHERE table_id=$1",
             [tableId]
         );
-        const positions = tablePlayersRes.rows.map((e) => e.position);
+        const allTablePlayers = allTablePlayersRes.rows;
+
+        if (allTablePlayers.find((tp) => tp.player_id === playerId)) {
+            res.json();
+            return;
+        }
+
+        const positions = allTablePlayers.map((e) => e.position);
         if (positions.length >= 9) {
             res.status(400).json({ error: `Cannot join table ${tableId}: table is full` });
             return;
@@ -210,14 +218,14 @@ app.post('/player/joinTable', async (req: Request, res: Response) => {
     }
 });
 
-app.delete('/player/leaveTable', async (req: Request, res: Response) => {
-    const player_id = req.body.player_id;
-    const table_id = req.body.table_id;
+app.put('/player/leaveTable', async (req: Request, res: Response) => {
+    const playerId = req.body.playerId;
+    const tableId = req.body.tableId;
 
     try {
         await pool.query(
-            "DELETE FROM table_players WHERE table_id=$1 AND player_id=$2",
-            [table_id, player_id]
+            "UPDATE table_players SET is_active=false WHERE table_id=$1 AND player_id=$2",
+            [tableId, playerId]
         );
 
         res.json();
@@ -353,6 +361,49 @@ app.get('/getTable', async (req: Request, res: Response) => {
     } catch(err) {
         res.status(400).json();
         return;
+    }
+});
+
+app.get('/getTablePlayer', async (req: Request, res: Response) => {
+    const tableId = req.query.tableId;
+    const playerId = req.query.playerId;
+    try {
+        const dbRes = await pool.query(
+            "SELECT * FROM table_players WHERE table_id=$1 AND player_id=$2",
+            [tableId, playerId]
+        );
+
+        if (dbRes.rowCount) {
+            res.json(dbRes.rows[0]);
+            return;
+        } else {
+            res.status(400).json({ err: "Player does not exist on table" });
+            return;
+        }
+    } catch(err) {
+        res.status(400).json({ err });
+        return;
+    }
+});
+
+app.get('/getHand', async (req: Request, res: Response) => {
+    const tableId = req.query.tableId;
+    const playerId = req.query.playerId;
+    const handNum = req.query.handNum;
+
+    try {
+        const dbRes = await pool.query(
+            "SELECT * FROM hands WHERE table_id=$1 AND player_id=$2 AND hand_num=$3",
+            [tableId, playerId, handNum]
+        );
+        if (dbRes.rowCount) {
+            res.json({ handExists: true, hand: dbRes.rows[0] });
+        } else {
+            res.json({ handExists: false });
+        }
+    } catch (err) {
+        console.log(err);
+        res.status(400).json();
     }
 });
 
