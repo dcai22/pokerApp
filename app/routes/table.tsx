@@ -28,10 +28,8 @@ import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
 import RankSelect from "~/components/RankSelect";
 import SuitSelect from "~/components/SuitSelect";
 import PositionsDisplay from "~/components/PositionsDisplay";
-
-const buyinFormSchema = z.object({
-    amount: z.coerce.number({ message: "invalid: please enter a number" }).multipleOf(0.01, { message: "invalid: please enter to the nearest cent" }),
-});
+import BuyinDialog from "~/components/BuyinDialog";
+import { buyinFormSchema } from "~/formSchemas";
 
 const vpipFormSchema = z.object({
     option: z.enum(["yes", "no"], {
@@ -96,7 +94,6 @@ export default function Table() {
     async function socketHandleUpdatePlayers(updatedPlayers: SetStateAction<any[]>) {
         setPlayers(updatedPlayers);
         console.log(updatedPlayers);
-        await updateBuyinHistory();
     }
 
     function socketHandleStartGame() {
@@ -232,6 +229,7 @@ export default function Table() {
         if (player) {
             setIsActive(player.isActive);
         }
+        updateBuyinHistory();
     }, [players]);
 
     async function handleLeave() {
@@ -461,6 +459,7 @@ export default function Table() {
                                     </DialogContent>
                                 </Form>
                             </Dialog>
+                            {/* <BuyinDialog onBuyin={onBuyin} /> */}
                             <Dialog>
                                 <DialogTrigger asChild>
                                     <Button>Buyin history</Button>

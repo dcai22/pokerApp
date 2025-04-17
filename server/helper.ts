@@ -56,13 +56,12 @@ export async function authToken(token: string, playerId: number) {
         return { message: "error: bad token" };
     }
 
-    let username;
     const playerRes = await pool.query(
         "SELECT * FROM players WHERE id=$1",
         [playerId]
     );
     if (playerRes.rowCount) {
-        username = playerRes.rows[0].username;
+        const username = playerRes.rows[0].username;
         return { username };
     } else {
         return { message: "error: player not found" };
