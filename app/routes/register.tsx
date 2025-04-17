@@ -8,6 +8,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "~/components/ui/form";
+import { illegalUsernames } from "~/restrictions";
 
 const formSchema = z.object({
     username: z.string().min(1, { message: "*required field" }),
@@ -31,6 +32,11 @@ export default function Register() {
     async function onSubmit(values: z.infer<typeof formSchema>) {
         const username = values.username;
         const password = values.password;
+
+        if (illegalUsernames.includes(username)) {
+            console.log("Error: Illegal name");
+            return;
+        }
 
         const hashedPassword = await genHash(password);
         try {

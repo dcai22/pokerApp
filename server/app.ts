@@ -258,19 +258,59 @@ app.post('/player/buyin', async (req: Request, res: Response) => {
 });
 
 app.get('/player/getBuyins', async (req: Request, res: Response) => {
-    const playerId = req.query.playerId; // DEBUG: value is -1 for some reason?
+    const tableId = req.query.tableId;
+
+    try {
+        const buyinsRes = await pool.query(
+            "SELECT * FROM buyins WHERE table_id=$1 ORDER BY time DESC",
+            [tableId]
+        );
+        const buyins = buyinsRes.rows;
+
+        if (buyins.length === 0) {
+            res.json({  buyins: [] });
+            return;
+        }
+
+        const playersRes = await pool.query(
+            "SELECT * FROM players",
+        );
+        const players = playersRes.rows;
+
+        res.json({ buyins: buyins.map((b) => {
+            return {
+                name: players.find((p) => p.id === b.player_id).username,
+                time: b.time,
+                amount: b.amount,
+            }
+        }) });
+    } catch (err) {
+        res.status(400).json({ message: "Error fetching buyins" });
+    }
+});
+
+app.get('/player/getHands', async (req: Request, res: Response) => {
+    const playerId = req.query.playerId;
     const tableId = req.query.tableId;
 
     try {
         const dbRes = await pool.query(
-            "SELECT * FROM buyins WHERE player_id=$1 AND table_id=$2 ORDER BY time DESC",
+            "SELECT * FROM hands WHERE player_id=$1 AND table_id=$2",
             [playerId, tableId]
         );
-        res.json({ buyins: dbRes.rows });
+
+        const hands = dbRes.rows.map((h) => {
+            return {
+                handNum: h.hand_num,
+                cid: h.combination_id,
+                vpip: h.vpip,
+            };
+        });
+        res.json({ hands });
     } catch (err) {
-        res.status(400).json({ message: "Error fetching buyins" });
+        console.log(err);
     }
-})
+});
 
 // Will only be called to UPDATE the `hands` schema
 // if VPIP first: then a row is created and it is updated here
@@ -403,6 +443,43 @@ app.get('/getHand', async (req: Request, res: Response) => {
     } catch (err) {
         console.log(err);
         res.status(400).json();
+    }
+});
+
+app.get('/getAllHands', async (req: Request, res: Response) => {
+    const tableId = req.query.tableId;
+
+    try {
+        // check table has ended
+        const tableRes = await pool.query(
+            "SELECT * FROM tables WHERE id=$1",
+            [tableId]
+        );
+        if (!tableRes.rows[0].has_ended) {
+            res.status(400).json();
+            return;
+        }
+
+        const playersRes = await pool.query(
+            "SELECT * FROM players"
+        );
+        const players = playersRes.rows;
+
+        const handsRes = await pool.query(
+            "SELECT * FROM hands WHERE table_id=$1",
+            [tableId]
+        );
+        const hands = handsRes.rows.map(h => {
+            return {
+                name: players.find(p => p.id === h.player_id).username,
+                handNum: h.hand_num,
+                cid: h.combination_id,
+                vpip: h.vpip,
+            };
+        });
+        res.json({ hands });
+    } catch (err) {
+        console.log(err);
     }
 });
 

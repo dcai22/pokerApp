@@ -3,7 +3,7 @@ import { Server } from "socket.io";
 
 import { app } from "./app";
 import pool from "./db";
-import { getTablePlayers } from "./helper";
+import { cancelPlayersAgree, checkPlayersAgree, getTablePlayers } from "./helper";
 const port = 3000;
 
 const server = createServer(app);
@@ -33,6 +33,9 @@ io.on("connection", (socket) => {
                 [playerData.tableId, playerData.playerId]
             );
             io.to(playerData.tableId).emit("updatePlayers", await getTablePlayers(playerData.tableId));
+
+            await cancelPlayersAgree(playerData.tableId);
+            socket.emit("cancelEndGame");
         } catch (err) {
             console.log(err);
         }
@@ -145,6 +148,41 @@ io.on("connection", (socket) => {
             
             io.to(playerData.tableId).emit("updatePlayers", await getTablePlayers(playerData.tableId));
         } catch(err) {
+            console.log(err);
+        }
+    });
+
+    socket.on("suggestEndGame", async () => {
+        const playerData = sockets.get(_id);
+        io.to(playerData.tableId).emit("endGameSuggested");
+    });
+
+    socket.on("agreeEndGame", async () => {
+        const playerData = sockets.get(_id);
+        try {
+            await pool.query(
+                "UPDATE table_players SET want_end_game=true WHERE table_id=$1 AND player_id=$2",
+                [playerData.tableId, playerData.playerId]
+            );
+
+            if (await checkPlayersAgree(playerData.tableId)) {
+                await pool.query(
+                    "UPDATE tables SET has_ended=true WHERE id=$1",
+                    [playerData.tableId]
+                );
+                io.to(playerData.tableId).emit("endGame");
+            }
+        } catch (err) {
+            console.log(err);
+        }
+    });
+
+    socket.on("disagreeEndGame", async () => {
+        const playerData = sockets.get(_id);
+        try {
+            await cancelPlayersAgree(playerData.tableId);
+            io.to(playerData.tableId).emit("cancelEndGame");
+        } catch (err) {
             console.log(err);
         }
     });
