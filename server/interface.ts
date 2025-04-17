@@ -213,3 +213,9 @@ export class Buyin {
         this.amount = amount;
     }
 }
+
+export interface LocalPlayerData {
+    name: string,
+    buyin: number,
+    isActive: boolean,
+}
