@@ -23,7 +23,7 @@ export default function StatsDialog({ hands }: StatsDialogProps) {
                     <DialogDescription />
                 </DialogHeader>
                 
-                <Tabs defaultValue="account" className="w-full h-full overflow-auto">
+                <Tabs defaultValue="summary" className="w-full h-full overflow-auto">
                     <TabsList className="w-full">
                         <TabsTrigger value="summary">Summary</TabsTrigger>
                         <TabsTrigger value="history">History</TabsTrigger>

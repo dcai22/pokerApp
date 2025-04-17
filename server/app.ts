@@ -446,6 +446,43 @@ app.get('/getHand', async (req: Request, res: Response) => {
     }
 });
 
+app.get('/getAllHands', async (req: Request, res: Response) => {
+    const tableId = req.query.tableId;
+
+    try {
+        // check table has ended
+        const tableRes = await pool.query(
+            "SELECT * FROM tables WHERE id=$1",
+            [tableId]
+        );
+        if (!tableRes.rows[0].has_ended) {
+            res.status(400).json();
+            return;
+        }
+
+        const playersRes = await pool.query(
+            "SELECT * FROM players"
+        );
+        const players = playersRes.rows;
+
+        const handsRes = await pool.query(
+            "SELECT * FROM hands WHERE table_id=$1",
+            [tableId]
+        );
+        const hands = handsRes.rows.map(h => {
+            return {
+                name: players.find(p => p.id === h.player_id).username,
+                handNum: h.hand_num,
+                cid: h.combination_id,
+                vpip: h.vpip,
+            };
+        });
+        res.json({ hands });
+    } catch (err) {
+        console.log(err);
+    }
+});
+
 
 // FOR TESTING
 app.get('/numVotes', async (req: Request, res: Response) => {

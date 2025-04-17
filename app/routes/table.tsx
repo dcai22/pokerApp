@@ -17,6 +17,7 @@ import BuyinHistoryDialog from "~/components/BuyinHistoryDialog";
 import EnterHandDialog from "~/components/EnterHandDialog";
 import VpipDialog from "~/components/VpipDialog";
 import StatsDialog from "~/components/StatsDialog";
+import TableStatsDialog from "~/components/TableStatsDialog";
 
 export default function Table() {
     const navigate = useNavigate();
@@ -48,6 +49,7 @@ export default function Table() {
     const [wantEndGame, setWantEndGame] = useState(false);
     const [endGameSuggested, setEndGameSuggested] = useState(false);
     const [hasEnded, setHasEnded] = useState(false);
+    const [allHands, setAllHands] = useState([]);
     
     async function socketHandleUpdatePlayers(updatedPlayers: SetStateAction<any[]>) {
         setPlayers(updatedPlayers);
@@ -223,6 +225,22 @@ export default function Table() {
     useEffect(() => {
         if (lastBuyinTime === lastBuyinRemovedTime) setBuyinAlert(<></>);
     }, [lastBuyinRemovedTime])
+
+    useEffect(() => {
+        async function getAllHands() {
+            try {
+                const res = await axios.get(
+                    `http://localhost:3000/getAllHands?tableId=${tableId}`
+                );
+                setAllHands(res.data.hands);
+            } catch (err) {
+                console.log(err);
+            }
+        }
+
+        if (!hasEnded) return;
+        getAllHands();
+    }, [hasEnded]);
 
     async function handleLeave() {
         socket.emit("leaveTable");
@@ -434,7 +452,10 @@ export default function Table() {
                     <div className="flex justify-center w-full h-full">
                         {hasStarted
                             ? hasEnded
-                                ? <div className="flex justify-center text-center w-full h-full items-center text-xl">Game Ended</div>
+                                ? <div className="flex flex-col justify-center h-full items-center">
+                                    <div className="text-3xl">Game has ended</div>
+                                    <TableStatsDialog playerNames={players.map(p => p.name)} hands={allHands} />
+                                </div>
                                 : tableCanPlay() && isActive
                                     ? <div className="flex flex-col w-full pt-20 px-10">
                                         <div className="flex justify-center w-full text-6xl">
