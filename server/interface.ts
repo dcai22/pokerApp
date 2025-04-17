@@ -236,3 +236,10 @@ export interface LocalHandData {
     cid: number,
     vpip: boolean,
 }
+
+export interface HandData {
+    name: string,
+    handNum: number,
+    cid: number,
+    vpip: boolean,
+}
