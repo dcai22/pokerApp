@@ -17,7 +17,6 @@ import {
     DialogTitle,
     DialogTrigger,
   } from "~/components/ui/dialog"
-import { Input } from "~/components/ui/input";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -46,12 +45,6 @@ const handFormSchema = z.object({
 
 export default function Table() {
     const navigate = useNavigate();
-    const buyinForm = useForm<z.infer<typeof buyinFormSchema>>({
-        resolver: zodResolver(buyinFormSchema),
-        defaultValues: {
-            amount: 25,
-        },
-    });
     const vpipForm = useForm<z.infer<typeof vpipFormSchema>>({
         resolver: zodResolver(vpipFormSchema),
         defaultValues: {
@@ -424,42 +417,7 @@ export default function Table() {
                         </div>
                         <div className="flex justify-center flex-col w-15/29 p-2">
                             <Buyins players={players} username={username} />
-                            <Dialog>
-                                <DialogTrigger asChild>
-                                    <Button className="my-2">Buyin</Button>
-                                </DialogTrigger>
-                                <Form {...buyinForm}>
-                                    <DialogContent className="w-1/5">
-                                        <form onSubmit={buyinForm.handleSubmit(onBuyin)} className="flex flex-col">
-                                            <DialogHeader>
-                                                <DialogTitle>
-                                                    Buyin
-                                                </DialogTitle>
-                                                <DialogDescription>
-                                                    Enter an amount to buyin:
-                                                </DialogDescription>
-                                            </DialogHeader>
-                                            <FormField
-                                                control={buyinForm.control}
-                                                name="amount"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormControl>
-                                                            <Input placeholder="e.g. 25" {...field} />
-                                                        </FormControl>
-                                                    </FormItem>
-                                                )}
-                                            />
-                                            <DialogFooter className="mt-1">
-                                                <DialogClose asChild>
-                                                    <Button type="submit">Confirm</Button>
-                                                </DialogClose>
-                                            </DialogFooter>
-                                        </form>
-                                    </DialogContent>
-                                </Form>
-                            </Dialog>
-                            {/* <BuyinDialog onBuyin={onBuyin} /> */}
+                            <BuyinDialog onBuyin={onBuyin} />
                             <Dialog>
                                 <DialogTrigger asChild>
                                     <Button>Buyin history</Button>
