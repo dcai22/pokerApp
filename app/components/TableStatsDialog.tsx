@@ -31,7 +31,7 @@ export default function HandStatsDialog({ playerNames, hands }: HandStatsDialogP
     return (
         <Dialog>
             <DialogTrigger asChild>
-                <Button className="w-55 h-18 text-3xl my-4">Global Stats</Button>
+                <Button className="w-55 h-20 text-3xl my-4">Global Stats</Button>
             </DialogTrigger>
             <DialogContent className="flex flex-col h-2/3">
                 <DialogHeader>
