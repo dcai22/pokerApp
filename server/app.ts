@@ -4,7 +4,6 @@ import cors from 'cors';
 import pool from "./db";
 import bcrypt from 'bcryptjs';
 import { authToken, genToken } from './helper';
-import { RESERVED_EVENTS } from 'node_modules/socket.io/dist/socket-types';
 
 const app = express();
 

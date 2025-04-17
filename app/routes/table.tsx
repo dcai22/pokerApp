@@ -31,6 +31,7 @@ export default function Table() {
     const [hasStarted, setHasStarted] = useState(false);
     const [buyinAlert, setBuyinAlert] = useState(<></>);
     const [lastBuyinTime, setLastBuyinTime] = useState(null as (string | null));
+    const [lastBuyinRemovedTime, setLastBuyinRemovedTime] = useState(null as (string | null));
     const [buyinHistory, setBuyinHistory] = useState([] as Buyin[]);
     const [handNum, setHandNum] = useState(1);
     const [hasEnteredHand, setHasEnteredHand] = useState(false);
@@ -52,6 +53,10 @@ export default function Table() {
         setHasStarted(true);
         setHasEnteredHand(false);
         setHasVpip(false);
+    }
+
+    function socketHandleRemoveBuyinAlert(newLastBuyinRemovedTime: SetStateAction<string | null>) {
+        setLastBuyinRemovedTime(newLastBuyinRemovedTime);
     }
 
     function socketHandleUpdateHandDone(newIsHandDone: boolean | ((prevState: boolean) => boolean)) {
@@ -144,12 +149,14 @@ export default function Table() {
 
         socket.on("updatePlayers", socketHandleUpdatePlayers);
         socket.on("startGame", socketHandleStartGame);
+        socket.on("removeBuyinAlert", socketHandleRemoveBuyinAlert);
         socket.on("updateHandDone", socketHandleUpdateHandDone);
         socket.on("nextHand", socketHandleNextHand);
 
         return () => {
             socket.off("updatePlayers", socketHandleUpdatePlayers);
             socket.off("startGame", socketHandleStartGame);
+            socket.on("removeBuyinAlert", socketHandleRemoveBuyinAlert);
             socket.off("updateHandDone", socketHandleUpdateHandDone);
             socket.off("nextHand", socketHandleNextHand);
         }
@@ -175,6 +182,10 @@ export default function Table() {
         }
         updateBuyinHistory();
     }, [players]);
+
+    useEffect(() => {
+        if (lastBuyinTime === lastBuyinRemovedTime) setBuyinAlert(<></>);
+    }, [lastBuyinRemovedTime])
 
     async function handleLeave() {
         socket.emit("leaveTable");
