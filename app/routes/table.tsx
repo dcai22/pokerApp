@@ -45,6 +45,9 @@ export default function Table() {
     const [suit2Randomiser, setSuit2Randomiser] = useState(Array.from({ length: 4 }, () => Math.random()));
     const [isActive, setIsActive] = useState(false);
     const [handHistory, setHandHistory] = useState([] as LocalHandData[]);
+    const [wantEndGame, setWantEndGame] = useState(false);
+    const [endGameSuggested, setEndGameSuggested] = useState(false);
+    const [hasEnded, setHasEnded] = useState(false);
     
     async function socketHandleUpdatePlayers(updatedPlayers: SetStateAction<any[]>) {
         setPlayers(updatedPlayers);
@@ -67,6 +70,19 @@ export default function Table() {
 
     function socketHandleNextHand(newHandNum: SetStateAction<number>) {
         setHandNum(newHandNum);
+    }
+
+    function socketHandleEndGameSuggested() {
+        setEndGameSuggested(true);
+    }
+
+    function socketHandleEndGame() {
+        setHasEnded(true);
+    }
+
+    function socketHandleCancelEndGame() {
+        setWantEndGame(false);
+        setEndGameSuggested(false);
     }
 
     useEffect(() => {
@@ -98,6 +114,8 @@ export default function Table() {
                     console.log(tablePlayerRes.data.err);
                     navigate("/joinTable");
                     return;
+                } else {
+                    setWantEndGame(tablePlayerRes.data.want_end_game);
                 }
 
                 const tableRes = await axios.get(
@@ -107,6 +125,7 @@ export default function Table() {
                 setTableName(tableRes.data.name);
                 setHandNum(tableRes.data.num_hands + 1); // must occur before setHasVpip due to handNum's useEffect hook
                 setHasStarted(tableRes.data.has_started);
+                setHasEnded(tableRes.data.has_ended);
 
                 // check if player is owner
                 const ownerRes = await axios.get(
@@ -114,6 +133,14 @@ export default function Table() {
                 );
                 if (ownerRes.status === 200) {
                     setOwnerName(ownerRes.data.username);
+                }
+
+                // check if owner wants to end the game
+                const ownerTpRes = await axios.get(
+                    `http://localhost:3000/getTablePlayer?tableId=${tableId}&playerId=${newPlayerId}`
+                );
+                if (ownerTpRes.status === 200) {
+                    setEndGameSuggested(ownerTpRes.data.want_end_game);
                 }
 
                 // check if the player has submitted a hand and vpip
@@ -154,13 +181,19 @@ export default function Table() {
         socket.on("removeBuyinAlert", socketHandleRemoveBuyinAlert);
         socket.on("updateHandDone", socketHandleUpdateHandDone);
         socket.on("nextHand", socketHandleNextHand);
+        socket.on("endGameSuggested", socketHandleEndGameSuggested);
+        socket.on("endGame", socketHandleEndGame);
+        socket.on("cancelEndGame", socketHandleCancelEndGame);
 
         return () => {
             socket.off("updatePlayers", socketHandleUpdatePlayers);
             socket.off("startGame", socketHandleStartGame);
-            socket.on("removeBuyinAlert", socketHandleRemoveBuyinAlert);
+            socket.off("removeBuyinAlert", socketHandleRemoveBuyinAlert);
             socket.off("updateHandDone", socketHandleUpdateHandDone);
             socket.off("nextHand", socketHandleNextHand);
+            socket.off("endGameSuggested", socketHandleEndGameSuggested);
+            socket.off("endGame", socketHandleEndGame);
+            socket.off("cancelEndGame", socketHandleCancelEndGame);
         }
     }, []);
 
@@ -356,14 +389,31 @@ export default function Table() {
         return players.filter((e) => e.isActive).length >= 2;
     }
 
-    return (
-        <div className={`flex justify-center items-center h-screen w-screen ${(!hasStarted || tableCanPlay()) && isActive ? "" : "bg-gray-500/40"}`}>
-            <div className="fixed top-5 z-50">
-                <Button className="fixed left-5" onClick={handleChangeStatus}>
-                    {isActive ? "Sit out" : "Deal me in"}
-                </Button>
+    function handleSuggestEndGame() {
+        setWantEndGame(true);
+        socket.emit("suggestEndGame");
+        socket.emit("agreeEndGame");
+    }
 
-                {/* <Button className="fixed right-5">Stats</Button> */}
+    function handleAgreeEndGame() {
+        setWantEndGame(true);
+        socket.emit("agreeEndGame");
+    }
+
+    function handleDisagreeEndGame() {
+        socket.emit("disagreeEndGame");
+    }
+
+    return (
+        <div className={`flex justify-center items-center h-screen w-screen ${hasEnded || (isActive && (!hasStarted || tableCanPlay())) ? "" : "bg-gray-500/40"}`}>
+            <div className="fixed top-5 z-50">
+                {hasEnded
+                    ? <></>
+                    : <Button className="fixed left-5" onClick={handleChangeStatus}>
+                        {isActive ? "Sit out" : "Deal me in"}
+                    </Button>
+                }
+
                 <StatsDialog hands={handHistory} />
             </div>
             <div className={"flex justify-center items-center h-screen w-full max-w-120"}>
@@ -383,51 +433,72 @@ export default function Table() {
                     </div>
                     <div className="flex justify-center w-full h-full">
                         {hasStarted
-                            ? tableCanPlay() && isActive
-                                ? <div className="flex flex-col w-full pt-20 px-10">
-                                    <div className="flex justify-center w-full text-6xl">
-                                        Hand {handNum}
+                            ? hasEnded
+                                ? <div className="flex justify-center text-center w-full h-full items-center text-xl">Game Ended</div>
+                                : tableCanPlay() && isActive
+                                    ? <div className="flex flex-col w-full pt-20 px-10">
+                                        <div className="flex justify-center w-full text-6xl">
+                                            Hand {handNum}
+                                        </div>
+                                        <EnterHandDialog 
+                                            disabled={hasEnteredHand || !isActive}
+                                            onEnterHand={onEnterHand}
+                                            rank1Randomiser={rank1Randomiser}
+                                            suit1Randomiser={suit1Randomiser}
+                                            rank2Randomiser={rank2Randomiser}
+                                            suit2Randomiser={suit2Randomiser}
+                                        />
+                                        <VpipDialog
+                                            disabled={hasVpip || !isActive}
+                                            onVpip={onVpip}
+                                        />
+                                        {isOwner()
+                                            ? <Button className="mt-3" disabled={!isHandDone} onClick={handleNext}>
+                                                Next Hand
+                                            </Button>
+                                            : <></>
+                                        }
                                     </div>
-                                    <EnterHandDialog 
-                                        disabled={hasEnteredHand || !isActive}
-                                        onEnterHand={onEnterHand}
-                                        rank1Randomiser={rank1Randomiser}
-                                        suit1Randomiser={suit1Randomiser}
-                                        rank2Randomiser={rank2Randomiser}
-                                        suit2Randomiser={suit2Randomiser}
-                                    />
-                                    <VpipDialog
-                                        disabled={hasVpip || !isActive}
-                                        onVpip={onVpip}
-                                    />
-                                    {isOwner()
-                                        ? <Button className="mt-3" disabled={!isHandDone} onClick={handleNext}>
-                                            Next Hand
+                                    : <div className="flex flex-col justify-center text-center text-xl w-full h-full text-center items-center">
+                                        <span className="font-bold text-3xl">Paused</span>
+                                        {isActive
+                                            ? "At least 2 active players required"
+                                            : `Press "Deal me in" to play`
+                                        }
+                                    </div>
+                                : <div className="flex justify-center text-center w-full h-full items-center">
+                                    {isOwner() 
+                                        ? <Button className="h-20 w-40 text-xl" onClick={handleStart}>
+                                            Start game
                                         </Button>
-                                        : <></>
+                                        : <div className="text-xl text-center">
+                                            Waiting for owner to start game...
+                                        </div>
                                     }
                                 </div>
-                                : <div className="flex flex-col justify-center text-center text-xl w-full h-full text-center items-center">
-                                    <span className="font-bold text-3xl">Paused</span>
-                                    {isActive
-                                        ? "At least 2 active players required"
-                                        : `Press "Deal me in" to play`
-                                    }
-                                </div>
-                            : <div className="flex justify-center text-center w-full h-full items-center">
-                                {isOwner() 
-                                    ? <Button className="h-20 w-40 text-xl" onClick={handleStart}>
-                                        Start game
-                                    </Button>
-                                    : <div className="text-xl text-center">
-                                        Waiting for owner to start game...
-                                    </div>
-                                }
-                            </div>
                         }
                     </div>
                     {buyinAlert}
                 </div>
+            </div>
+            <div className="fixed right-5 bottom-5">
+                {hasEnded
+                    ? <></>
+                    : endGameSuggested
+                        ? wantEndGame
+                            ? <div className="flex flex-col">
+                                You voted to end the game
+                                <Button onClick={handleDisagreeEndGame}>Cancel</Button>
+                            </div>
+                            : <div className="flex flex-col">
+                                Owner wants to end game
+                                <Button onClick={handleAgreeEndGame}>Accept</Button>
+                                <Button onClick={handleDisagreeEndGame}>Decline</Button>
+                            </div>
+                        : isOwner()
+                            ? <Button onClick={handleSuggestEndGame}>End Game</Button>
+                            : <></>
+                }
             </div>
         </div>
     );

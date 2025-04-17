@@ -98,3 +98,33 @@ export async function getTablePlayers(tableId: number) {
         });
     return newPlayers;
 }
+
+export async function checkPlayersAgree(tableId: number) {
+    try {
+        const tablePlayersRes = await pool.query(
+            "SELECT * FROM table_players WHERE table_id=$1",
+            [tableId]
+        );
+        const tablePlayers = tablePlayersRes.rows;
+
+        if (tablePlayers.length === 0 || tablePlayers.some(tp => !tp.want_end_game)) {
+            return false;
+        } else {
+            return true;
+        }
+    } catch (err) {
+        console.log(err);
+        return false;
+    }
+}
+
+export async function cancelPlayersAgree(tableId: number) {
+    try {
+        await pool.query(
+            "UPDATE table_players SET want_end_game=false WHERE table_id=$1",
+            [tableId]
+        );
+    } catch (err) {
+        console.log(err);
+    }
+}

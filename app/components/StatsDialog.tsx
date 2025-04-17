@@ -17,16 +17,18 @@ export default function StatsDialog({ hands }: StatsDialogProps) {
             </DialogTrigger>
             <DialogContent className="flex flex-col h-2/3">
                 <DialogHeader>
-                    <DialogTitle />
+                    <DialogTitle>
+                        Hand Statistics
+                    </DialogTitle>
                     <DialogDescription />
                 </DialogHeader>
                 
                 <Tabs defaultValue="account" className="w-full h-full overflow-auto">
                     <TabsList className="w-full">
-                        <TabsTrigger value="stats">Hand stats</TabsTrigger>
-                        <TabsTrigger value="history">Hand history</TabsTrigger>
+                        <TabsTrigger value="summary">Summary</TabsTrigger>
+                        <TabsTrigger value="history">History</TabsTrigger>
                     </TabsList>
-                    <TabsContent value="stats" className="flex flex-col justify-center items-center">
+                    <TabsContent value="summary" className="flex flex-col justify-center items-center">
                         <HandStats hands={hands} />
                     </TabsContent>
                     <TabsContent value="history">
