@@ -29,6 +29,7 @@ import SuitSelect from "~/components/SuitSelect";
 import PositionsDisplay from "~/components/PositionsDisplay";
 import BuyinDialog from "~/components/BuyinDialog";
 import { buyinFormSchema } from "~/formSchemas";
+import BuyinHistoryDialog from "~/components/BuyinHistoryDialog";
 
 const vpipFormSchema = z.object({
     option: z.enum(["yes", "no"], {
@@ -417,25 +418,7 @@ export default function Table() {
                         <div className="flex justify-center flex-col w-15/29 p-2">
                             <Buyins players={players} username={username} />
                             <BuyinDialog onBuyin={onBuyin} />
-                            <Dialog>
-                                <DialogTrigger asChild>
-                                    <Button>Buyin history</Button>
-                                </DialogTrigger>
-                                <DialogContent className="max-h-7/8 overflow-auto">
-                                    <DialogHeader>
-                                        <DialogTitle>
-                                            Buyin History
-                                        </DialogTitle>
-                                        <DialogDescription />
-                                    </DialogHeader>
-                                    {getBuyinHistoryComponent()}
-                                    <DialogFooter className="mt-1">
-                                        <DialogClose asChild>
-                                            <Button type="button">Close</Button>
-                                        </DialogClose>
-                                    </DialogFooter>
-                                </DialogContent>
-                            </Dialog>
+                            <BuyinHistoryDialog buyinHistoryComponent={getBuyinHistoryComponent()} />
                         </div>
                     </div>
                     <div className="flex justify-center w-full h-full">
