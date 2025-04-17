@@ -73,8 +73,8 @@ io.on("connection", (socket) => {
         const playerData = sockets.get(_id);
         io.to(playerData.tableId).emit("updatePlayers", await getTablePlayers(playerData.tableId));
 
-        await new Promise(r => setTimeout(r, 2000));
-        socket.emit("removeBuyinAlert", buyinTime);
+        // await new Promise(r => setTimeout(r, 2000));
+        // socket.emit("removeBuyinAlert", buyinTime);
     });
 
     socket.on("checkHandDone", async (handNum) => {

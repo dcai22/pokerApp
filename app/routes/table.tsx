@@ -7,37 +7,18 @@ import { useEffect, useRef, useState, type SetStateAction } from "react";
 import { authToken } from "~/helpers";
 import { socket } from "~/root";
 import Buyins from "~/components/Buyins";
-import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-  } from "~/components/ui/dialog"
 import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, FormControl, FormField, FormItem, FormLabel } from "~/components/ui/form";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Card, Hand, type Buyin } from "server/interface";
-import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
 import PositionsDisplay from "~/components/PositionsDisplay";
 import BuyinDialog from "~/components/BuyinDialog";
 import { buyinFormSchema, handFormSchema, vpipFormSchema } from "~/formSchemas";
 import BuyinHistoryDialog from "~/components/BuyinHistoryDialog";
 import EnterHandDialog from "~/components/EnterHandDialog";
+import VpipDialog from "~/components/VpipDialog";
 
 export default function Table() {
     const navigate = useNavigate();
-    const vpipForm = useForm<z.infer<typeof vpipFormSchema>>({
-        resolver: zodResolver(vpipFormSchema),
-        defaultValues: {
-            option: "no",
-        },
-    });
 
     const hasRun = useRef(false);
 
@@ -71,12 +52,6 @@ export default function Table() {
         setHasStarted(true);
         setHasEnteredHand(false);
         setHasVpip(false);
-    }
-
-    function socketHandleRemoveBuyinAlert(buyinTime: string | null) {
-        if (lastBuyinTime === buyinTime) setBuyinAlert(<></>);
-        console.log(lastBuyinTime);
-        console.log(buyinTime);
     }
 
     function socketHandleUpdateHandDone(newIsHandDone: boolean | ((prevState: boolean) => boolean)) {
@@ -169,14 +144,12 @@ export default function Table() {
 
         socket.on("updatePlayers", socketHandleUpdatePlayers);
         socket.on("startGame", socketHandleStartGame);
-        socket.on("removeBuyinAlert", socketHandleRemoveBuyinAlert);
         socket.on("updateHandDone", socketHandleUpdateHandDone);
         socket.on("nextHand", socketHandleNextHand);
 
         return () => {
             socket.off("updatePlayers", socketHandleUpdatePlayers);
             socket.off("startGame", socketHandleStartGame);
-            socket.off("removeBuyinAlert", socketHandleRemoveBuyinAlert);
             socket.off("updateHandDone", socketHandleUpdateHandDone);
             socket.off("nextHand", socketHandleNextHand);
         }
@@ -223,24 +196,8 @@ export default function Table() {
 
     async function onBuyin(values: z.infer<typeof buyinFormSchema>) {
         const amount = values.amount;
-        const newBuyinAlert = (
-            <Alert className="fixed bottom-4 right-4 z-50 w-50" onClick={() => setBuyinAlert(<></>)}>
-            <AlertTitle>Success!</AlertTitle>
-            <AlertDescription>
-                <div><span className="font-bold">{username}</span> bought in for ${amount}</div>
-            </AlertDescription>
-            </Alert>
-        );
-        setBuyinAlert(newBuyinAlert);
-
-        const buyinTime = (new Date()).toLocaleString("en-GB", {
-            dateStyle: "long",
-            timeStyle: "short",
-            timeZone: "Australia/Sydney",
-            hour12: true,
-        });
-        setLastBuyinTime(buyinTime);
-
+        const buyinTime = (new Date()).toISOString();
+        
         try {
             const res = await axios.post(
                 "http://localhost:3000/player/buyin",
@@ -252,12 +209,23 @@ export default function Table() {
                 }
             );
 
-            if (res.status !== 200) {
+            if (res.status === 200) {
+                const newBuyinAlert = (
+                    <Alert className="fixed bottom-4 right-4 z-50 w-50" onClick={() => setBuyinAlert(<></>)}>
+                    <AlertTitle>Success!</AlertTitle>
+                    <AlertDescription>
+                        <div><span className="font-bold">{username}</span> bought in for ${amount}</div>
+                    </AlertDescription>
+                    </Alert>
+                );
+                setLastBuyinTime(buyinTime);
+                setBuyinAlert(newBuyinAlert);
+            } else {
                 window.alert("Error: couldn't buy in");
                 return;
             }
         } catch (err) {
-            window.alert("Error: couldn't buy in");
+            console.log(err);
             return;
         }
 
@@ -283,7 +251,14 @@ export default function Table() {
                 {buyinHistory.map((e, i) => <li key={i} className="py-2">
                     <ul>
                         <li key="amount" className="flex"><span className="w-26">Amount:</span>${e.amount}</li>
-                        <li key="time" className="flex"><span className="w-26">Timestamp:</span>{e.time}</li>
+                        <li key="time" className="flex"><span className="w-26">Timestamp:</span>{
+                            (new Date(e.time)).toLocaleString("en-GB", {
+                                dateStyle: "long",
+                                timeStyle: "short",
+                                timeZone: "Australia/Sydney",
+                                hour12: true,
+                            })
+                        }</li>
                     </ul>
                 </li>)}
             </ul>
@@ -413,60 +388,10 @@ export default function Table() {
                                         rank2Randomiser={rank2Randomiser}
                                         suit2Randomiser={suit2Randomiser}
                                     />
-                                    <Dialog>
-                                        <DialogTrigger asChild>
-                                            <Button className="my-1" disabled={hasVpip || !isActive}>VPIP</Button>
-                                        </DialogTrigger>
-                                        <Form {...vpipForm}>
-                                            <DialogContent className="w-50 h-45">
-                                                <form onSubmit={vpipForm.handleSubmit(onVpip)} className="flex flex-col">
-                                                    <DialogHeader className="mb-2">
-                                                        <DialogTitle>
-                                                            VPIP
-                                                        </DialogTitle>
-                                                        <DialogDescription />
-                                                    </DialogHeader>
-                                                    <FormField
-                                                        control={vpipForm.control}
-                                                        name="option"
-                                                        render={({ field }) => (
-                                                            <FormItem>
-                                                                <FormControl>
-                                                                    <RadioGroup
-                                                                        onValueChange={field.onChange}
-                                                                        defaultValue="no"
-                                                                        className="flex flex-col space-y-1"
-                                                                    >
-                                                                        <FormItem className="flex items-center space-x-3 space-y-0">
-                                                                            <FormControl>
-                                                                            <RadioGroupItem value="no" />
-                                                                            </FormControl>
-                                                                            <FormLabel className="font-normal">
-                                                                            No
-                                                                            </FormLabel>
-                                                                        </FormItem>
-                                                                        <FormItem className="flex items-center space-x-3 space-y-0">
-                                                                            <FormControl>
-                                                                            <RadioGroupItem value="yes" />
-                                                                            </FormControl>
-                                                                            <FormLabel className="font-normal">
-                                                                            Yes
-                                                                            </FormLabel>
-                                                                        </FormItem>
-                                                                    </RadioGroup>
-                                                                </FormControl>
-                                                            </FormItem>
-                                                        )}
-                                                    />
-                                                    <DialogFooter className="mt-5">
-                                                        <DialogClose asChild>
-                                                            <Button type="submit">Confirm</Button>
-                                                        </DialogClose>
-                                                    </DialogFooter>
-                                                </form>
-                                            </DialogContent>
-                                        </Form>
-                                    </Dialog>
+                                    <VpipDialog
+                                        disabled={hasVpip || !isActive}
+                                        onVpip={onVpip}
+                                    />
                                     {isOwner()
                                         ? <Button className="mt-3" disabled={!isHandDone} onClick={handleNext}>
                                             Next Hand

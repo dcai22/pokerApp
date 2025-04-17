@@ -8,7 +8,7 @@ import { z } from "zod";
 import { handFormSchema } from "~/formSchemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-interface onEnterHandDialogProps {
+interface EnterHandDialogProps {
     disabled: boolean,
     onEnterHand(data: z.infer<typeof handFormSchema>): Promise<void>,
     rank1Randomiser: number[],
@@ -17,7 +17,7 @@ interface onEnterHandDialogProps {
     suit2Randomiser: number[],
 }
 
-export default function onEnterHandDialog({ disabled, onEnterHand, rank1Randomiser, suit1Randomiser, rank2Randomiser, suit2Randomiser }: onEnterHandDialogProps) {
+export default function EnterHandDialog({ disabled, onEnterHand, rank1Randomiser, suit1Randomiser, rank2Randomiser, suit2Randomiser }: EnterHandDialogProps) {
     const handForm = useForm<z.infer<typeof handFormSchema>>({
         resolver: zodResolver(handFormSchema),
         defaultValues: {
