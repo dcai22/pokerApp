@@ -19,11 +19,7 @@ export default function Buyins({ players, username }: BuyinsProps) {
             <ul>
                 {players.map((e, i) => 
                     <li key={i}>
-                        <span className="font-bold">{e.name}:</span> ${e.buyin} {
-                            e.name ===  username
-                                ? <span> (You)</span>
-                                : <></>
-                        }
+                        <span className={`font-bold ${e.name === username ? "underline" : ""}`}>{e.name}</span>: ${e.buyin}
                     </li>
                 )}
             </ul>
