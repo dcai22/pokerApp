@@ -222,6 +222,7 @@ export interface LocalPlayerData {
     name: string,
     buyin: number,
     isActive: boolean,
+    wantEndGame: boolean,
 }
 
 export interface LocalBuyinData {

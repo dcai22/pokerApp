@@ -29,6 +29,7 @@ CREATE TABLE Tables (
     num_hands INT DEFAULT 0,
     owner INT,
     has_started BOOLEAN DEFAULT FALSE,
+    has_ended BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (owner) REFERENCES Players(id)
 );
 
@@ -40,6 +41,7 @@ CREATE TABLE Table_Players (
     buyin DECIMAL(10, 2) DEFAULT 0,
     is_active BOOLEAN DEFAULT TRUE,
     position INT,
+    want_end_game BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (table_id) REFERENCES Tables(id),
     FOREIGN KEY (player_id) REFERENCES Players(id)
 );
