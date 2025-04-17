@@ -187,7 +187,7 @@ export default function Table() {
                 return;
             }
 
-            socket.emit("joinTable", tableId);
+            socket.emit("joinTable");
             await updateBuyinHistory();
         }
 
@@ -234,7 +234,7 @@ export default function Table() {
     }, [players]);
 
     async function handleLeave() {
-        socket.emit("leaveTable", tableId, playerId);
+        socket.emit("leaveTable");
         navigate("/joinTable");
     }
 
@@ -248,7 +248,7 @@ export default function Table() {
             return;
         }
 
-        socket.emit("startGame", tableId);
+        socket.emit("startGame");
     }
 
     async function onBuyin(values: z.infer<typeof buyinFormSchema>) {
@@ -286,7 +286,7 @@ export default function Table() {
             return;
         }
 
-        socket.emit("newBuyin", buyinTime, tableId, playerId);
+        socket.emit("newBuyin", buyinTime);
     }
 
     async function updateBuyinHistory() {
@@ -337,7 +337,7 @@ export default function Table() {
             );
             if (res.status === 200) {
                 setHasVpip(true);
-                socket.emit("checkHandDone", tableId, handNum);
+                socket.emit("checkHandDone", handNum);
             } else {
                 console.log(res.data.err);
             }
@@ -392,13 +392,13 @@ export default function Table() {
     }
 
     function handleNext() {
-        socket.emit("alertNextHand", tableId, handNum);
+        socket.emit("alertNextHand", handNum);
     }
 
     function handleChangeStatus() {
-        socket.emit("changeStatus", tableId, playerId);
+        socket.emit("changeStatus");
         socket.once("changeStatusDone", () => {
-            socket.emit("checkHandDone", tableId, handNum);
+            socket.emit("checkHandDone", handNum);
         });
     }
 

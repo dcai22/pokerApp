@@ -307,11 +307,21 @@ More detail about security
 
  - 'Next Hand' button will only require all ACTIVE players to have VPIP'd (DONE)
 
- NOTES: there was a lot of socket duplication due to socket.on() being placed outside of useEffect.
- Since the component unmounts/remounts frequently, this results in exponentially duplicating sockets.
- FIX: Place socket.on() inside useEffect, and return () => { socket.off() } in useEffect.
+NOTES: there was a lot of socket duplication due to socket.on() being placed outside of useEffect.
+Since the component unmounts/remounts frequently, this results in exponentially duplicating sockets.
+FIX: Place socket.on() inside useEffect, and return () => { socket.off() } in useEffect.
 
 
 
- 16/04/2025
- Completed all security features discussed yesterday
+16/04/2025
+Completed all security features discussed yesterday
+17/04/2025
+The difficult part of the app has been done -- the table functionality, entering hands and vpips, etc.
+Now I will just be adding quality of life features. For example:
+ - Adding a 'filter by player' feature for buyins (including 'show all buyins')
+ - A hand history button to show a player's own hands
+    - A separate tab for showing hand statistics (e.g. suited, connected, pairs)
+ - Owner can press an 'end game' button, and players can all agree to end the game
+    - Once the game officially ends, all hand details are shown
+    - These hand details can be exported
+ - Option to edit hand after entering it (might be abused by players)
