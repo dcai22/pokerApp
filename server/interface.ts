@@ -219,3 +219,9 @@ export interface LocalPlayerData {
     buyin: number,
     isActive: boolean,
 }
+
+export interface LocalBuyinData {
+    name: string,
+    time: string,
+    amount: number,
+}

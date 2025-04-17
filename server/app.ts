@@ -258,19 +258,36 @@ app.post('/player/buyin', async (req: Request, res: Response) => {
 });
 
 app.get('/player/getBuyins', async (req: Request, res: Response) => {
-    const playerId = req.query.playerId; // DEBUG: value is -1 for some reason?
     const tableId = req.query.tableId;
 
     try {
-        const dbRes = await pool.query(
-            "SELECT * FROM buyins WHERE player_id=$1 AND table_id=$2 ORDER BY time DESC",
-            [playerId, tableId]
+        const buyinsRes = await pool.query(
+            "SELECT * FROM buyins WHERE table_id=$1 ORDER BY time DESC",
+            [tableId]
         );
-        res.json({ buyins: dbRes.rows });
+        const buyins = buyinsRes.rows;
+
+        if (buyins.length === 0) {
+            res.json({  buyins: [] });
+            return;
+        }
+
+        const playersRes = await pool.query(
+            "SELECT * FROM players",
+        );
+        const players = playersRes.rows;
+
+        res.json({ buyins: buyins.map((b) => {
+            return {
+                name: players.find((p) => p.id === b.player_id).username,
+                time: b.time,
+                amount: b.amount,
+            }
+        }) });
     } catch (err) {
         res.status(400).json({ message: "Error fetching buyins" });
     }
-})
+});
 
 // Will only be called to UPDATE the `hands` schema
 // if VPIP first: then a row is created and it is updated here

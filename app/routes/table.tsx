@@ -9,7 +9,7 @@ import { socket } from "~/root";
 import Buyins from "~/components/Buyins";
 import { z } from "zod";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
-import { Card, Hand, type Buyin } from "server/interface";
+import { Card, Hand, type LocalBuyinData } from "server/interface";
 import PositionsDisplay from "~/components/PositionsDisplay";
 import BuyinDialog from "~/components/BuyinDialog";
 import { buyinFormSchema, handFormSchema, vpipFormSchema } from "~/formSchemas";
@@ -32,7 +32,7 @@ export default function Table() {
     const [buyinAlert, setBuyinAlert] = useState(<></>);
     const [lastBuyinTime, setLastBuyinTime] = useState(null as (string | null));
     const [lastBuyinRemovedTime, setLastBuyinRemovedTime] = useState(null as (string | null));
-    const [buyinHistory, setBuyinHistory] = useState([] as Buyin[]);
+    const [buyinHistory, setBuyinHistory] = useState([] as LocalBuyinData[]);
     const [handNum, setHandNum] = useState(1);
     const [hasEnteredHand, setHasEnteredHand] = useState(false);
     const [hasVpip, setHasVpip] = useState(false);
@@ -245,7 +245,7 @@ export default function Table() {
 
     async function updateBuyinHistory() {
         try {
-            const res = await axios.get(`http://localhost:3000/player/getBuyins?playerId=${playerId}&tableId=${tableId}`);
+            const res = await axios.get(`http://localhost:3000/player/getBuyins?tableId=${tableId}`);
             if (res.status === 200) {
                 setBuyinHistory(res.data.buyins);
             } else {
@@ -254,26 +254,6 @@ export default function Table() {
         } catch (err) {
             console.log("Error fetching buyin history");
         }
-    }
-
-    function getBuyinHistoryComponent() {
-        return (
-            <ul className="divide-y divide-gray-500">
-                {buyinHistory.map((e, i) => <li key={i} className="py-2">
-                    <ul>
-                        <li key="amount" className="flex"><span className="w-26">Amount:</span>${e.amount}</li>
-                        <li key="time" className="flex"><span className="w-26">Timestamp:</span>{
-                            (new Date(e.time)).toLocaleString("en-GB", {
-                                dateStyle: "long",
-                                timeStyle: "short",
-                                timeZone: "Australia/Sydney",
-                                hour12: true,
-                            })
-                        }</li>
-                    </ul>
-                </li>)}
-            </ul>
-        );
     }
 
     async function onVpip(data: z.infer<typeof vpipFormSchema>) {
@@ -360,9 +340,6 @@ export default function Table() {
     function tableCanPlay() {
         return players.filter((e) => e.isActive).length >= 2;
     }
-    
-    // SSR doesn't allow access to window
-    // window.addEventListener("beforeunload", handleLeave);
 
     return (
         <div className={`flex justify-center items-center h-screen w-screen ${(!hasStarted || tableCanPlay()) && isActive ? "" : "bg-gray-500/40"}`}>
@@ -381,7 +358,7 @@ export default function Table() {
                         <div className="flex justify-center flex-col w-15/29 p-2">
                             <Buyins players={players} username={username} />
                             <BuyinDialog onBuyin={onBuyin} />
-                            <BuyinHistoryDialog buyinHistoryComponent={getBuyinHistoryComponent()} />
+                            <BuyinHistoryDialog playerNames={players.map((p) => p.name)} buyins={buyinHistory} />
                         </div>
                     </div>
                     <div className="flex justify-center w-full h-full">
