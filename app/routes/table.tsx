@@ -4,70 +4,21 @@ import Greeting from "~/components/Greeting";
 import { Button } from "~/components/ui/button";
 import TableWelcome from "~/components/TableWelcome";
 import { useEffect, useRef, useState, type SetStateAction } from "react";
-import { authToken, calcPosition } from "~/helpers";
+import { authToken } from "~/helpers";
 import { socket } from "~/root";
 import Buyins from "~/components/Buyins";
-import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-  } from "~/components/ui/dialog"
-import { Input } from "~/components/ui/input";
 import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, FormControl, FormField, FormItem, FormLabel } from "~/components/ui/form";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Card, Hand, type Buyin } from "server/interface";
-import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
-import RankSelect from "~/components/RankSelect";
-import SuitSelect from "~/components/SuitSelect";
-
-const buyinFormSchema = z.object({
-    amount: z.coerce.number({ message: "invalid: please enter a number" }).multipleOf(0.01, { message: "invalid: please enter to the nearest cent" }),
-});
-
-const vpipFormSchema = z.object({
-    option: z.enum(["yes", "no"], {
-        required_error: "Select one of the options",
-    }),
-});
-
-const handFormSchema = z.object({
-    rank1: z.enum(["", ...Card.ranks]),
-    suit1: z.enum(["", ...Card.suits]),
-    rank2: z.enum(["", ...Card.ranks]),
-    suit2: z.enum(["", ...Card.suits]),
-});
+import PositionsDisplay from "~/components/PositionsDisplay";
+import BuyinDialog from "~/components/BuyinDialog";
+import { buyinFormSchema, handFormSchema, vpipFormSchema } from "~/formSchemas";
+import BuyinHistoryDialog from "~/components/BuyinHistoryDialog";
+import EnterHandDialog from "~/components/EnterHandDialog";
+import VpipDialog from "~/components/VpipDialog";
 
 export default function Table() {
     const navigate = useNavigate();
-    const buyinForm = useForm<z.infer<typeof buyinFormSchema>>({
-        resolver: zodResolver(buyinFormSchema),
-        defaultValues: {
-            amount: 25,
-        },
-    });
-    const vpipForm = useForm<z.infer<typeof vpipFormSchema>>({
-        resolver: zodResolver(vpipFormSchema),
-        defaultValues: {
-            option: "no",
-        },
-    });
-    const handForm = useForm<z.infer<typeof handFormSchema>>({
-        resolver: zodResolver(handFormSchema),
-        defaultValues: {
-            rank1: "",
-            suit1: "",
-            rank2: "",
-            suit2: "",
-        },
-    });
 
     const hasRun = useRef(false);
 
@@ -80,6 +31,7 @@ export default function Table() {
     const [hasStarted, setHasStarted] = useState(false);
     const [buyinAlert, setBuyinAlert] = useState(<></>);
     const [lastBuyinTime, setLastBuyinTime] = useState(null as (string | null));
+    const [lastBuyinRemovedTime, setLastBuyinRemovedTime] = useState(null as (string | null));
     const [buyinHistory, setBuyinHistory] = useState([] as Buyin[]);
     const [handNum, setHandNum] = useState(1);
     const [hasEnteredHand, setHasEnteredHand] = useState(false);
@@ -95,7 +47,6 @@ export default function Table() {
     async function socketHandleUpdatePlayers(updatedPlayers: SetStateAction<any[]>) {
         setPlayers(updatedPlayers);
         console.log(updatedPlayers);
-        await updateBuyinHistory();
     }
 
     function socketHandleStartGame() {
@@ -104,10 +55,8 @@ export default function Table() {
         setHasVpip(false);
     }
 
-    function socketHandleRemoveBuyinAlert(buyinTime: string | null) {
-        if (lastBuyinTime === buyinTime) setBuyinAlert(<></>);
-        console.log(lastBuyinTime);
-        console.log(buyinTime);
+    function socketHandleRemoveBuyinAlert(newLastBuyinRemovedTime: SetStateAction<string | null>) {
+        setLastBuyinRemovedTime(newLastBuyinRemovedTime);
     }
 
     function socketHandleUpdateHandDone(newIsHandDone: boolean | ((prevState: boolean) => boolean)) {
@@ -187,7 +136,7 @@ export default function Table() {
                 return;
             }
 
-            socket.emit("joinTable", tableId);
+            socket.emit("joinTable");
             await updateBuyinHistory();
         }
 
@@ -207,7 +156,7 @@ export default function Table() {
         return () => {
             socket.off("updatePlayers", socketHandleUpdatePlayers);
             socket.off("startGame", socketHandleStartGame);
-            socket.off("removeBuyinAlert", socketHandleRemoveBuyinAlert);
+            socket.on("removeBuyinAlert", socketHandleRemoveBuyinAlert);
             socket.off("updateHandDone", socketHandleUpdateHandDone);
             socket.off("nextHand", socketHandleNextHand);
         }
@@ -231,10 +180,15 @@ export default function Table() {
         if (player) {
             setIsActive(player.isActive);
         }
+        updateBuyinHistory();
     }, [players]);
 
+    useEffect(() => {
+        if (lastBuyinTime === lastBuyinRemovedTime) setBuyinAlert(<></>);
+    }, [lastBuyinRemovedTime])
+
     async function handleLeave() {
-        socket.emit("leaveTable", tableId, playerId);
+        socket.emit("leaveTable");
         navigate("/joinTable");
     }
 
@@ -248,24 +202,13 @@ export default function Table() {
             return;
         }
 
-        socket.emit("startGame", tableId);
+        socket.emit("startGame");
     }
 
     async function onBuyin(values: z.infer<typeof buyinFormSchema>) {
         const amount = values.amount;
-        const newBuyinAlert = (
-            <Alert className="fixed bottom-4 right-4 z-50 w-50" onClick={() => setBuyinAlert(<></>)}>
-            <AlertTitle>Success!</AlertTitle>
-            <AlertDescription>
-                <div><span className="font-bold">{username}</span> bought in for ${amount}</div>
-            </AlertDescription>
-            </Alert>
-        );
-        setBuyinAlert(newBuyinAlert);
-
         const buyinTime = (new Date()).toISOString();
-        setLastBuyinTime(buyinTime);
-
+        
         try {
             const res = await axios.post(
                 "http://localhost:3000/player/buyin",
@@ -277,16 +220,27 @@ export default function Table() {
                 }
             );
 
-            if (res.status !== 200) {
+            if (res.status === 200) {
+                const newBuyinAlert = (
+                    <Alert className="fixed bottom-4 right-4 z-50 w-50" onClick={() => setBuyinAlert(<></>)}>
+                    <AlertTitle>Success!</AlertTitle>
+                    <AlertDescription>
+                        <div><span className="font-bold">{username}</span> bought in for ${amount}</div>
+                    </AlertDescription>
+                    </Alert>
+                );
+                setLastBuyinTime(buyinTime);
+                setBuyinAlert(newBuyinAlert);
+            } else {
                 window.alert("Error: couldn't buy in");
                 return;
             }
         } catch (err) {
-            window.alert("Error: couldn't buy in");
+            console.log(err);
             return;
         }
 
-        socket.emit("newBuyin", buyinTime, tableId, playerId);
+        socket.emit("newBuyin", buyinTime);
     }
 
     async function updateBuyinHistory() {
@@ -313,6 +267,7 @@ export default function Table() {
                                 dateStyle: "long",
                                 timeStyle: "short",
                                 timeZone: "Australia/Sydney",
+                                hour12: true,
                             })
                         }</li>
                     </ul>
@@ -337,7 +292,7 @@ export default function Table() {
             );
             if (res.status === 200) {
                 setHasVpip(true);
-                socket.emit("checkHandDone", tableId, handNum);
+                socket.emit("checkHandDone", handNum);
             } else {
                 console.log(res.data.err);
             }
@@ -392,13 +347,13 @@ export default function Table() {
     }
 
     function handleNext() {
-        socket.emit("alertNextHand", tableId, handNum);
+        socket.emit("alertNextHand", handNum);
     }
 
     function handleChangeStatus() {
-        socket.emit("changeStatus", tableId, playerId);
+        socket.emit("changeStatus");
         socket.once("changeStatusDone", () => {
-            socket.emit("checkHandDone", tableId, handNum);
+            socket.emit("checkHandDone", handNum);
         });
     }
 
@@ -420,78 +375,13 @@ export default function Table() {
                         <div className="flex flex-col justify-center w-14/29 p-2">
                             <Greeting name={username} />
                             <TableWelcome name={tableName} code={parseInt(tableId)} />
-
-                            Starting positions:
-                            <div className="mb-10">
-                                <ul>
-                                    {players.map((e, i) => 
-                                        <li key={i} className="flex">
-                                            <span className="w-7">{e.name === ownerName ? "⭐" : ""}</span>
-                                            <span className={`w-15 ${e.isActive ? "font-bold" : "text-gray-500"}`}>{calcPosition(i, players.length)}</span>
-                                            <span className={`${e.name === username ? "underline" : ""}`}>{e.name}</span>
-                                        </li>
-                                    )}
-                                </ul>
-                            </div>
-
+                            <PositionsDisplay players={players} ownerName={ownerName} username={username} />
                             <Button onClick={handleLeave}>Leave table</Button>
                         </div>
                         <div className="flex justify-center flex-col w-15/29 p-2">
                             <Buyins players={players} username={username} />
-                            <Dialog>
-                                <DialogTrigger asChild>
-                                    <Button className="my-2">Buyin</Button>
-                                </DialogTrigger>
-                                <Form {...buyinForm}>
-                                    <DialogContent className="w-1/5">
-                                        <form onSubmit={buyinForm.handleSubmit(onBuyin)} className="flex flex-col">
-                                            <DialogHeader>
-                                                <DialogTitle>
-                                                    Buyin
-                                                </DialogTitle>
-                                                <DialogDescription>
-                                                    Enter an amount to buyin:
-                                                </DialogDescription>
-                                            </DialogHeader>
-                                            <FormField
-                                                control={buyinForm.control}
-                                                name="amount"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormControl>
-                                                            <Input placeholder="e.g. 25" {...field} />
-                                                        </FormControl>
-                                                    </FormItem>
-                                                )}
-                                            />
-                                            <DialogFooter className="mt-1">
-                                                <DialogClose asChild>
-                                                    <Button type="submit">Confirm</Button>
-                                                </DialogClose>
-                                            </DialogFooter>
-                                        </form>
-                                    </DialogContent>
-                                </Form>
-                            </Dialog>
-                            <Dialog>
-                                <DialogTrigger asChild>
-                                    <Button>Buyin history</Button>
-                                </DialogTrigger>
-                                <DialogContent className="max-h-7/8 overflow-auto">
-                                    <DialogHeader>
-                                        <DialogTitle>
-                                            Buyin History
-                                        </DialogTitle>
-                                        <DialogDescription />
-                                    </DialogHeader>
-                                    {getBuyinHistoryComponent()}
-                                    <DialogFooter className="mt-1">
-                                        <DialogClose asChild>
-                                            <Button type="button">Close</Button>
-                                        </DialogClose>
-                                    </DialogFooter>
-                                </DialogContent>
-                            </Dialog>
+                            <BuyinDialog onBuyin={onBuyin} />
+                            <BuyinHistoryDialog buyinHistoryComponent={getBuyinHistoryComponent()} />
                         </div>
                     </div>
                     <div className="flex justify-center w-full h-full">
@@ -501,150 +391,18 @@ export default function Table() {
                                     <div className="flex justify-center w-full text-6xl">
                                         Hand {handNum}
                                     </div>
-                                    <Dialog>
-                                        <DialogTrigger asChild>
-                                            <Button className="my-1" disabled={hasEnteredHand || !isActive}>Enter hand (optional)</Button>
-                                        </DialogTrigger>
-                                        <Form {...handForm}>
-                                            <DialogContent className="w-400">
-                                                <form onSubmit={handForm.handleSubmit(onEnterHand)} className="flex flex-col">
-                                                    <DialogHeader>
-                                                        <DialogTitle>
-                                                            Enter Hand
-                                                        </DialogTitle>
-                                                        <DialogDescription>
-                                                            Fields are randomised every hand to prevent cheating
-                                                        </DialogDescription>
-                                                    </DialogHeader>
-                                                    <div className="flex w-full h-full">
-                                                        <div className="flex flex-col w-full">
-                                                            <FormLabel className="my-4">
-                                                                1. Rank
-                                                            </FormLabel>
-                                                            <FormField
-                                                                control={handForm.control}
-                                                                name="rank1"
-                                                                render={({ field }) => (
-                                                                    <FormItem>
-                                                                        <FormControl>
-                                                                            <RankSelect onValueChange={field.onChange} randomiser={rank1Randomiser} />
-                                                                        </FormControl>
-                                                                    </FormItem>
-                                                                )}
-                                                            />
-                                                        </div>
-                                                        <div className="flex flex-col w-full">
-                                                            <FormLabel className="my-4">
-                                                                Suit
-                                                            </FormLabel>
-                                                            <FormField
-                                                                control={handForm.control}
-                                                                name="suit1"
-                                                                render={({ field }) => (
-                                                                    <FormItem>
-                                                                        <FormControl>
-                                                                            <SuitSelect onValueChange={field.onChange} randomiser={suit1Randomiser} />
-                                                                        </FormControl>
-                                                                    </FormItem>
-                                                                )}
-                                                            />
-                                                        </div>
-                                                        <div className="flex flex-col w-full">
-                                                            <FormLabel className="my-4">
-                                                                2. Rank
-                                                            </FormLabel>
-                                                            <FormField
-                                                                control={handForm.control}
-                                                                name="rank2"
-                                                                render={({ field }) => (
-                                                                    <FormItem>
-                                                                        <FormControl>
-                                                                            <RankSelect onValueChange={field.onChange} randomiser={rank2Randomiser} />
-                                                                        </FormControl>
-                                                                    </FormItem>
-                                                                )}
-                                                            />
-                                                        </div>
-                                                        <div className="flex flex-col w-full">
-                                                            <FormLabel className="my-4">
-                                                                Suit
-                                                            </FormLabel>
-                                                            <FormField
-                                                                control={handForm.control}
-                                                                name="suit2"
-                                                                render={({ field }) => (
-                                                                    <FormItem>
-                                                                        <FormControl>
-                                                                            <SuitSelect onValueChange={field.onChange} randomiser={suit2Randomiser} />
-                                                                        </FormControl>
-                                                                    </FormItem>
-                                                                )}
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                    <DialogFooter className="mt-6">
-                                                        <DialogClose asChild>
-                                                            <Button type="submit">Confirm</Button>
-                                                        </DialogClose>
-                                                    </DialogFooter>
-                                                </form>
-                                            </DialogContent>
-                                        </Form>
-                                    </Dialog>
-                                    <Dialog>
-                                        <DialogTrigger asChild>
-                                            <Button className="my-1" disabled={hasVpip || !isActive}>VPIP</Button>
-                                        </DialogTrigger>
-                                        <Form {...vpipForm}>
-                                            <DialogContent className="w-50 h-45">
-                                                <form onSubmit={vpipForm.handleSubmit(onVpip)} className="flex flex-col">
-                                                    <DialogHeader className="mb-2">
-                                                        <DialogTitle>
-                                                            VPIP
-                                                        </DialogTitle>
-                                                        <DialogDescription />
-                                                    </DialogHeader>
-                                                    <FormField
-                                                        control={vpipForm.control}
-                                                        name="option"
-                                                        render={({ field }) => (
-                                                            <FormItem>
-                                                                <FormControl>
-                                                                    <RadioGroup
-                                                                        onValueChange={field.onChange}
-                                                                        defaultValue="no"
-                                                                        className="flex flex-col space-y-1"
-                                                                    >
-                                                                        <FormItem className="flex items-center space-x-3 space-y-0">
-                                                                            <FormControl>
-                                                                            <RadioGroupItem value="no" />
-                                                                            </FormControl>
-                                                                            <FormLabel className="font-normal">
-                                                                            No
-                                                                            </FormLabel>
-                                                                        </FormItem>
-                                                                        <FormItem className="flex items-center space-x-3 space-y-0">
-                                                                            <FormControl>
-                                                                            <RadioGroupItem value="yes" />
-                                                                            </FormControl>
-                                                                            <FormLabel className="font-normal">
-                                                                            Yes
-                                                                            </FormLabel>
-                                                                        </FormItem>
-                                                                    </RadioGroup>
-                                                                </FormControl>
-                                                            </FormItem>
-                                                        )}
-                                                    />
-                                                    <DialogFooter className="mt-5">
-                                                        <DialogClose asChild>
-                                                            <Button type="submit">Confirm</Button>
-                                                        </DialogClose>
-                                                    </DialogFooter>
-                                                </form>
-                                            </DialogContent>
-                                        </Form>
-                                    </Dialog>
+                                    <EnterHandDialog 
+                                        disabled={hasEnteredHand || !isActive}
+                                        onEnterHand={onEnterHand}
+                                        rank1Randomiser={rank1Randomiser}
+                                        suit1Randomiser={suit1Randomiser}
+                                        rank2Randomiser={rank2Randomiser}
+                                        suit2Randomiser={suit2Randomiser}
+                                    />
+                                    <VpipDialog
+                                        disabled={hasVpip || !isActive}
+                                        onVpip={onVpip}
+                                    />
                                     {isOwner()
                                         ? <Button className="mt-3" disabled={!isHandDone} onClick={handleNext}>
                                             Next Hand

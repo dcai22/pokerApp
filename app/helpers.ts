@@ -1,6 +1,5 @@
 import axios from "axios";
 import bcrypt from "bcryptjs";
-import { useNavigate } from "react-router";
 
 export async function genHash(str: string) {
     const saltRounds = 10;

@@ -56,7 +56,7 @@ CREATE TABLE Hands (
 );
 
 CREATE TABLE Tokens (
-    hash varchar(255) PRIMARY KEY,
+    hash VARCHAR(255) PRIMARY KEY,
     player_id INT,
     FOREIGN KEY (player_id) REFERENCES Players(id)
 );
@@ -64,7 +64,7 @@ CREATE TABLE Tokens (
 CREATE TABLE Buyins (
     player_id INT,
     table_id INT,
-    time TIMESTAMP,
+    time VARCHAR(255),
     PRIMARY KEY (player_id, table_id, time),
     amount DECIMAL(10, 2) DEFAULT 0,                -- STORED AS A STRING
     FOREIGN KEY (player_id) REFERENCES Players(id),
