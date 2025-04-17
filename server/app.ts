@@ -259,7 +259,7 @@ app.post('/player/buyin', async (req: Request, res: Response) => {
 });
 
 app.get('/player/getBuyins', async (req: Request, res: Response) => {
-    const playerId = req.query.playerId;
+    const playerId = req.query.playerId; // DEBUG: value is -1 for some reason?
     const tableId = req.query.tableId;
 
     try {

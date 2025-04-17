@@ -331,3 +331,6 @@ Now I will just be adding quality of life features. For example:
  - A solo, offline mode without the table features
 
 I will also refactor table.tsx into its Components so that adding/editing Components is easier.
+
+Since socket.on() is called within useEffect(), which interacts strangely with useState(), variables
+initialised with useState() should not be used in any socketHandle...() function.
