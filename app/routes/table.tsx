@@ -427,14 +427,8 @@ export default function Table() {
                                     {players.map((e, i) => 
                                         <li key={i} className="flex">
                                             <span className="w-7">{e.name === ownerName ? "⭐" : ""}</span>
-                                            <span className={`w-15 ${e.isActive ? "font-buld" : "text-gray-500"}`}>{calcPosition(i, players.length)}</span>
-                                            <span>
-                                                {e.name} {
-                                                e.name === username
-                                                    ? <span> (You)</span>
-                                                    : <></>
-                                                }
-                                            </span>
+                                            <span className={`w-15 ${e.isActive ? "font-bold" : "text-gray-500"}`}>{calcPosition(i, players.length)}</span>
+                                            <span className={`${e.name === username ? "underline" : ""}`}>{e.name}</span>
                                         </li>
                                     )}
                                 </ul>
