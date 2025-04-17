@@ -9,13 +9,14 @@ import { socket } from "~/root";
 import Buyins from "~/components/Buyins";
 import { z } from "zod";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
-import { Card, Hand, type LocalBuyinData } from "server/interface";
+import { Card, Hand, type LocalBuyinData, type LocalHandData } from "server/interface";
 import PositionsDisplay from "~/components/PositionsDisplay";
 import BuyinDialog from "~/components/BuyinDialog";
 import { buyinFormSchema, handFormSchema, vpipFormSchema } from "~/formSchemas";
 import BuyinHistoryDialog from "~/components/BuyinHistoryDialog";
 import EnterHandDialog from "~/components/EnterHandDialog";
 import VpipDialog from "~/components/VpipDialog";
+import StatsDialog from "~/components/StatsDialog";
 
 export default function Table() {
     const navigate = useNavigate();
@@ -43,6 +44,7 @@ export default function Table() {
     const [rank2Randomiser, setRank2Randomiser] = useState(Array.from({ length: 13 }, () => Math.random()));
     const [suit2Randomiser, setSuit2Randomiser] = useState(Array.from({ length: 4 }, () => Math.random()));
     const [isActive, setIsActive] = useState(false);
+    const [handHistory, setHandHistory] = useState([] as LocalHandData[]);
     
     async function socketHandleUpdatePlayers(updatedPlayers: SetStateAction<any[]>) {
         setPlayers(updatedPlayers);
@@ -172,6 +174,8 @@ export default function Table() {
         setSuit1Randomiser(Array.from({ length: 4 }, () => Math.random()));
         setRank2Randomiser(Array.from({ length: 13 }, () => Math.random()));
         setSuit2Randomiser(Array.from({ length: 4 }, () => Math.random()));
+
+        updateHandHistory();
     }, [handNum]);
 
     // Update isActive whenever players changes
@@ -253,6 +257,17 @@ export default function Table() {
             }
         } catch (err) {
             console.log("Error fetching buyin history");
+        }
+    }
+
+    async function updateHandHistory() {
+        try {
+            const res = await axios.get(
+                `http://localhost:3000/player/getHands?playerId=${playerId}&tableId=${tableId}`
+            );
+            setHandHistory(res.data.hands);
+        } catch (err) {
+            console.log(err);
         }
     }
 
@@ -348,7 +363,8 @@ export default function Table() {
                     {isActive ? "Sit out" : "Deal me in"}
                 </Button>
 
-                <Button className="fixed right-5">Stats</Button>
+                {/* <Button className="fixed right-5">Stats</Button> */}
+                <StatsDialog hands={handHistory} />
             </div>
             <div className={"flex justify-center items-center h-screen w-full max-w-120"}>
                 <div className="flex flex-col h-9/10 w-9/10">

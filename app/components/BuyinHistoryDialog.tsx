@@ -46,39 +46,37 @@ export default function BuyinHistoryDialog({ playerNames, buyins }: BuyinHistory
     }
 
     return (
-        <>
-            <Dialog>
-                <DialogTrigger asChild>
-                    <Button>Buyin history</Button>
-                </DialogTrigger>
-                <DialogContent className="flex flex-col h-2/3">
-                    <DialogHeader>
-                        <DialogTitle>
-                            Buyin History
-                        </DialogTitle>
-                        <DialogDescription />
-                    </DialogHeader>
-                    <Select onValueChange={setDisplayMode} defaultValue="all" >
-                        <SelectTrigger className="w-[180px]">
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <ul>
-                                <SelectItem value="all" key="-1">All Players</SelectItem>
-                                {playerNames.map((e, i) => 
-                                    <li key={i}><SelectItem value={e}>{e}</SelectItem></li>
-                                )}
-                            </ul>
-                        </SelectContent>
-                    </Select>
-                    {getBuyinHistoryComponent()}
-                    <DialogFooter className="mt-1">
-                        <DialogClose asChild>
-                            <Button type="button">Close</Button>
-                        </DialogClose>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-        </>
+        <Dialog>
+            <DialogTrigger asChild>
+                <Button>Buyin history</Button>
+            </DialogTrigger>
+            <DialogContent className="flex flex-col h-2/3">
+                <DialogHeader>
+                    <DialogTitle>
+                        Buyin History
+                    </DialogTitle>
+                    <DialogDescription />
+                </DialogHeader>
+                <Select onValueChange={setDisplayMode} defaultValue="all" >
+                    <SelectTrigger className="w-[180px]">
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <ul>
+                            <SelectItem value="all" key="-1">All Players</SelectItem>
+                            {playerNames.map((e, i) => 
+                                <li key={i}><SelectItem value={e}>{e}</SelectItem></li>
+                            )}
+                        </ul>
+                    </SelectContent>
+                </Select>
+                {getBuyinHistoryComponent()}
+                <DialogFooter className="mt-1">
+                    <DialogClose asChild>
+                        <Button type="button">Close</Button>
+                    </DialogClose>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     );
 }
