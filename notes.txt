@@ -321,7 +321,7 @@ Completed all security features discussed yesterday
 17/04/2025
 The difficult part of the app has been done -- the table functionality, entering hands and vpips, etc.
 Now I will just be adding quality of life features. For example:
- - Adding a 'filter by player' feature for buyins (including 'show all buyins')
+ - Adding a 'filter by player' feature for buyins (including 'show all buyins') (DONE)
  - A hand history button to show a player's own hands
     - A separate tab for showing hand statistics (e.g. suited, connected, pairs)
  - Owner can press an 'end game' button, and players can all agree to end the game

@@ -343,9 +343,13 @@ export default function Table() {
 
     return (
         <div className={`flex justify-center items-center h-screen w-screen ${(!hasStarted || tableCanPlay()) && isActive ? "" : "bg-gray-500/40"}`}>
-            <Button className="fixed top-5 left-5 z-50" onClick={handleChangeStatus}>
-                {isActive ? "Sit out" : "Deal me in"}
-            </Button>
+            <div className="fixed top-5 z-50">
+                <Button className="fixed left-5" onClick={handleChangeStatus}>
+                    {isActive ? "Sit out" : "Deal me in"}
+                </Button>
+
+                <Button className="fixed right-5">Stats</Button>
+            </div>
             <div className={"flex justify-center items-center h-screen w-full max-w-120"}>
                 <div className="flex flex-col h-9/10 w-9/10">
                     <div className="flex w-full mt-7">
