@@ -315,6 +315,9 @@ FIX: Place socket.on() inside useEffect, and return () => { socket.off() } in us
 
 16/04/2025
 Completed all security features discussed yesterday
+
+
+
 17/04/2025
 The difficult part of the app has been done -- the table functionality, entering hands and vpips, etc.
 Now I will just be adding quality of life features. For example:
@@ -326,3 +329,5 @@ Now I will just be adding quality of life features. For example:
     - These hand details can be exported
  - Option to edit hand after entering it (might be abused by players)
  - A solo, offline mode without the table features
+
+I will also refactor table.tsx into its Components so that adding/editing Components is easier.

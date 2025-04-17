@@ -4,7 +4,7 @@ import Greeting from "~/components/Greeting";
 import { Button } from "~/components/ui/button";
 import TableWelcome from "~/components/TableWelcome";
 import { useEffect, useRef, useState, type SetStateAction } from "react";
-import { authToken, calcPosition } from "~/helpers";
+import { authToken } from "~/helpers";
 import { socket } from "~/root";
 import Buyins from "~/components/Buyins";
 import {
@@ -27,6 +27,7 @@ import { Card, Hand, type Buyin } from "server/interface";
 import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
 import RankSelect from "~/components/RankSelect";
 import SuitSelect from "~/components/SuitSelect";
+import PositionsDisplay from "~/components/PositionsDisplay";
 
 const buyinFormSchema = z.object({
     amount: z.coerce.number({ message: "invalid: please enter a number" }).multipleOf(0.01, { message: "invalid: please enter to the nearest cent" }),
@@ -420,20 +421,7 @@ export default function Table() {
                         <div className="flex flex-col justify-center w-14/29 p-2">
                             <Greeting name={username} />
                             <TableWelcome name={tableName} code={parseInt(tableId)} />
-
-                            Starting positions:
-                            <div className="mb-10">
-                                <ul>
-                                    {players.map((e, i) => 
-                                        <li key={i} className="flex">
-                                            <span className="w-7">{e.name === ownerName ? "⭐" : ""}</span>
-                                            <span className={`w-15 ${e.isActive ? "font-bold" : "text-gray-500"}`}>{calcPosition(i, players.length)}</span>
-                                            <span className={`${e.name === username ? "underline" : ""}`}>{e.name}</span>
-                                        </li>
-                                    )}
-                                </ul>
-                            </div>
-
+                            <PositionsDisplay players={players} ownerName={ownerName} username={username} />
                             <Button onClick={handleLeave}>Leave table</Button>
                         </div>
                         <div className="flex justify-center flex-col w-15/29 p-2">

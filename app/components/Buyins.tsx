@@ -1,9 +1,7 @@
+import type { LocalPlayerData } from "server/interface";
+
 interface BuyinsProps {
-    players: {
-        name: string,
-        buyin: number,
-        isActive: boolean,
-    }[],
+    players: LocalPlayerData[],
     username: string,
 }
 
