@@ -128,7 +128,7 @@ io.on("connection", (socket) => {
                 [!oldStatus, playerData.tableId, playerData.playerId]
             );
 
-            io.emit("updatePlayers", await getTablePlayers(playerData.tableId));
+            io.to(playerData.tableId).emit("updatePlayers", await getTablePlayers(playerData.tableId));
             socket.emit("changeStatusDone");
         } catch (err) {
             console.log(err);
@@ -143,7 +143,7 @@ io.on("connection", (socket) => {
                 [playerData.tableId, playerData.playerId]
             );
             
-            io.emit("updatePlayers", await getTablePlayers(playerData.tableId));
+            io.to(playerData.tableId).emit("updatePlayers", await getTablePlayers(playerData.tableId));
         } catch(err) {
             console.log(err);
         }
