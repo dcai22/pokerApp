@@ -289,6 +289,29 @@ app.get('/player/getBuyins', async (req: Request, res: Response) => {
     }
 });
 
+app.get('/player/getHands', async (req: Request, res: Response) => {
+    const playerId = req.query.playerId;
+    const tableId = req.query.tableId;
+
+    try {
+        const dbRes = await pool.query(
+            "SELECT * FROM hands WHERE player_id=$1 AND table_id=$2",
+            [playerId, tableId]
+        );
+
+        const hands = dbRes.rows.map((h) => {
+            return {
+                handNum: h.hand_num,
+                cid: h.combination_id,
+                vpip: h.vpip,
+            };
+        });
+        res.json({ hands });
+    } catch (err) {
+        console.log(err);
+    }
+});
+
 // Will only be called to UPDATE the `hands` schema
 // if VPIP first: then a row is created and it is updated here
 // if hand is entered first: nothing is submitted until 'VPIP' is completed

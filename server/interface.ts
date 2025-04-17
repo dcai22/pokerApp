@@ -127,12 +127,12 @@ export class Hand {
     static fromCid(cid: number) {
         if (cid < 0) return new Hand(null, null);
 
-        const card1_id = cid / 52;
-        const card1_rank = card1_id / 4;
+        const card1_id = Math.floor(cid / 52);
+        const card1_rank = Math.floor(card1_id / 4);
         const card1_suit = card1_id % 4;
 
-        const card2_id = cid / 52;
-        const card2_rank = card2_id / 4;
+        const card2_id = cid % 52;
+        const card2_rank = Math.floor(card2_id / 4);
         const card2_suit = card2_id % 4;
 
         return new Hand(
@@ -198,6 +198,10 @@ export class Card {
             return "♠";
         }
     }
+
+    static prettyPrint(card: Card) {
+        return `${card.rank}${card.suit}`.toUpperCase();
+    }
 }
 
 export class Buyin {
@@ -224,4 +228,10 @@ export interface LocalBuyinData {
     name: string,
     time: string,
     amount: number,
+}
+
+export interface LocalHandData {
+    handNum: number,
+    cid: number,
+    vpip: boolean,
 }
