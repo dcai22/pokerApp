@@ -330,7 +330,10 @@ Now I will just be adding quality of life features. For example:
  - Option to edit hand after entering it (might be abused by players)
  - A solo, offline mode without the table features
 
-I will also refactor table.tsx into its Components so that adding/editing Components is easier.
+I will also refactor table.tsx into its Components so that adding/editing Components is easier. (DONE)
 
 Since socket.on() is called within useEffect(), which interacts strangely with useState(), variables
 initialised with useState() should not be used in any socketHandle...() function.
+
+The SQL 'IN' operator requires parentheses, and does not work with an empty array.
+This is difficult to achieve with parametrisation.
