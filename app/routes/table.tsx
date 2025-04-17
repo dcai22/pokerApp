@@ -255,7 +255,12 @@ export default function Table() {
         );
         setBuyinAlert(newBuyinAlert);
 
-        const buyinTime = (new Date()).toISOString();
+        const buyinTime = (new Date()).toLocaleString("en-GB", {
+            dateStyle: "long",
+            timeStyle: "short",
+            timeZone: "Australia/Sydney",
+            hour12: true,
+        });
         setLastBuyinTime(buyinTime);
 
         try {
@@ -300,13 +305,7 @@ export default function Table() {
                 {buyinHistory.map((e, i) => <li key={i} className="py-2">
                     <ul>
                         <li key="amount" className="flex"><span className="w-26">Amount:</span>${e.amount}</li>
-                        <li key="time" className="flex"><span className="w-26">Timestamp:</span>{
-                            (new Date(e.time)).toLocaleString("en-GB", {
-                                dateStyle: "long",
-                                timeStyle: "short",
-                                timeZone: "Australia/Sydney",
-                            })
-                        }</li>
+                        <li key="time" className="flex"><span className="w-26">Timestamp:</span>{e.time}</li>
                     </ul>
                 </li>)}
             </ul>
