@@ -69,22 +69,34 @@ export async function authToken(token: string, playerId: number) {
 }
 
 export async function getTablePlayers(tableId: number) {
-    const allTablePlayers = await pool.query(
+    const tablePlayersRes = await pool.query(
         "SELECT * FROM table_players WHERE table_id=$1 ORDER BY position",
         [tableId]
     );
-    const tablePlayers = allTablePlayers.rows;
+    const tablePlayers = tablePlayersRes.rows;
 
-    const allPlayers = await pool.query(
+    const playersRes = await pool.query(
         "SELECT * FROM players"
     );
-    const players = allPlayers.rows;
+    const players = playersRes.rows;
 
-    const allBuyins = await pool.query(
+    const buyinsRes = await pool.query(
         "SELECT player_id, SUM(amount) AS total_buyin FROM buyins WHERE table_id=$1 GROUP BY player_id",
         [tableId]
     );
-    const buyins = allBuyins.rows;
+    const buyins = buyinsRes.rows;
+
+    const tableRes = await pool.query(
+        "SELECT * FROM tables WHERE id=$1",
+        [tableId]
+    );
+    const handNum = tableRes.rows[0].num_hands + 1;
+
+    const handsRes = await pool.query(
+        "SELECT player_id FROM hands WHERE table_id=$1 AND hand_num=$2",
+        [tableId, handNum]
+    );
+    const vpipPlayers = handsRes.rows.map(p => p.player_id);
 
     const newPlayers = tablePlayers
         .sort((a, b) => a.position -  b.position)
@@ -94,6 +106,7 @@ export async function getTablePlayers(tableId: number) {
                 name: players.find((p) => p.id === tp.player_id).username,
                 buyin: buyin === undefined ? '0' : buyin.total_buyin,
                 isActive: tp.is_active,
+                hasVpip: vpipPlayers.includes(tp.player_id),
             };
         });
     return newPlayers;

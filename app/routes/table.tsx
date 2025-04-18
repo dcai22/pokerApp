@@ -210,6 +210,9 @@ export default function Table() {
         setRank2Randomiser(Array.from({ length: 13 }, () => Math.random()));
         setSuit2Randomiser(Array.from({ length: 4 }, () => Math.random()));
 
+        const newPlayers = players.map(p => Object.assign(p, { hasVpip: false }));
+        setPlayers(newPlayers);
+
         updateHandHistory();
     }, [handNum]);
 
@@ -422,6 +425,23 @@ export default function Table() {
         socket.emit("disagreeEndGame");
     }
 
+    function getWaitingOnComponent() {
+        const playersWithoutVpip = players.filter(p => p.isActive && !p.hasVpip).map(p => p.name);
+        return (
+            <div className="flex flex-col items-center justify-center border-3 my-1 p-1 border-gray-400">
+                <span className="text-2xl font-bold">Waiting on:</span>
+                {playersWithoutVpip.length > 0
+                    ? <ul className="text-xl">
+                        {playersWithoutVpip.map((p, i) => <li key={i} className={p === username ? "underline" : ""}>
+                            {p}
+                        </li>)}
+                    </ul>
+                    : <div className="text-xl italic text-gray-500">Nobody!</div>
+                }
+            </div>
+        );
+    }
+
     return (
         <div className={`flex justify-center items-center h-screen w-screen ${hasEnded || (isActive && (!hasStarted || tableCanPlay())) ? "" : "bg-gray-500/40"}`}>
             {hasEnded
@@ -474,8 +494,9 @@ export default function Table() {
                                             disabled={hasVpip || !isActive}
                                             onVpip={onVpip}
                                         />
+                                        {getWaitingOnComponent()}
                                         {isOwner()
-                                            ? <Button className="mt-3" disabled={!isHandDone} onClick={handleNext}>
+                                            ? <Button className="my-1" disabled={!isHandDone} onClick={handleNext}>
                                                 Next Hand
                                             </Button>
                                             : <></>
