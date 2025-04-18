@@ -338,8 +338,18 @@ initialised with useState() should not be used in any socketHandle...() function
 The SQL 'IN' operator requires parentheses, and does not work with an empty array.
 This is difficult to achieve with parametrisation.
 
+
+
 18/04/2025
 Successfully deployed app.
  - Database: Neon
  - Backend: Render (branch: 'deployment')
  - Frontend: Vercel
+
+.env variables are hidden from the deployed frontend/backend. They can be set on Vercel and Render after.
+
+
+
+19/04/2025
+It seems running bcrypt.compare() on so many tokens is very expensive.
+This gives me incentive to have tokens expire in the database so that fewer hashes need to be checked.
