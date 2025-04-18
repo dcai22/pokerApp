@@ -11,7 +11,7 @@ function RandomButton() {
 
     useEffect(() => {
         async function initVotes() {
-            const res = await axios.get(`${API_BASE}/authToken/numVotes`);
+            const res = await axios.get(`${API_BASE}/numVotes`);
             if (res.status === 200) {
                 setNumYes(res.data.num_yes);
                 setNumNo(res.data.num_no);
