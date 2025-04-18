@@ -23,7 +23,7 @@
     "cardsJS": "^1.1.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "dotenv": "^16.4.7",
+    "dotenv": "^16.5.0",
     "isbot": "^5.1.17",
     "lucide-react": "^0.487.0",
     "mongodb": "^6.15.0",

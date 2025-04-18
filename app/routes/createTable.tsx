@@ -10,6 +10,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "~/components/ui/form";
+import { API_BASE } from "~/root";
 
 const formSchema = z.object({
     tableName: z.string().min(1, { message: "*required field" }),
@@ -68,7 +69,7 @@ export default function CreateTable() {
     
         try {
             const res = await axios.post(
-                "http://localhost:3000/player/createTable",
+                `${API_BASE}/player/createTable`,
                 {
                     tableName,
                     sb,

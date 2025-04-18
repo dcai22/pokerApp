@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { Button } from "./ui/button";
-import { socket } from "app/root";
+import { API_BASE, socket } from "app/root";
 
 function RandomButton() {
     const hasRun = useRef(false);
@@ -11,7 +11,7 @@ function RandomButton() {
 
     useEffect(() => {
         async function initVotes() {
-            const res = await axios.get("http://localhost:3000/numVotes");
+            const res = await axios.get(`${API_BASE}/authToken/numVotes`);
             if (res.status === 200) {
                 setNumYes(res.data.num_yes);
                 setNumNo(res.data.num_no);
@@ -35,7 +35,10 @@ function RandomButton() {
         const [ newYes, newNo ] = [ numYes + 1, numNo ];
         setNumYes(newYes);
         setNumNo(newNo);
-        axios.put("http://localhost:3000/updateVotes", { numYes: newYes, numNo: newNo });
+        axios.put(
+            `${API_BASE}/updateVotes`,
+            { numYes: newYes, numNo: newNo }
+        );
 
         socket.emit("newVote", newYes, newNo);
 
@@ -48,7 +51,10 @@ function RandomButton() {
         const [ newYes, newNo ] = [ numYes, numNo + 1 ];
         setNumYes(newYes);
         setNumNo(newNo);
-        axios.put("http://localhost:3000/updateVotes", { numYes: newYes, numNo: newNo });
+        axios.put(
+            `${API_BASE}/updateVotes`,
+            { numYes: newYes, numNo: newNo }
+        );
 
         socket.emit("newVote", newYes, newNo);
     }
@@ -57,7 +63,10 @@ function RandomButton() {
         const [ newYes, newNo ] = [ 0, 0 ];
         setNumYes(newYes);
         setNumNo(newNo);
-        axios.put("http://localhost:3000/updateVotes", { numYes: newYes, numNo: newNo });
+        axios.put(
+            `${API_BASE}/updateVotes`,
+            { numYes: newYes, numNo: newNo }
+        );
 
         socket.emit("newVote", newYes, newNo);
     }

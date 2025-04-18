@@ -1,5 +1,6 @@
 import axios from "axios";
 import bcrypt from "bcryptjs";
+import { API_BASE } from "./root";
 
 export async function genHash(str: string) {
     const saltRounds = 10;
@@ -20,7 +21,7 @@ export async function authToken() {
     let username;
     try {
         const res = await axios.post(
-            "http://localhost:3000/authToken",
+            `${API_BASE}/authToken`,
             { token, playerId }
         );
         if (res.data.message) {

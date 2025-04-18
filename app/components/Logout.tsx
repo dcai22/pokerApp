@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router";
 import axios from "axios";
 import { Button } from "./ui/button";
+import { API_BASE } from "~/root";
 
 interface LogoutProps {
     player_id: number,
@@ -12,7 +13,7 @@ export default function Logout({ player_id, token }: LogoutProps) {
 
     async function onClick() {
         await axios.delete(
-            "http://localhost:3000/deleteToken",
+            `${API_BASE}/deleteToken`,
             {
                 data: {
                     player_id,
