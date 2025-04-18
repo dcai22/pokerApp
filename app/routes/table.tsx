@@ -426,11 +426,13 @@ export default function Table() {
         <div className={`flex justify-center items-center h-screen w-screen ${hasEnded || (isActive && (!hasStarted || tableCanPlay())) ? "" : "bg-gray-500/40"}`}>
             {hasEnded
                 ? <></>
-                : <div className="fixed top-5 z-50">
-                    <Button className="fixed left-5" onClick={handleChangeStatus}>
-                        {isActive ? "Sit out" : "Deal me in"}
-                    </Button>
-                    <StatsDialog hands={handHistory} />
+                : <div className="fixed top-0 z-50 w-full h-18 bg-gray-500/90 border-b border-black">
+                    <div className="fixed top-4 w-full h-full">
+                        <Button className="fixed left-5" onClick={handleChangeStatus}>
+                            {isActive ? "Sit out" : "Deal me in"}
+                        </Button>
+                        <StatsDialog hands={handHistory} />
+                    </div>
                 </div>
             }
             <div className={"flex justify-center items-center h-screen w-full max-w-120"}>
@@ -449,7 +451,6 @@ export default function Table() {
                         </div>
                     </div>
                     <div className="flex justify-center w-full h-full">
-                        {/* {hasStarted */}
                         {hasEnded
                             ? <div className="flex flex-col justify-center h-full items-center">
                                 <div className="text-3xl">Game has ended</div>
