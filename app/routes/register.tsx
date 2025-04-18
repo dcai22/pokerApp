@@ -9,6 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "~/components/ui/form";
 import { illegalUsernames } from "~/restrictions";
+import { API_BASE } from "~/root";
 
 const formSchema = z.object({
     username: z.string().min(1, { message: "*required field" }),
@@ -41,7 +42,7 @@ export default function Register() {
         const hashedPassword = await genHash(password);
         try {
             const res = await axios.post(
-                "http://localhost:3000/registerPlayer",
+                `${API_BASE}/registerPlayer`,
                 {
                     username,
                     hashedPassword,

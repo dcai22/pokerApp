@@ -7,6 +7,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "~/components/ui/form";
+import { API_BASE } from "~/root";
 
 const formSchema = z.object({
     username: z.string().min(1),
@@ -33,7 +34,7 @@ export default function Login() {
 
         try {
             const res = await axios.post(
-                "http://localhost:3000/login",
+                `${API_BASE}/login`,
                 {
                     username,
                     password,

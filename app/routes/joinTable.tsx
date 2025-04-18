@@ -10,6 +10,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "~/components/ui/form";
+import { API_BASE } from "~/root";
 
 const formSchema = z.object({
     tableId: z.string(),
@@ -61,7 +62,7 @@ function JoinTable() {
 
         try {
             const res = await axios.post(
-                "http://localhost:3000/player/joinTable",
+                `${API_BASE}/player/joinTable`,
                 {
                     playerId,
                     tableId,

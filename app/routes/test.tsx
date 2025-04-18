@@ -16,6 +16,7 @@ import {
 } from "~/components/ui/form"
 import { Input } from "~/components/ui/input"
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "~/components/ui/dialog";
+import { API_BASE } from "~/root";
  
 const formSchema = z.object({
   amount: z.coerce.number({ message: "please enter a number "}).int().gte(0, { message: "please enter an amount greater than 0" }),
@@ -51,7 +52,7 @@ export default function Test() {
         setValue(newValue);
         sessionStorage.setItem("value", newValue.toString());
 
-        const randomReq = await axios.get('http://localhost:3000/numVotes');
+        const randomReq = await axios.get(`${API_BASE}/numVotes`);
         console.log(randomReq);
     }
 
