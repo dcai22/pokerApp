@@ -1,12 +1,12 @@
 import { createServer } from "http";
 import { Server } from "socket.io";
-import dotenv from 'dotenv';
-dotenv.config();
 
 import { app } from "./app";
 import pool from "./db";
 import { cancelPlayersAgree, checkPlayersAgree, getTablePlayers } from "./helper";
 const port = 3000;
+import dotenv from 'dotenv';
+dotenv.config();
 
 const server = createServer(app);
 const io = new Server(server, {

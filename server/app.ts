@@ -1,11 +1,11 @@
 import express, { json, type Request, type Response } from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
-dotenv.config();
 
 import pool from "./db";
 import bcrypt from 'bcryptjs';
 import { authToken, genToken } from './helper';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const app = express();
 
