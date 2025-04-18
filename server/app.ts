@@ -90,16 +90,20 @@ app.post('/login', async (req: Request, res: Response) => {
 });
 
 app.delete('/deleteToken', async (req: Request, res: Response) => {
-    const token = req.body.token;
+    const playerId = req.query.playerId;
+    const token = req.query.token as string;
 
-    const dbRes = await pool.query("SELECT hash FROM tokens");
-    const allTokens = dbRes.rows;
+    const dbRes = await pool.query(
+        "SELECT hash FROM tokens WHERE player_id=$1",
+        [playerId]
+    );
+    const allHashes = dbRes.rows.map(t => t.hash);
 
-    for (const dbToken of allTokens) {
-        if (await bcrypt.compare(token, dbToken.hash)) {
+    for (const dbHash of allHashes) {
+        if (await bcrypt.compare(token, dbHash)) {
             await pool.query(
                 "DELETE FROM tokens WHERE hash=$1",
-                [dbToken.hash]
+                [dbHash]
             );
             res.json();
             return;

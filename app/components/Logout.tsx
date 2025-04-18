@@ -4,22 +4,16 @@ import { Button } from "./ui/button";
 import { API_BASE } from "~/root";
 
 interface LogoutProps {
-    player_id: number,
+    playerId: number,
     token: string,
 }
 
-export default function Logout({ player_id, token }: LogoutProps) {
+export default function Logout({ playerId, token }: LogoutProps) {
     const navigate = useNavigate();
 
     async function onClick() {
         await axios.delete(
-            `${API_BASE}/deleteToken`,
-            {
-                data: {
-                    player_id,
-                    token,
-                }
-            }
+            `${API_BASE}/deleteToken?playerId=${playerId}&token=${token}`,
         );
         sessionStorage.removeItem("token");
         sessionStorage.removeItem("playerId");
