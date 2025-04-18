@@ -136,7 +136,7 @@ export default function CreateTable() {
 
                 <h1 className="mb-2">Already have a table?</h1>
                 <Button onClick={() => navigate(`/joinTable`)} className="mb-10">Join an existing table</Button>
-                <Logout player_id={playerId} token={token} />
+                <Logout playerId={playerId} token={token} />
             </div>
         </div>
     );

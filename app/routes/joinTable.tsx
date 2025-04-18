@@ -106,7 +106,7 @@ function JoinTable() {
 
                 <h1 className="mb-1">Don't have a table?</h1>
                 <Button onClick={() => navigate(`/createTable`)} className="mb-10">Create a new table</Button>
-                <Logout player_id={playerId} token={token} />
+                <Logout playerId={playerId} token={token} />
             </div>
         </div>
     );
