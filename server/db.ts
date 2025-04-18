@@ -3,6 +3,7 @@ const { Pool } = pg;
 import dotenv from 'dotenv';
 dotenv.config();
 
+// FOR DEVELOPMENT
 // const pool = new Pool({
 //     user: "postgres",
 //     password: "ligmaballs",
@@ -11,6 +12,7 @@ dotenv.config();
 //     database: "poker_app"
 // });
 
+// FOR DEPLOYMENT
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: {
