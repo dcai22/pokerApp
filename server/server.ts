@@ -1,5 +1,7 @@
 import { createServer } from "http";
 import { Server } from "socket.io";
+import dotenv from 'dotenv';
+dotenv.config();
 
 import { app } from "./app";
 import pool from "./db";
@@ -9,7 +11,7 @@ const port = 3000;
 const server = createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: ["http://localhost:5173"],
+        origin: ["http://localhost:5173", process.env.CLIENT_ORIGIN as string],
         methods: ["GET", "POST", "PUT", "DELETE"],
     }
 });
