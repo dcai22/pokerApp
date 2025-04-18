@@ -5,7 +5,7 @@ import { Button } from "~/components/ui/button";
 import TableWelcome from "~/components/TableWelcome";
 import { useEffect, useRef, useState, type SetStateAction } from "react";
 import { authToken } from "~/helpers";
-import { socket } from "~/root";
+import { API_BASE, socket } from "~/root";
 import Buyins from "~/components/Buyins";
 import { z } from "zod";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
@@ -110,7 +110,7 @@ export default function Table() {
             try {
                 // check player is on table (implicitly checks player and table exist)
                 const tablePlayerRes = await axios.get(
-                    `http://localhost:3000/getTablePlayer?tableId=${tableId}&playerId=${newPlayerId}`
+                    `${API_BASE}/getTablePlayer?tableId=${tableId}&playerId=${newPlayerId}`
                 );
                 if (tablePlayerRes.status !== 200) {
                     console.log(tablePlayerRes.data.err);
@@ -121,7 +121,7 @@ export default function Table() {
                 }
 
                 const tableRes = await axios.get(
-                    `http://localhost:3000/getTable?table_id=${tableId}`
+                    `${API_BASE}/getTable?table_id=${tableId}`
                 );
                 // set default values
                 setTableName(tableRes.data.name);
@@ -131,7 +131,7 @@ export default function Table() {
 
                 // check if player is owner
                 const ownerRes = await axios.get(
-                    `http://localhost:3000/getPlayer?player_id=${tableRes.data.owner}`
+                    `${API_BASE}/getPlayer?player_id=${tableRes.data.owner}`
                 );
                 if (ownerRes.status === 200) {
                     setOwnerName(ownerRes.data.username);
@@ -139,7 +139,7 @@ export default function Table() {
 
                 // check if owner wants to end the game
                 const ownerTpRes = await axios.get(
-                    `http://localhost:3000/getTablePlayer?tableId=${tableId}&playerId=${newPlayerId}`
+                    `${API_BASE}/getTablePlayer?tableId=${tableId}&playerId=${newPlayerId}`
                 );
                 if (ownerTpRes.status === 200) {
                     setEndGameSuggested(ownerTpRes.data.want_end_game);
@@ -148,7 +148,7 @@ export default function Table() {
                 // check if the player has submitted a hand and vpip
                 const newHandNum = tableRes.data.num_hands + 1;
                 const handRes = await axios.get(
-                    `http://localhost:3000/getHand?tableId=${tableId}&playerId=${newPlayerId}&handNum=${newHandNum}`
+                    `${API_BASE}/getHand?tableId=${tableId}&playerId=${newPlayerId}&handNum=${newHandNum}`
                 );
                 if (handRes.data.handExists) {
                     console.log("successful query");
@@ -230,7 +230,7 @@ export default function Table() {
         async function getAllHands() {
             try {
                 const res = await axios.get(
-                    `http://localhost:3000/getAllHands?tableId=${tableId}`
+                    `${API_BASE}/getAllHands?tableId=${tableId}`
                 );
                 setAllHands(res.data.hands);
             } catch (err) {
@@ -266,7 +266,7 @@ export default function Table() {
         
         try {
             const res = await axios.post(
-                "http://localhost:3000/player/buyin",
+                `${API_BASE}/player/buyin`,
                 {
                     amount,
                     buyinTime,
@@ -300,7 +300,7 @@ export default function Table() {
 
     async function updateBuyinHistory() {
         try {
-            const res = await axios.get(`http://localhost:3000/player/getBuyins?tableId=${tableId}`);
+            const res = await axios.get(`${API_BASE}/player/getBuyins?tableId=${tableId}`);
             if (res.status === 200) {
                 setBuyinHistory(res.data.buyins);
             } else {
@@ -314,7 +314,7 @@ export default function Table() {
     async function updateHandHistory() {
         try {
             const res = await axios.get(
-                `http://localhost:3000/player/getHands?playerId=${playerId}&tableId=${tableId}`
+                `${API_BASE}/player/getHands?playerId=${playerId}&tableId=${tableId}`
             );
             setHandHistory(res.data.hands);
         } catch (err) {
@@ -327,7 +327,7 @@ export default function Table() {
         
         try {
             const res = await axios.post(
-                "http://localhost:3000/player/vpip",
+                `${API_BASE}/player/vpip`,
                 {
                     playerId,
                     tableId,
@@ -372,7 +372,7 @@ export default function Table() {
             console.log(handNum);
             console.log(newHand.cid());
             const res = await axios.put(
-                "http://localhost:3000/player/addHand",
+                `${API_BASE}/player/addHand`,
                 {
                     playerId,
                     tableId,
@@ -449,13 +449,14 @@ export default function Table() {
                         </div>
                     </div>
                     <div className="flex justify-center w-full h-full">
-                        {hasStarted
-                            ? hasEnded
-                                ? <div className="flex flex-col justify-center h-full items-center">
-                                    <div className="text-3xl">Game has ended</div>
-                                    <TableStatsDialog playerNames={players.map(p => p.name)} hands={allHands} />
-                                </div>
-                                : tableCanPlay() && isActive
+                        {/* {hasStarted */}
+                        {hasEnded
+                            ? <div className="flex flex-col justify-center h-full items-center">
+                                <div className="text-3xl">Game has ended</div>
+                                <TableStatsDialog playerNames={players.map(p => p.name)} hands={allHands} />
+                            </div>
+                            : hasStarted
+                                ? tableCanPlay() && isActive
                                     ? <div className="flex flex-col w-full pt-20 px-10">
                                         <div className="flex justify-center w-full text-6xl">
                                             Hand {handNum}
