@@ -9,15 +9,14 @@ import {
 
 import type { Route } from "./+types/root";
 import "./app.css";
+export const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 import io from "socket.io-client";
-export const socket = io("http://localhost:3000", { autoConnect: false });
+export const socket = io(`${API_BASE}`, { autoConnect: false });
 // // You can now listen for events from the server
 socket.on("connect", () => {
   console.log("Connected to the server!");
 });
-
-export const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
