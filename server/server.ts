@@ -85,6 +85,9 @@ io.on("connection", (socket) => {
     socket.on("checkHandDone", async (handNum) => {
         try {
             const playerData = sockets.get(_id);
+
+            io.to(playerData.tableId).emit("updatePlayers", await getTablePlayers(playerData.tableId));
+
             const activePlayersRes = await pool.query(
                 "SELECT * FROM table_players WHERE table_id=$1 AND is_active=true",
                 [playerData.tableId]

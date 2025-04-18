@@ -337,3 +337,9 @@ initialised with useState() should not be used in any socketHandle...() function
 
 The SQL 'IN' operator requires parentheses, and does not work with an empty array.
 This is difficult to achieve with parametrisation.
+
+18/04/2025
+Successfully deployed app.
+ - Database: Neon
+ - Backend: Render (branch: 'deployment')
+ - Frontend: Vercel
