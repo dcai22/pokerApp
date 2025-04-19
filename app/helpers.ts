@@ -58,3 +58,14 @@ export function calcPosition(i: number, n: number) {
 
     return positions[i];
 }
+
+export function shiftArray(arr: any[], offset: number) {
+    const len = arr.length;
+    if (len === 0) return arr;
+    const trueOffset = offset % len;
+    let shiftedArr = new Array(len);
+    arr.forEach((e, i) => {
+        shiftedArr[(i + offset) % len] = e;
+    })
+    return shiftedArr;
+}

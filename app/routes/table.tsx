@@ -40,10 +40,10 @@ export default function Table() {
     const [hasVpip, setHasVpip] = useState(false);
     const [curHand, setCurHand] = useState(new Hand(null, null));
     const [isHandDone, setIsHandDone] = useState(false);
-    const [rank1Randomiser, setRank1Randomiser] = useState(Array.from({ length: 13 }, () => Math.random()));
-    const [suit1Randomiser, setSuit1Randomiser] = useState(Array.from({ length: 4 }, () => Math.random()));
-    const [rank2Randomiser, setRank2Randomiser] = useState(Array.from({ length: 13 }, () => Math.random()));
-    const [suit2Randomiser, setSuit2Randomiser] = useState(Array.from({ length: 4 }, () => Math.random()));
+    const [rank1Offset, setRank1Offset] = useState(Math.floor(13 * Math.random()));
+    const [suit1Offset, setSuit1Offset] = useState(Math.floor(4 * Math.random()));
+    const [rank2Offset, setRank2Offset] = useState(Math.floor(13 * Math.random()));
+    const [suit2Offset, setSuit2Offset] = useState(Math.floor(4 * Math.random()));
     const [isActive, setIsActive] = useState(false);
     const [handHistory, setHandHistory] = useState([] as LocalHandData[]);
     const [wantEndGame, setWantEndGame] = useState(false);
@@ -205,10 +205,10 @@ export default function Table() {
         setHasVpip(false);
         setCurHand(new Hand(null, null));
         setIsHandDone(false);
-        setRank1Randomiser(Array.from({ length: 13 }, () => Math.random()));
-        setSuit1Randomiser(Array.from({ length: 4 }, () => Math.random()));
-        setRank2Randomiser(Array.from({ length: 13 }, () => Math.random()));
-        setSuit2Randomiser(Array.from({ length: 4 }, () => Math.random()));
+        setRank1Offset(Math.floor(13 * Math.random()));
+        setSuit1Offset(Math.floor(4 * Math.random()));
+        setRank2Offset(Math.floor(13 * Math.random()));
+        setSuit2Offset(Math.floor(4 * Math.random()));
 
         const newPlayers = players.map(p => Object.assign(p, { hasVpip: false }));
         setPlayers(newPlayers);
@@ -485,10 +485,10 @@ export default function Table() {
                                         <EnterHandDialog 
                                             disabled={hasEnteredHand || !isActive}
                                             onEnterHand={onEnterHand}
-                                            rank1Randomiser={rank1Randomiser}
-                                            suit1Randomiser={suit1Randomiser}
-                                            rank2Randomiser={rank2Randomiser}
-                                            suit2Randomiser={suit2Randomiser}
+                                            rank1Offset={rank1Offset}
+                                            suit1Offset={suit1Offset}
+                                            rank2Offset={rank2Offset}
+                                            suit2Offset={suit2Offset}
                                         />
                                         <VpipDialog
                                             disabled={hasVpip || !isActive}

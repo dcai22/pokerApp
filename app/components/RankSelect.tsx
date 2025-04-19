@@ -1,22 +1,21 @@
 import { Card } from "server/interface";
 import { FormControl, FormItem, FormLabel } from "./ui/form";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
+import { shiftArray } from "~/helpers";
 
 interface RankSelectProps {
     onValueChange: ((value: string) => void) | undefined,
-    randomiser: number[],
+    offset: number,
 }
 
-export default function RankSelect({ onValueChange, randomiser }: RankSelectProps) {
+export default function RankSelect({ onValueChange, offset }: RankSelectProps) {
     return (
         <RadioGroup
             onValueChange={onValueChange}
             defaultValue=""
             className="flex flex-col space-y-1"
         >
-            {Card.ranks.map((value, i) => ({ value, sort: randomiser[i] }))
-                .sort((a, b) => a.sort - b.sort)
-                .map(({ value }) => value)
+            {shiftArray(Card.ranks, offset)
                 .map((e, i) => 
                     <FormItem className="flex items-center space-x-3 space-y-0" key={i}>
                         <FormControl>
