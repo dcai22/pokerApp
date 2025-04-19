@@ -356,11 +356,16 @@ export default function Table() {
         const rank2 = data.rank2;
         const suit2 = data.suit2;
 
+        if (rank1 === rank2 && suit1 === suit2) {
+            console.log("Error: Cards can't be the same. Please try again.");
+            return;
+        }
+
         const newHand = [rank1, suit1, rank2, suit2].includes("")
             ? new Hand(null, null)
             : new Hand(new Card(rank1, suit1), new Card(rank2, suit2));
-        if (rank1 === rank2 && suit1 === suit2) {
-            console.log("Error: Cards can't be the same. Please try again.");
+        if (newHand.isNull()) {
+            console.log("Error: Not all fields selected. Please try again.");
             return;
         }
         if (!hasVpip) {
