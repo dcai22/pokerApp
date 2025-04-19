@@ -28,7 +28,7 @@ export default function RankSelect({ onValueChange, offset }: RankSelectProps) {
                     <FormItem className="flex items-center space-x-3 space-y-0" key={i}>
                         <FormControl className="checked:bg-black">
                             <RadioGroupPrimitive.Item value={e} asChild>
-                                <Button className={`${value === e ? "bg-gray-500 text-white" : "bg-white text-gray-500"} border-1 border-gray-200 shadow-xs hover:bg-gray-500 hover:text-white w-20`}>
+                                <Button className={`${value === e ? "bg-gray-500 text-white" : "bg-white text-gray-500"} border-1 border-gray-200 shadow-xs hover:bg-gray-500 hover:text-white w-full`}>
                                     {e}
                                 </Button>
                             </RadioGroupPrimitive.Item>
