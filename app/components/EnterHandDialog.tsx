@@ -11,13 +11,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 interface EnterHandDialogProps {
     disabled: boolean,
     onEnterHand(data: z.infer<typeof handFormSchema>): Promise<void>,
-    rank1Randomiser: number[],
-    suit1Randomiser: number[],
-    rank2Randomiser: number[],
-    suit2Randomiser: number[],
+    rank1Offset: number,
+    suit1Offset: number,
+    rank2Offset: number,
+    suit2Offset: number,
 }
 
-export default function EnterHandDialog({ disabled, onEnterHand, rank1Randomiser, suit1Randomiser, rank2Randomiser, suit2Randomiser }: EnterHandDialogProps) {
+export default function EnterHandDialog({ disabled, onEnterHand, rank1Offset, suit1Offset, rank2Offset, suit2Offset }: EnterHandDialogProps) {
     const handForm = useForm<z.infer<typeof handFormSchema>>({
         resolver: zodResolver(handFormSchema),
         defaultValues: {
@@ -41,7 +41,7 @@ export default function EnterHandDialog({ disabled, onEnterHand, rank1Randomiser
                                 Enter Hand
                             </DialogTitle>
                             <DialogDescription>
-                                Fields are randomised every hand to prevent cheating
+                                Fields are shifted every hand to prevent cheating
                             </DialogDescription>
                         </DialogHeader>
                         <div className="flex w-full h-full">
@@ -55,7 +55,7 @@ export default function EnterHandDialog({ disabled, onEnterHand, rank1Randomiser
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormControl>
-                                                <RankSelect onValueChange={field.onChange} randomiser={rank1Randomiser} />
+                                                <RankSelect onValueChange={field.onChange} offset={rank1Offset} />
                                             </FormControl>
                                         </FormItem>
                                     )}
@@ -71,7 +71,7 @@ export default function EnterHandDialog({ disabled, onEnterHand, rank1Randomiser
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormControl>
-                                                <SuitSelect onValueChange={field.onChange} randomiser={suit1Randomiser} />
+                                                <SuitSelect onValueChange={field.onChange} offset={suit1Offset} />
                                             </FormControl>
                                         </FormItem>
                                     )}
@@ -87,7 +87,7 @@ export default function EnterHandDialog({ disabled, onEnterHand, rank1Randomiser
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormControl>
-                                                <RankSelect onValueChange={field.onChange} randomiser={rank2Randomiser} />
+                                                <RankSelect onValueChange={field.onChange} offset={rank2Offset} />
                                             </FormControl>
                                         </FormItem>
                                     )}
@@ -103,7 +103,7 @@ export default function EnterHandDialog({ disabled, onEnterHand, rank1Randomiser
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormControl>
-                                                <SuitSelect onValueChange={field.onChange} randomiser={suit2Randomiser} />
+                                                <SuitSelect onValueChange={field.onChange} offset={suit2Offset} />
                                             </FormControl>
                                         </FormItem>
                                     )}
