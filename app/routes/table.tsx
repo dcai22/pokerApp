@@ -471,7 +471,7 @@ export default function Table() {
                         </div>
                         <div className="flex justify-center flex-col w-15/29 p-2">
                             <Buyins players={players} username={username} />
-                            <BuyinDialog onBuyin={onBuyin} />
+                            <BuyinDialog onBuyin={onBuyin} disabled={hasEnded} />
                             <BuyinHistoryDialog playerNames={players.map((p) => p.name)} buyins={buyinHistory} />
                         </div>
                     </div>

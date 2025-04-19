@@ -9,9 +9,10 @@ import { buyinFormSchema } from "~/formSchemas";
 
 interface BuyinDialogProps {
     onBuyin(value: z.infer<typeof buyinFormSchema>): Promise<void>,
+    disabled?: boolean | undefined;
 }
 
-export default function BuyinDialog({ onBuyin }: BuyinDialogProps) {
+export default function BuyinDialog({ onBuyin, disabled }: BuyinDialogProps) {
     const buyinForm = useForm<z.infer<typeof buyinFormSchema>>({
         resolver: zodResolver(buyinFormSchema),
         defaultValues: {
@@ -22,7 +23,7 @@ export default function BuyinDialog({ onBuyin }: BuyinDialogProps) {
     return (
         <Dialog>
             <DialogTrigger asChild>
-                <Button className="my-2">Buyin</Button>
+                <Button className="my-2" disabled={disabled}>Buyin</Button>
             </DialogTrigger>
             <Form {...buyinForm}>
                 <DialogContent className="w-60">
