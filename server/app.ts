@@ -65,25 +65,42 @@ app.delete('/removePlayer', async (req: Request, res: Response) => {
         // delete all data related to tables owned by player
         for (const tableId of tableIds) {
             await pool.query(
-                `
-                DELETE FROM buyins WHERE table_id=$1;
-                DELETE FROM hands WHERE table_id=$1;
-                DELETE FROM table_players WHERE table_id=$1;
-                DELETE FROM tables WHERE id=$1;
-                `,
+                "DELETE FROM buyins WHERE table_id=$1",
+                [tableId]
+            );
+            await pool.query(
+                "DELETE FROM hands WHERE table_id=$1",
+                [tableId]
+            );
+            await pool.query(
+                "DELETE FROM table_players WHERE table_id=$1",
+                [tableId]
+            );
+            await pool.query(
+                "DELETE FROM tables WHERE id=$1",
                 [tableId]
             );
         }
 
         // delete all data related to player
         await pool.query(
-            `
-            DELETE FROM tokens WHERE player_id=$1;
-            DELETE FROM table_players WHERE player_id=$1;
-            DELETE FROM hands WHERE player_id=$1;
-            DELETE FROM buyins WHERE player_id=$1;
-            DELETE FROM players WHERE id=$1;
-            `,
+            "DELETE FROM tokens WHERE player_id=$1;",
+            [playerId]
+        );
+        await pool.query(
+            "DELETE FROM table_players WHERE player_id=$1;",
+            [playerId]
+        );
+        await pool.query(
+            "DELETE FROM hands WHERE player_id=$1;",
+            [playerId]
+        );
+        await pool.query(
+            "DELETE FROM buyins WHERE player_id=$1;",
+            [playerId]
+        );
+        await pool.query(
+            "DELETE FROM players WHERE id=$1;",
             [playerId]
         );
 
