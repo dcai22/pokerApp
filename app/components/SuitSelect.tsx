@@ -14,6 +14,26 @@ interface SuitSelectProps {
 export default function SuitSelect({ onValueChange, offset }: SuitSelectProps) {
     const [value, setValue] = useState("");
 
+    function defaultColour(suit: string) {
+        if (!Card.suits.includes(suit)) return "";
+
+        if (["d", "h"].includes(suit)) {
+            return "text-red-500";
+        } else {
+            return "text-black";
+        }
+    }
+
+    function activeColour(suit: string) {
+        if (!Card.suits.includes(suit)) return "";
+
+        if (["d", "h"].includes(suit)) {
+            return "text-red-300";
+        } else {
+            return "text-white";
+        }
+    }
+
     return (
         <RadioGroup
             onValueChange={(v) => {
@@ -27,8 +47,12 @@ export default function SuitSelect({ onValueChange, offset }: SuitSelectProps) {
                 .map((e, i) =>
                     <FormItem className="flex items-center space-x-3 space-y-0" key={i}>
                         <FormControl className="checked:bg-black">
-                            <RadioGroupPrimitive.Item value={e}>
-                                <Button className={` ${["d", "h"].includes(e) ? "text-red-500" : "text-black"} ${value === e ? "bg-gray-500 text-white" : "bg-white"} border-1 border-gray-200 shadow-xs hover:bg-gray-500 hover:text-white w-15`}>
+                            <RadioGroupPrimitive.Item value={e} asChild>
+                                <Button className={`${value === e
+                                        ? `bg-gray-500 ${activeColour(e)}`
+                                        : `bg-white ${defaultColour(e)}`}
+                                    border-1 border-gray-200 shadow-xs hover:bg-gray-500 hover:${activeColour(e)} w-20`
+                                }>
                                     {Card.prettySuit(e)}
                                 </Button>
                             </RadioGroupPrimitive.Item>

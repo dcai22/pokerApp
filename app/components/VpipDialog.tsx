@@ -54,7 +54,7 @@ export default function VpipDialog({ disabled, onVpip }: VpipDialogProps) {
                                         >
                                             <FormItem className="flex items-center space-y-0">
                                                 <FormControl className="checked:bg-black">
-                                                    <RadioGroupPrimitive.Item value="no">
+                                                    <RadioGroupPrimitive.Item value="no" asChild>
                                                         <Button className={`${value === "no" ? "bg-gray-500 text-white" : "bg-white text-gray-500"} border-1 border-gray-200 shadow-xs hover:bg-gray-500 hover:text-white w-22`}>
                                                             No
                                                         </Button>
@@ -63,7 +63,7 @@ export default function VpipDialog({ disabled, onVpip }: VpipDialogProps) {
                                             </FormItem>
                                             <FormItem className="flex items-center space-y-0">
                                                 <FormControl className="checked:bg-black">
-                                                    <RadioGroupPrimitive.Item value="yes">
+                                                    <RadioGroupPrimitive.Item value="yes" asChild>
                                                         <Button className={`${value === "yes" ? "bg-gray-500 text-white" : "bg-white text-gray-500"} border-1 border-gray-200 shadow-xs hover:bg-gray-500 hover:text-white w-22`}>
                                                             Yes
                                                         </Button>
