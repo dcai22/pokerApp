@@ -44,70 +44,72 @@ export default function EnterHandDialog({ disabled, onEnterHand, rank1Offset, su
                                 Fields are shifted every hand to prevent cheating
                             </DialogDescription>
                         </DialogHeader>
-                        <div className="flex w-full h-full">
-                            <div className="flex flex-col w-full">
-                                <FormLabel className="my-4">
-                                    1. Rank
+                        <div className="flex w-full h-full divide-x mt-4">
+                            <div className="flex flex-col w-full h-full p-2">
+                                <FormLabel className="justify-center">
+                                    Card 1
                                 </FormLabel>
-                                <FormField
-                                    control={handForm.control}
-                                    name="rank1"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormControl>
-                                                <RankSelect onValueChange={field.onChange} offset={rank1Offset} />
-                                            </FormControl>
-                                        </FormItem>
-                                    )}
-                                />
+                                <div className="flex w-full">
+                                    <div className="flex flex-col w-full p-2">
+                                        <FormField
+                                            control={handForm.control}
+                                            name="rank1"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormControl>
+                                                        <RankSelect onValueChange={field.onChange} offset={rank1Offset} />
+                                                    </FormControl>
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </div>
+                                    <div className="flex flex-col w-full p-2">
+                                        <FormField
+                                            control={handForm.control}
+                                            name="suit1"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormControl>
+                                                        <SuitSelect onValueChange={field.onChange} offset={suit1Offset} />
+                                                    </FormControl>
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </div>
+                                </div>
                             </div>
-                            <div className="flex flex-col w-full">
-                                <FormLabel className="my-4">
-                                    Suit
+                            <div className="flex flex-col w-full h-full p-2">
+                                <FormLabel className="justify-center">
+                                    Card 2
                                 </FormLabel>
-                                <FormField
-                                    control={handForm.control}
-                                    name="suit1"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormControl>
-                                                <SuitSelect onValueChange={field.onChange} offset={suit1Offset} />
-                                            </FormControl>
-                                        </FormItem>
-                                    )}
-                                />
-                            </div>
-                            <div className="flex flex-col w-full">
-                                <FormLabel className="my-4">
-                                    2. Rank
-                                </FormLabel>
-                                <FormField
-                                    control={handForm.control}
-                                    name="rank2"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormControl>
-                                                <RankSelect onValueChange={field.onChange} offset={rank2Offset} />
-                                            </FormControl>
-                                        </FormItem>
-                                    )}
-                                />
-                            </div>
-                            <div className="flex flex-col w-full">
-                                <FormLabel className="my-4">
-                                    Suit
-                                </FormLabel>
-                                <FormField
-                                    control={handForm.control}
-                                    name="suit2"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormControl>
-                                                <SuitSelect onValueChange={field.onChange} offset={suit2Offset} />
-                                            </FormControl>
-                                        </FormItem>
-                                    )}
-                                />
+                                <div className="flex w-full">
+                                    <div className="flex flex-col w-full p-2">
+                                        <FormField
+                                            control={handForm.control}
+                                            name="rank2"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormControl>
+                                                        <RankSelect onValueChange={field.onChange} offset={rank2Offset} />
+                                                    </FormControl>
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </div>
+                                    <div className="flex flex-col w-full p-2">
+                                        <FormField
+                                            control={handForm.control}
+                                            name="suit2"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormControl>
+                                                        <SuitSelect onValueChange={field.onChange} offset={suit2Offset} />
+                                                    </FormControl>
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <DialogFooter className="mt-6">

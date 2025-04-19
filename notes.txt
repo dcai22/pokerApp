@@ -353,3 +353,7 @@ Successfully deployed app.
 19/04/2025
 It seems running bcrypt.compare() on so many tokens is very expensive.
 This gives me incentive to have tokens expire in the database so that fewer hashes need to be checked.
+
+Tailwind fails to properly render dynamic class names involving `hover:`.
+For example, `hover:{getTextColour()}` doesn't work, since getTextColour() is generated dynamically.
+Instead, consider hardcoding all cases with the full name, e.g. `isRed() ? "hover:text-red-500" : "hover:text-black"`.

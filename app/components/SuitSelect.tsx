@@ -14,24 +14,22 @@ interface SuitSelectProps {
 export default function SuitSelect({ onValueChange, offset }: SuitSelectProps) {
     const [value, setValue] = useState("");
 
-    function defaultColour(suit: string) {
-        if (!Card.suits.includes(suit)) return "";
+    const defaultRed = "text-red-500";
+    const activeRed = "text-red-300";
+    const defaultBlack = "text-black";
+    const activeBlack = "text-gray-300";
 
-        if (["d", "h"].includes(suit)) {
-            return "text-red-500";
-        } else {
-            return "text-black";
-        }
+    function isRed(suit: string) {
+        if (["d", "h"].includes(suit)) return true;
+        return false;
+    }
+
+    function defaultColour(suit: string) {
+        return isRed(suit) ? defaultRed : defaultBlack;
     }
 
     function activeColour(suit: string) {
-        if (!Card.suits.includes(suit)) return "";
-
-        if (["d", "h"].includes(suit)) {
-            return "text-red-300";
-        } else {
-            return "text-white";
-        }
+        return isRed(suit) ? activeRed : activeBlack;
     }
 
     return (
@@ -50,8 +48,9 @@ export default function SuitSelect({ onValueChange, offset }: SuitSelectProps) {
                             <RadioGroupPrimitive.Item value={e} asChild>
                                 <Button className={`${value === e
                                         ? `bg-gray-500 ${activeColour(e)}`
-                                        : `bg-white ${defaultColour(e)}`}
-                                    border-1 border-gray-200 shadow-xs hover:bg-gray-500 hover:${activeColour(e)} w-20`
+                                        : `bg-white ${defaultColour(e)}`
+                                    } border-1 border-gray-200 shadow-xs hover:bg-gray-500 w-full
+                                    ${isRed(e) ? `hover:${activeRed}` : `hover:${activeBlack}`}`
                                 }>
                                     {Card.prettySuit(e)}
                                 </Button>
