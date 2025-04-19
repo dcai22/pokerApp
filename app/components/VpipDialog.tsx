@@ -1,11 +1,13 @@
 import { useForm } from "react-hook-form";
 import { Button } from "./ui/button";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel } from "./ui/form";
-import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
+import { Form, FormControl, FormField, FormItem } from "./ui/form";
+import { RadioGroup } from "./ui/radio-group";
+import * as RadioGroupPrimitive from "@radix-ui/react-radio-group"
 import { z } from "zod";
 import { vpipFormSchema } from "~/formSchemas";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
 
 interface VpipDialogProps {
     disabled: boolean,
@@ -19,15 +21,18 @@ export default function VpipDialog({ disabled, onVpip }: VpipDialogProps) {
             option: "no",
         },
     });
+
+    const [value, setValue] = useState("no");
+
     return (
         <Dialog>
             <DialogTrigger asChild>
                 <Button className="my-1" disabled={disabled}>VPIP</Button>
             </DialogTrigger>
             <Form {...vpipForm}>
-                <DialogContent className="w-50 h-45">
-                    <form onSubmit={vpipForm.handleSubmit(onVpip)} className="flex flex-col">
-                        <DialogHeader className="mb-2">
+                <DialogContent className="flex w-60 h-45 items-center">
+                    <form onSubmit={vpipForm.handleSubmit(onVpip)} className="flex flex-col w-full">
+                        <DialogHeader className="mb-2 items-center">
                             <DialogTitle>
                                 VPIP
                             </DialogTitle>
@@ -40,34 +45,39 @@ export default function VpipDialog({ disabled, onVpip }: VpipDialogProps) {
                                 <FormItem>
                                     <FormControl>
                                         <RadioGroup
-                                            onValueChange={field.onChange}
+                                            onValueChange={v => {
+                                                setValue(v);
+                                                field.onChange(v);
+                                            }}
                                             defaultValue="no"
-                                            className="flex flex-col space-y-1"
+                                            className="flex"
                                         >
-                                            <FormItem className="flex items-center space-x-3 space-y-0">
-                                                <FormControl>
-                                                <RadioGroupItem value="no" />
+                                            <FormItem className="flex items-center space-y-0">
+                                                <FormControl className="checked:bg-black">
+                                                    <RadioGroupPrimitive.Item value="no">
+                                                        <Button className={`${value === "no" ? "bg-gray-500 text-white" : "bg-white text-gray-500"} border-1 border-gray-200 shadow-xs hover:bg-gray-500 hover:text-white w-22`}>
+                                                            No
+                                                        </Button>
+                                                    </RadioGroupPrimitive.Item>
                                                 </FormControl>
-                                                <FormLabel className="font-normal">
-                                                No
-                                                </FormLabel>
                                             </FormItem>
-                                            <FormItem className="flex items-center space-x-3 space-y-0">
-                                                <FormControl>
-                                                <RadioGroupItem value="yes" />
+                                            <FormItem className="flex items-center space-y-0">
+                                                <FormControl className="checked:bg-black">
+                                                    <RadioGroupPrimitive.Item value="yes">
+                                                        <Button className={`${value === "yes" ? "bg-gray-500 text-white" : "bg-white text-gray-500"} border-1 border-gray-200 shadow-xs hover:bg-gray-500 hover:text-white w-22`}>
+                                                            Yes
+                                                        </Button>
+                                                    </RadioGroupPrimitive.Item>
                                                 </FormControl>
-                                                <FormLabel className="font-normal">
-                                                Yes
-                                                </FormLabel>
                                             </FormItem>
                                         </RadioGroup>
                                     </FormControl>
                                 </FormItem>
                             )}
                         />
-                        <DialogFooter className="mt-5">
+                        <DialogFooter className="mt-5 w-full">
                             <DialogClose asChild>
-                                <Button type="submit">Confirm</Button>
+                                <Button type="submit" className="w-full">Confirm</Button>
                             </DialogClose>
                         </DialogFooter>
                     </form>
