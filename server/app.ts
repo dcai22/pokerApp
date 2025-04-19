@@ -51,8 +51,46 @@ app.post('/registerPlayer', async (req: Request, res: Response) => {
     }
 });
 
-app.delete('/removePlayer', (req: Request, res: Response) => {
-    // TODO
+app.delete('/removePlayer', async (req: Request, res: Response) => {
+    const playerId = req.query.playerId;
+
+    try {
+        // all tables owned by player
+        const tableRes = await pool.query(
+            "SELECT id FROM tables WHERE owner=$1",
+            [playerId]
+        );
+        const tableIds = tableRes.rows.map(t => t.table_id);
+
+        // delete all data related to tables owned by player
+        for (const tableId of tableIds) {
+            await pool.query(
+                `
+                DELETE FROM buyins WHERE table_id=$1;
+                DELETE FROM hands WHERE table_id=$1;
+                DELETE FROM table_players WHERE table_id=$1;
+                DELETE FROM tables WHERE id=$1;
+                `,
+                [tableId]
+            );
+        }
+
+        // delete all data related to player
+        await pool.query(
+            `
+            DELETE FROM tokens WHERE player_id=$1;
+            DELETE FROM table_players WHERE player_id=$1;
+            DELETE FROM hands WHERE player_id=$1;
+            DELETE FROM buyins WHERE player_id=$1;
+            DELETE FROM players WHERE id=$1;
+            `,
+            [playerId]
+        );
+
+        res.json();
+    } catch (err) {
+        console.log(err);
+    }
 });
 
 app.post('/login', async (req: Request, res: Response) => {
