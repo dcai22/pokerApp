@@ -11,6 +11,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "~/components/ui/form";
 import { API_BASE } from "~/root";
+import DeleteAccountButton from "~/components/DeleteAccountButton";
 
 const formSchema = z.object({
     tableName: z.string().min(1, { message: "*required field" }),
@@ -85,6 +86,7 @@ export default function CreateTable() {
 
     return (
         <div className="flex flex-col justify-center items-center w-screen h-screen">
+            <DeleteAccountButton playerId={playerId} />
             <div className="flex flex-col">
                 <Greeting name={username} />
                 <h1 className="mb-2">Create a new table!</h1>

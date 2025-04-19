@@ -11,6 +11,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "~/components/ui/form";
 import { API_BASE } from "~/root";
+import DeleteAccountButton from "~/components/DeleteAccountButton";
 
 const formSchema = z.object({
     tableId: z.string(),
@@ -81,6 +82,7 @@ function JoinTable() {
 
     return (
         <div className="flex flex-col justify-center items-center w-screen h-screen">
+            <DeleteAccountButton playerId={playerId} />
             <div className="flex flex-col">
                 <Greeting name={username} />
                 <h1>Join a table:</h1>
