@@ -25,7 +25,7 @@ export default function Login() {
     });
 
     useEffect(() => {
-        if (sessionStorage.getItem("token")) navigate("/joinTable");
+        if (localStorage.getItem("token")) navigate("/joinTable");
     }, []);
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -42,8 +42,8 @@ export default function Login() {
             );
             
             if (res.status === 200) {
-                sessionStorage.setItem("token", res.data.token);
-                sessionStorage.setItem("playerId", res.data.player_id)
+                localStorage.setItem("token", res.data.token);
+                localStorage.setItem("playerId", res.data.player_id)
                 navigate("/joinTable");
             } else {
                 window.alert("login error");

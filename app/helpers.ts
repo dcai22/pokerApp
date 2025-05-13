@@ -10,11 +10,11 @@ export async function genHash(str: string) {
 }
 
 export async function authToken() {
-    const token = sessionStorage.getItem("token");
+    const token = localStorage.getItem("token");
     if (!token) return { navigate: true };
 
     // converts playerId to int
-    const pidString = sessionStorage.getItem("playerId");
+    const pidString = localStorage.getItem("playerId");
     if (pidString === null || Number.isNaN(parseInt(pidString))) return { navigate: true };
     const playerId = parseInt(pidString);
 

@@ -16,13 +16,13 @@ export default function deleteAccountButton({ playerId }: deleteAccountButtonPro
             await axios.delete(
                 `${API_BASE}/removePlayer?playerId=${playerId}`
             );
-            sessionStorage.removeItem("token");
-            sessionStorage.removeItem("playerId");
+            localStorage.removeItem("token");
+            localStorage.removeItem("playerId");
             navigate("/login");
         } catch (err) {
             console.log(err);
-            sessionStorage.removeItem("token");
-            sessionStorage.removeItem("playerId");
+            localStorage.removeItem("token");
+            localStorage.removeItem("playerId");
             navigate("/login");
         }
     }

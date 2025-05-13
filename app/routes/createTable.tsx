@@ -40,8 +40,8 @@ export default function CreateTable() {
         async function authAndInit() {
             const res = await authToken();
             if (res.navigate) {
-                sessionStorage.removeItem("token");
-                sessionStorage.removeItem("playerId");
+                localStorage.removeItem("token");
+                localStorage.removeItem("playerId");
                 navigate("/login");
             } else {
                 setToken(res.token as string);

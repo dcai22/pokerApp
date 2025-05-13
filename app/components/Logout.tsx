@@ -15,8 +15,8 @@ export default function Logout({ playerId, token }: LogoutProps) {
         await axios.delete(
             `${API_BASE}/deleteToken?playerId=${playerId}&token=${token}`,
         );
-        sessionStorage.removeItem("token");
-        sessionStorage.removeItem("playerId");
+        localStorage.removeItem("token");
+        localStorage.removeItem("playerId");
 
         navigate("/login");
     }
