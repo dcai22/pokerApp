@@ -2,8 +2,6 @@ import { useNavigate } from "react-router";
 import axios from "axios";
 import { Button } from "./ui/button";
 import { API_BASE } from "~/root";
-import { useState } from "react";
-import { Spinner } from "./ui/spinner";
 
 interface LogoutProps {
     playerId: number,

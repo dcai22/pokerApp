@@ -365,6 +365,7 @@ Sensitive storage stored in .env and server/db.ts was removed with the help of G
 Today's goal is to improve the user experience.
 Data stored in session storage will be moved to local storage. This should prevent a bug where users are redirected
 to the home screen if they have been inactive for too long.
-Player name will also be stored in local storage.
-Other tokens for a player will be purged upon login.
+Other tokens for a player will be purged upon login. This means a player can only be logged in on one device at a time.
 Loading spinners will be added where required to reduce loading time frustration.
+
+Fixed bug in backend where the local storage token wasn't actually checked.

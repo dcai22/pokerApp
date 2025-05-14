@@ -43,7 +43,7 @@ export async function genToken(player_id: number) {
     }
 }
 
-// returns { player_id, username }
+// returns { message } or { username }
 export async function authToken(token: string, playerId: number) {
     const tokenRes = await pool.query(
         "SELECT * FROM tokens WHERE player_id=$1",
@@ -51,9 +51,20 @@ export async function authToken(token: string, playerId: number) {
     );
     const playerTokens = tokenRes.rows;
 
-    const found = playerTokens.find((t) => bcrypt.compare(token, t.hash));
-    if (found === undefined) {
+    let hash;
+    for (const t of playerTokens) {
+        if (await bcrypt.compare(token, t.hash)) {
+            hash = t.hash;
+            break;
+        }
+    }
+    if (!hash) {
         return { message: "error: bad token" };
+    } else {
+        await pool.query(
+            "DELETE FROM tokens WHERE NOT hash=$1",
+            [hash]
+        );
     }
 
     const playerRes = await pool.query(

@@ -135,6 +135,10 @@ app.post('/login', async (req: Request, res: Response) => {
     }
 
     if (await bcrypt.compare(password, hashedPassword)) {
+        await pool.query(
+            "DELETE FROM tokens WHERE player_id=$1",
+            [player_id]
+        );
         const token = await genToken(player_id);
         res.json({ player_id, token });
         return;
