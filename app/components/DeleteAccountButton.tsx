@@ -6,21 +6,21 @@ import { useNavigate } from "react-router";
 
 interface deleteAccountButtonProps {
     playerId: number,
+    onSubmit(): void,
 }
 
-export default function deleteAccountButton({ playerId }: deleteAccountButtonProps) {
+export default function deleteAccountButton({ playerId, onSubmit }: deleteAccountButtonProps) {
     const navigate = useNavigate();
 
     async function handleClick() {
+        onSubmit();
         try {
             await axios.delete(
                 `${API_BASE}/removePlayer?playerId=${playerId}`
             );
-            localStorage.removeItem("token");
-            localStorage.removeItem("playerId");
-            navigate("/login");
         } catch (err) {
             console.log(err);
+        } finally {
             localStorage.removeItem("token");
             localStorage.removeItem("playerId");
             navigate("/login");

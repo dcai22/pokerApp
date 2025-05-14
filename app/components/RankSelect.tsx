@@ -7,7 +7,7 @@ import { Button } from "./ui/button";
 import { useState } from "react";
 
 interface RankSelectProps {
-    onValueChange: ((value: string) => void),
+    onValueChange(value: string): void,
     offset: number,
 }
 

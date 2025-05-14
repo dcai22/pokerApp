@@ -7,7 +7,7 @@ import { useState } from "react";
 import { Button } from "./ui/button";
 
 interface SuitSelectProps {
-    onValueChange: ((value: string) => void),
+    onValueChange(value: string): void,
     offset: number,
 }
 

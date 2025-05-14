@@ -2,7 +2,7 @@ import { useNavigate } from "react-router";
 import axios from "axios";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { genHash } from "~/helpers";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -10,6 +10,7 @@ import { useForm } from "react-hook-form";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "~/components/ui/form";
 import { illegalUsernames } from "~/restrictions";
 import { API_BASE } from "~/root";
+import { Spinner } from "~/components/ui/spinner";
 
 const formSchema = z.object({
     username: z.string().min(1, { message: "*required field" }),
@@ -17,6 +18,8 @@ const formSchema = z.object({
 });
 
 export default function Register() {
+    const [loadingText, setLoadingText] = useState("");
+
     const navigate = useNavigate();
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -31,6 +34,8 @@ export default function Register() {
     }, []);
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
+        setLoadingText("Creating account...");
+
         const username = values.username;
         const password = values.password;
 
@@ -53,12 +58,20 @@ export default function Register() {
                 localStorage.setItem("playerId", res.data.player_id);
                 navigate("/joinTable");
             } else {
+                setLoadingText("");
                 window.alert("register error");
             }
         } catch (err) {
+            setLoadingText("");
             window.alert("username is taken")
         }
     }
+
+    if (loadingText.length > 0) return (
+        <div className="flex flex-col justify-center items-center w-screen h-screen">
+            <Spinner size="large">{loadingText}</Spinner>
+        </div>
+    );
 
     return (
         <div className="flex flex-col justify-center items-center w-screen h-screen">

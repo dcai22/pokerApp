@@ -34,6 +34,7 @@ export default function CreateTable() {
     const hasRun = useRef(false);
 
     const [loadingText, setLoadingText] = useState("Loading...");
+    const [deletingAccount, setDeletingAccount] = useState(false);
 
     const [token, setToken] = useState("");
     const [playerId, setPlayerId] = useState(-1);
@@ -91,6 +92,12 @@ export default function CreateTable() {
         }
     }
 
+    if (deletingAccount) return (
+        <div className="flex flex-col justify-center items-center w-screen h-screen">
+            <Spinner size="large" className="text-red-400">Deleting account...</Spinner>
+        </div>
+    );
+
     if (loadingText.length > 0) return (
         <div className="flex flex-col justify-center items-center w-screen h-screen">
             <Spinner size="large">{loadingText}</Spinner>
@@ -99,7 +106,7 @@ export default function CreateTable() {
 
     return (
         <div className="flex flex-col justify-center items-center w-screen h-screen">
-            <DeleteAccountButton playerId={playerId} />
+            <DeleteAccountButton playerId={playerId} onSubmit={() => setDeletingAccount(true)} />
             <div className="flex flex-col">
                 <Greeting name={username} />
                 <h1 className="mb-2">Create a new table!</h1>
