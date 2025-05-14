@@ -29,7 +29,7 @@ function JoinTable() {
 
     const hasRun = useRef(false);
 
-    const [loading, setLoading] = useState(true);
+    const [loadingText, setLoadingText] = useState("Loading...");
 
     const [token, setToken] = useState("");
     const [playerId, setPlayerId] = useState(-1);
@@ -47,7 +47,7 @@ function JoinTable() {
                 setPlayerId(res.playerId as number);
                 setUsername(res.username);
             }
-            setLoading(false);
+            setLoadingText("");
         }
 
         if (!hasRun.current) {
@@ -59,7 +59,7 @@ function JoinTable() {
     }, []);
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
-        setLoading(true);
+        setLoadingText("Joining table...");
 
         const tableId = parseInt(values.tableId);
         if (!tableId) {
@@ -79,18 +79,18 @@ function JoinTable() {
             if (res.status === 200) {
                 navigate(`/table/${tableId}`);
             } else {
-                setLoading(false);
+                setLoadingText("");
                 window.alert("table does not exist");
             }
         } catch(err) {
-            setLoading(false);
+            setLoadingText("");
             window.alert("table does not exist");
         }
     }
 
-    if (loading) return (
+    if (loadingText.length > 0) return (
         <div className="flex flex-col justify-center items-center w-screen h-screen">
-            <Spinner />
+            <Spinner size="large">{loadingText}</Spinner>
         </div>
     );
 
@@ -122,7 +122,7 @@ function JoinTable() {
 
                 <h1 className="mb-1">Don't have a table?</h1>
                 <Button onClick={() => navigate(`/createTable`)} className="mb-10">Create a new table</Button>
-                <div className="flex flex-col w-full h-full" onClick={() => setLoading(true)}>
+                <div className="flex flex-col w-full h-full" onClick={() => setLoadingText("Logging out...")}>
                     <Logout playerId={playerId} token={token} />
                 </div>
             </div>

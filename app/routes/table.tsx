@@ -25,7 +25,7 @@ export default function Table() {
 
     const hasRun = useRef(false);
 
-    const [loading, setLoading] = useState(true);
+    const [loadingText, setLoadingText] = useState("Loading...");
     const [changingStatus, setChangingStatus] = useState(false);
 
     const tableId = useParams().tableId as string;
@@ -174,7 +174,7 @@ export default function Table() {
             socket.emit("joinTable");
             await updateBuyinHistory();
 
-            setLoading(false);
+            setLoadingText("");
         }
 
         if (!hasRun.current) {
@@ -252,8 +252,6 @@ export default function Table() {
     }, [hasEnded]);
 
     async function handleLeave() {
-        setLoading(true);
-
         socket.emit("leaveTable");
         navigate("/joinTable");
     }
@@ -466,9 +464,9 @@ export default function Table() {
         );
     }
 
-    if (loading) return (
+    if (loadingText.length > 0) return (
         <div className="flex flex-col justify-center items-center w-screen h-screen">
-            <Spinner />
+            <Spinner size="large">{loadingText}</Spinner>
         </div>
     );
 

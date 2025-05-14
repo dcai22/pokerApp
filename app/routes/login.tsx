@@ -16,7 +16,7 @@ const formSchema = z.object({
 });
 
 export default function Login() {
-    const [loading, setLoading] = useState(false);
+    const [loadingText, setLoadingText] = useState("");
 
     const navigate = useNavigate();
     const form = useForm<z.infer<typeof formSchema>>({
@@ -32,7 +32,7 @@ export default function Login() {
     }, []);
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
-        setLoading(true);
+        setLoadingText("Logging in...");
 
         const username = values.username;
         const password = values.password;
@@ -51,18 +51,18 @@ export default function Login() {
                 localStorage.setItem("playerId", res.data.player_id)
                 navigate("/joinTable");
             } else {
-                setLoading(false);
+                setLoadingText("");
                 window.alert("login error");
             }
         } catch (err) {
-            setLoading(false);
+            setLoadingText("");
             window.alert("incorrect username or password");
         }
     }
 
-    if (loading) return (
+    if (loadingText.length > 0) return (
         <div className="flex flex-col justify-center items-center w-screen h-screen">
-            <Spinner />
+            <Spinner size="large">{loadingText}</Spinner>
         </div>
     );
 
