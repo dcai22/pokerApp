@@ -29,6 +29,10 @@ io.on("connection", (socket) => {
     socket.on("disconnect", async () => {
         console.log("user disconnected");
         const playerData = sockets.get(_id);
+        if (!playerData) {
+            console.warn("playerData not found for socket:", _id);
+            return;
+        }
         try {
             await pool.query(
                 "UPDATE table_players SET is_active=false WHERE table_id=$1 AND player_id=$2",
@@ -51,6 +55,10 @@ io.on("connection", (socket) => {
 
     socket.on("joinTable", async () => {
         const playerData = sockets.get(_id);
+        if (!playerData) {
+            console.warn("playerData not found for socket:", _id);
+            return;
+        }
         console.log(`New player has joined table with id=${playerData.tableId}`);
 
         try {
@@ -63,6 +71,10 @@ io.on("connection", (socket) => {
     socket.on("startGame", async () => {
         try {
             const playerData = sockets.get(_id);
+            if (!playerData) {
+                console.warn("playerData not found for socket:", _id);
+                return;
+            }
             await pool.query(
                 "UPDATE tables SET has_started=true WHERE id=$1",
                 [playerData.tableId]
@@ -76,6 +88,10 @@ io.on("connection", (socket) => {
 
     socket.on("newBuyin", async (buyinTime) => {
         const playerData = sockets.get(_id);
+        if (!playerData) {
+            console.warn("playerData not found for socket:", _id);
+            return;
+        }
         io.to(playerData.tableId).emit("updatePlayers", await getTablePlayers(playerData.tableId));
 
         await new Promise(r => setTimeout(r, 2000));
@@ -85,6 +101,10 @@ io.on("connection", (socket) => {
     socket.on("checkHandDone", async (handNum) => {
         try {
             const playerData = sockets.get(_id);
+            if (!playerData) {
+                console.warn("playerData not found for socket:", _id);
+                return;
+            }
 
             io.to(playerData.tableId).emit("updatePlayers", await getTablePlayers(playerData.tableId));
 
@@ -113,6 +133,10 @@ io.on("connection", (socket) => {
     socket.on("alertNextHand", async (numHands) => {
         try {
             const playerData = sockets.get(_id);
+            if (!playerData) {
+                console.warn("playerData not found for socket:", _id);
+                return;
+            }
             await pool.query(
                 "UPDATE tables SET num_hands=$1 WHERE id=$2",
                 [numHands, playerData.tableId]
@@ -126,6 +150,10 @@ io.on("connection", (socket) => {
     socket.on("changeStatus", async () => {
         try {
             const playerData = sockets.get(_id);
+            if (!playerData) {
+                console.warn("playerData not found for socket:", _id);
+                return;
+            }
             const tablePlayerRes = await pool.query(
                 "SELECT * FROM table_players WHERE table_id=$1 AND player_id=$2",
                 [playerData.tableId, playerData.playerId]
@@ -146,6 +174,10 @@ io.on("connection", (socket) => {
     socket.on("leaveTable", async () => {
         try {
             const playerData = sockets.get(_id);
+            if (!playerData) {
+                console.warn("playerData not found for socket:", _id);
+                return;
+            }
             await pool.query(
                 "UPDATE table_players SET is_active=false WHERE table_id=$1 AND player_id=$2",
                 [playerData.tableId, playerData.playerId]
@@ -159,11 +191,19 @@ io.on("connection", (socket) => {
 
     socket.on("suggestEndGame", async () => {
         const playerData = sockets.get(_id);
+        if (!playerData) {
+            console.warn("playerData not found for socket:", _id);
+            return;
+        }
         io.to(playerData.tableId).emit("endGameSuggested");
     });
 
     socket.on("agreeEndGame", async () => {
         const playerData = sockets.get(_id);
+        if (!playerData) {
+            console.warn("playerData not found for socket:", _id);
+            return;
+        }
         try {
             await pool.query(
                 "UPDATE table_players SET want_end_game=true WHERE table_id=$1 AND player_id=$2",
@@ -184,6 +224,10 @@ io.on("connection", (socket) => {
 
     socket.on("disagreeEndGame", async () => {
         const playerData = sockets.get(_id);
+        if (!playerData) {
+            console.warn("playerData not found for socket:", _id);
+            return;
+        }
         try {
             await cancelPlayersAgree(playerData.tableId);
             io.to(playerData.tableId).emit("cancelEndGame");
