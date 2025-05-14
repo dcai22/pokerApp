@@ -26,6 +26,7 @@ export default function Table() {
     const hasRun = useRef(false);
 
     const [loading, setLoading] = useState(true);
+    const [changingStatus, setChangingStatus] = useState(false);
 
     const tableId = useParams().tableId as string;
     const [playerId, setPlayerId] = useState(-1);
@@ -411,9 +412,20 @@ export default function Table() {
         socket.emit("alertNextHand", handNum);
     }
 
-    function handleChangeStatus() {
+    async function handleChangeStatus() {
+        setChangingStatus(true);
+        
+        setPlayers(players.map((p) => {
+            if (p.name === username) {
+                return Object.assign(p, {isActive: !p.isActive});
+            } else {
+                return p;
+            }
+        }));
+        
         socket.emit("changeStatus");
         socket.once("changeStatusDone", () => {
+            setChangingStatus(false);
             socket.emit("checkHandDone", handNum);
         });
     }
@@ -466,7 +478,7 @@ export default function Table() {
                 ? <></>
                 : <div className="fixed top-0 z-50 w-full h-18 bg-gray-500/90 border-b border-black">
                     <div className="fixed top-4">
-                        <Button className="fixed left-5" onClick={handleChangeStatus}>
+                        <Button className="fixed left-5" onClick={handleChangeStatus} disabled={changingStatus}>
                             {isActive ? "Sit out" : "Deal me in"}
                         </Button>
                         <StatsDialog hands={handHistory} />
