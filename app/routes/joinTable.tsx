@@ -12,6 +12,7 @@ import { useForm } from "react-hook-form";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "~/components/ui/form";
 import { API_BASE } from "~/root";
 import DeleteAccountButton from "~/components/DeleteAccountButton";
+import { Spinner } from "~/components/ui/spinner";
 
 const formSchema = z.object({
     tableId: z.string(),
@@ -27,6 +28,8 @@ function JoinTable() {
     });
 
     const hasRun = useRef(false);
+
+    const [loading, setLoading] = useState(true);
 
     const [token, setToken] = useState("");
     const [playerId, setPlayerId] = useState(-1);
@@ -44,6 +47,7 @@ function JoinTable() {
                 setPlayerId(res.playerId as number);
                 setUsername(res.username);
             }
+            setLoading(false);
         }
 
         if (!hasRun.current) {
@@ -55,6 +59,8 @@ function JoinTable() {
     }, []);
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
+        setLoading(true);
+
         const tableId = parseInt(values.tableId);
         if (!tableId) {
             window.alert("Invalid Table ID");
@@ -73,12 +79,20 @@ function JoinTable() {
             if (res.status === 200) {
                 navigate(`/table/${tableId}`);
             } else {
+                setLoading(false);
                 window.alert("table does not exist");
             }
         } catch(err) {
+            setLoading(false);
             window.alert("table does not exist");
         }
     }
+
+    if (loading) return (
+        <div className="flex flex-col justify-center items-center w-screen h-screen">
+            <Spinner />
+        </div>
+    );
 
     return (
         <div className="flex flex-col justify-center items-center w-screen h-screen">
@@ -108,7 +122,9 @@ function JoinTable() {
 
                 <h1 className="mb-1">Don't have a table?</h1>
                 <Button onClick={() => navigate(`/createTable`)} className="mb-10">Create a new table</Button>
-                <Logout playerId={playerId} token={token} />
+                <div className="flex flex-col w-full h-full" onClick={() => setLoading(true)}>
+                    <Logout playerId={playerId} token={token} />
+                </div>
             </div>
         </div>
     );

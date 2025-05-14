@@ -357,3 +357,14 @@ This gives me incentive to have tokens expire in the database so that fewer hash
 Tailwind fails to properly render dynamic class names involving `hover:`.
 For example, `hover:{getTextColour()}` doesn't work, since getTextColour() is generated dynamically.
 Instead, consider hardcoding all cases with the full name, e.g. `isRed() ? "hover:text-red-500" : "hover:text-black"`.
+
+13/05/2025
+Sensitive storage stored in .env and server/db.ts was removed with the help of GitHub Support.
+
+14/05/2025
+Today's goal is to improve the user experience.
+Data stored in session storage will be moved to local storage. This should prevent a bug where users are redirected
+to the home screen if they have been inactive for too long.
+Player name will also be stored in local storage.
+Other tokens for a player will be purged upon login.
+Loading spinners will be added where required to reduce loading time frustration.

@@ -2,12 +2,13 @@ import { useNavigate } from "react-router";
 import axios from "axios";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "~/components/ui/form";
 import { API_BASE } from "~/root";
+import { Spinner } from "~/components/ui/spinner";
 
 const formSchema = z.object({
     username: z.string().min(1),
@@ -15,6 +16,8 @@ const formSchema = z.object({
 });
 
 export default function Login() {
+    const [loading, setLoading] = useState(false);
+
     const navigate = useNavigate();
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -29,6 +32,8 @@ export default function Login() {
     }, []);
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
+        setLoading(true);
+
         const username = values.username;
         const password = values.password;
 
@@ -46,12 +51,20 @@ export default function Login() {
                 localStorage.setItem("playerId", res.data.player_id)
                 navigate("/joinTable");
             } else {
+                setLoading(false);
                 window.alert("login error");
             }
         } catch (err) {
+            setLoading(false);
             window.alert("incorrect username or password");
         }
     }
+
+    if (loading) return (
+        <div className="flex flex-col justify-center items-center w-screen h-screen">
+            <Spinner />
+        </div>
+    );
 
     return (
         <div className="flex flex-col justify-center items-center w-screen h-screen">

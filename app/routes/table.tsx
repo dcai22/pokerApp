@@ -18,11 +18,14 @@ import EnterHandDialog from "~/components/EnterHandDialog";
 import VpipDialog from "~/components/VpipDialog";
 import StatsDialog from "~/components/StatsDialog";
 import TableStatsDialog from "~/components/TableStatsDialog";
+import { Spinner } from "~/components/ui/spinner";
 
 export default function Table() {
     const navigate = useNavigate();
 
     const hasRun = useRef(false);
+
+    const [loading, setLoading] = useState(true);
 
     const tableId = useParams().tableId as string;
     const [playerId, setPlayerId] = useState(-1);
@@ -169,6 +172,8 @@ export default function Table() {
 
             socket.emit("joinTable");
             await updateBuyinHistory();
+
+            setLoading(false);
         }
 
         if (!hasRun.current) {
@@ -246,6 +251,8 @@ export default function Table() {
     }, [hasEnded]);
 
     async function handleLeave() {
+        setLoading(true);
+
         socket.emit("leaveTable");
         navigate("/joinTable");
     }
@@ -446,6 +453,12 @@ export default function Table() {
             </div>
         );
     }
+
+    if (loading) return (
+        <div className="flex flex-col justify-center items-center w-screen h-screen">
+            <Spinner />
+        </div>
+    );
 
     return (
         <div className={`flex justify-center items-center h-screen w-screen ${hasEnded || (isActive && (!hasStarted || tableCanPlay())) ? "" : "bg-gray-500/40"}`}>
