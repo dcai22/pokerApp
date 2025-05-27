@@ -3,7 +3,7 @@ import cors from 'cors';
 
 import pool from "./db";
 import bcrypt from 'bcryptjs';
-import { authToken, genToken } from './helper';
+import { authToken, genToken, genTableId } from './helper';
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -46,6 +46,7 @@ app.post('/registerPlayer', async (req: Request, res: Response) => {
             return;
         }
     } catch(err) {
+        console.log("Error: ", err);
         res.status(400).json();
         return;
     }
@@ -188,20 +189,19 @@ app.post('/player/createTable', async (req: Request, res: Response) => {
     const playerId = req.body.playerId;
 
     // create table
-    let tableId;
+    let tableId = await genTableId();
     try {
         const dbRes = await pool.query(
-            "INSERT INTO tables(name, sb, bb, owner) VALUES($1, $2, $3, $4) RETURNING id;",
-            [tableName, sb, bb, playerId]
+            "INSERT INTO tables(id, name, sb, bb, owner) VALUES($1, $2, $3, $4, $5);",
+            [tableId, tableName, sb, bb, playerId]
         );
 
-        if (dbRes.rowCount) {
-            tableId = dbRes.rows[0].id;
-        } else {
+        if (dbRes.rowCount === 0) {
             res.status(400).json();
             return;
         }
     } catch(err) {
+        console.log("Error: ", err);
         res.status(400).json();
         return;
     }

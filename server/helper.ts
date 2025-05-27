@@ -152,3 +152,22 @@ export async function cancelPlayersAgree(tableId: number) {
         console.log(err);
     }
 }
+
+export async function genTableId() {
+    while (true) {
+        const tableId = Math.floor(Math.random() * 9000 + 1000);
+
+        // check for duplicates
+        try {
+            const dbRes = await pool.query(
+                "SELECT * FROM tables WHERE id=$1",
+                [tableId]
+            );
+            if (dbRes.rowCount) continue;
+        } catch (err) {
+            throw new Response("Error in helper.ts", { status: 400 });
+        }
+
+        return tableId;
+    }
+}

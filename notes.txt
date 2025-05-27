@@ -15,7 +15,7 @@ FRONTEND
 `npm run dev`
 
 BACKEND
-`npx tsx server.ts`
+`npx tsx server/server.ts`
 
 
 
@@ -371,3 +371,8 @@ https://shadcnui-expansions.typeart.cc/docs/spinner
 
 Fixed bug in backend where the local storage token wasn't actually checked because I was using array find() with an
 async function.
+
+28/05/2025
+Made the table ID a unique 4-digit number.
+Currently, only 9000 unique table IDs are possible.
+This is not an issue at the current scale, but I may implement a way to automatically remove inactive tables from the database.
