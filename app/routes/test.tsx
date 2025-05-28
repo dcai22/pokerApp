@@ -79,7 +79,7 @@ export default function Test() {
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormControl>
-                                            <Input placeholder="amount" {...field} />
+                                            <Input autoFocus placeholder="amount" {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>

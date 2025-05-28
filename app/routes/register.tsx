@@ -87,7 +87,7 @@ export default function Register() {
                                 <FormItem>
                                     <FormLabel />
                                     <FormControl>
-                                        <Input placeholder="Username" {...field} />
+                                        <Input autoFocus placeholder="Username" {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -100,7 +100,7 @@ export default function Register() {
                                 <FormItem>
                                     <FormLabel />
                                     <FormControl>
-                                        <Input placeholder="Password" type="password" {...field} />
+                                        <Input autoFocus placeholder="Password" type="password" {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>

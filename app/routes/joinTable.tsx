@@ -118,7 +118,7 @@ function JoinTable() {
                                 <FormItem>
                                     <FormLabel />
                                     <FormControl>
-                                        <Input placeholder="Table ID" {...field} />
+                                        <Input autoFocus placeholder="Table ID" {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>

@@ -121,7 +121,7 @@ export default function CreateTable() {
                                 <FormItem>
                                     <FormLabel />
                                     <FormControl>
-                                        <Input placeholder="Table name" {...field} />
+                                        <Input autoFocus placeholder="Table name" {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -134,7 +134,7 @@ export default function CreateTable() {
                                 <FormItem>
                                     <FormLabel />
                                     <FormControl>
-                                        <Input placeholder="Small blind" {...field} />
+                                        <Input autoFocus placeholder="Small blind" {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -147,7 +147,7 @@ export default function CreateTable() {
                                 <FormItem>
                                     <FormLabel />
                                     <FormControl>
-                                        <Input placeholder="Big blind" {...field} />
+                                        <Input autoFocus placeholder="Big blind" {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
