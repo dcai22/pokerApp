@@ -34,7 +34,7 @@ export default function Login() {
     async function onSubmit(values: z.infer<typeof formSchema>) {
         setLoadingText("Logging in...");
 
-        const username = values.username;
+        const username = values.username.trim();
         const password = values.password;
 
         try {
@@ -93,7 +93,7 @@ export default function Login() {
                                 <FormItem>
                                     <FormLabel />
                                     <FormControl>
-                                        <Input autoFocus placeholder="Password" type="password" {...field} />
+                                        <Input placeholder="Password" type="password" {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>

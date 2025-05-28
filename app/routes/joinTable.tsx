@@ -15,8 +15,8 @@ import DeleteAccountButton from "~/components/DeleteAccountButton";
 import { Spinner } from "~/components/ui/spinner";
 
 const formSchema = z.object({
-    tableId: z.string(),
-})
+    tableId: z.string().nonempty({ message: "Table ID is required" }).refine((val) => Number.isInteger(Number(val)), { message: "Table Id must be a number" }),
+});
 
 function JoinTable() {
     const navigate = useNavigate();
@@ -63,11 +63,6 @@ function JoinTable() {
         setLoadingText("Joining table...");
 
         const tableId = parseInt(values.tableId);
-        if (!tableId) {
-            setLoadingText("");
-            window.alert("Invalid Table ID");
-            return;
-        }
 
         try {
             const res = await axios.post(

@@ -42,7 +42,7 @@ export default function BuyinDialog({ onBuyin, disabled }: BuyinDialogProps) {
                             render={({ field }) => (
                                 <FormItem>
                                     <FormControl>
-                                        <Input placeholder="e.g. 25" {...field} />
+                                        <Input autoFocus placeholder="e.g. 25" {...field} />
                                     </FormControl>
                                 </FormItem>
                             )}

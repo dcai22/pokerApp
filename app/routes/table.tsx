@@ -143,7 +143,7 @@ export default function Table() {
 
                 // check if owner wants to end the game
                 const ownerTpRes = await axios.get(
-                    `${API_BASE}/getTablePlayer?tableId=${tableId}&playerId=${newPlayerId}`
+                    `${API_BASE}/getTablePlayer?tableId=${tableId}&playerId=${tableRes.data.owner}`
                 );
                 if (ownerTpRes.status === 200) {
                     setEndGameSuggested(ownerTpRes.data.want_end_game);

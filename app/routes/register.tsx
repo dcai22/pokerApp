@@ -36,11 +36,14 @@ export default function Register() {
     async function onSubmit(values: z.infer<typeof formSchema>) {
         setLoadingText("Creating account...");
 
-        const username = values.username;
+        const username = values.username.trim();
         const password = values.password;
 
         if (illegalUsernames.includes(username)) {
-            console.log("Error: Illegal name");
+            const message = "Error: Illegal name";
+            console.log(message);
+            window.alert(message);
+            setLoadingText("");
             return;
         }
 
@@ -100,7 +103,7 @@ export default function Register() {
                                 <FormItem>
                                     <FormLabel />
                                     <FormControl>
-                                        <Input autoFocus placeholder="Password" type="password" {...field} />
+                                        <Input placeholder="Password" type="password" {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>

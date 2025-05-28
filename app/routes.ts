@@ -7,6 +7,5 @@ export default [
     route("createTable", "routes/createTable.tsx"),
     route("joinTable", "routes/joinTable.tsx"),
     route("table/:tableId", "routes/table.tsx"),
-    route("viewStatistics", "routes/viewStatistics.tsx"),
     route("test", "routes/test.tsx"),
 ] satisfies RouteConfig;

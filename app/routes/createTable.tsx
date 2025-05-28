@@ -18,6 +18,9 @@ const formSchema = z.object({
     tableName: z.string().min(1, { message: "*required field" }),
     sb: z.coerce.number({ message: "invalid: please enter a number" }).multipleOf(0.01, { message: "invalid: please enter to the nearest cent" }),
     bb: z.coerce.number({ message: "invalid: please enter a number" }).multipleOf(0.01, { message: "invalid: please enter to the nearest cent" }),
+}).refine(data => data.sb <= data.bb, {
+    message: "small blind cannot be larger than big blind",
+    path: ["sb"],
 });
 
 export default function CreateTable() {
@@ -69,12 +72,6 @@ export default function CreateTable() {
         const tableName = values.tableName;
         const sb = values.sb;
         const bb = values.bb;
-
-        if (sb > bb) {
-            setLoadingText("");
-            window.alert("small blind cannot be larger than big blind");
-            return;
-        }
     
         try {
             const res = await axios.post(
@@ -134,7 +131,7 @@ export default function CreateTable() {
                                 <FormItem>
                                     <FormLabel />
                                     <FormControl>
-                                        <Input autoFocus placeholder="Small blind" {...field} />
+                                        <Input placeholder="Small blind" {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -147,7 +144,7 @@ export default function CreateTable() {
                                 <FormItem>
                                     <FormLabel />
                                     <FormControl>
-                                        <Input autoFocus placeholder="Big blind" {...field} />
+                                        <Input placeholder="Big blind" {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>

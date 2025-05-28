@@ -12,6 +12,10 @@ interface BuyinHistoryDialogProps {
 export default function BuyinHistoryDialog({ playerNames, buyins }: BuyinHistoryDialogProps) {
     const [displayMode, setDisplayMode] = useState("all");
 
+    function handleOpenChange() {
+        setDisplayMode("all");
+    }
+
     function getBuyinHistoryComponent() {
         const displayBuyins = displayMode === "all"
             ? buyins
@@ -29,9 +33,9 @@ export default function BuyinHistoryDialog({ playerNames, buyins }: BuyinHistory
             <ul className="divide-y divide-gray-500 h-full overflow-auto">
                 {displayBuyins.map((e, i) => <li key={i} className="py-2">
                     <ul>
-                        <li key="name" className="flex"><span className="w-20 font-bold">Player</span>{e.name}</li>
-                        <li key="amount" className="flex"><span className="w-20 font-bold">Buyin</span>${e.amount}</li>
-                        <li key="time" className="flex"><span className="w-20 font-bold">Time</span>{
+                        <li className="flex"><span className="w-20 font-bold">Player</span>{e.name}</li>
+                        <li className="flex"><span className="w-20 font-bold">Buyin</span>${e.amount}</li>
+                        <li className="flex"><span className="w-20 font-bold">Time</span>{
                             (new Date(e.time)).toLocaleString("en-GB", {
                                 dateStyle: "long",
                                 timeStyle: "short",
@@ -46,7 +50,7 @@ export default function BuyinHistoryDialog({ playerNames, buyins }: BuyinHistory
     }
 
     return (
-        <Dialog>
+        <Dialog onOpenChange={handleOpenChange}>
             <DialogTrigger asChild>
                 <Button>Buyin history</Button>
             </DialogTrigger>
@@ -65,7 +69,7 @@ export default function BuyinHistoryDialog({ playerNames, buyins }: BuyinHistory
                         <ul>
                             <SelectItem value="all" key="-1">All Players</SelectItem>
                             {playerNames.map((e, i) => 
-                                <li key={i}><SelectItem value={e}>{e}</SelectItem></li>
+                                <SelectItem key={i} value={e}>{e}</SelectItem>
                             )}
                         </ul>
                     </SelectContent>
