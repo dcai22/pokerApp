@@ -28,8 +28,19 @@ export default function EnterHandDialog({ disabled, onEnterHand, rank1Offset, su
         },
     });
 
+    function handleOpenChange(open: boolean) {
+        if (open) {
+            handForm.reset({
+                rank1: "",
+                suit1: "",
+                rank2: "",
+                suit2: "",
+            });
+        }
+    }
+
     return (
-        <Dialog>
+        <Dialog onOpenChange={handleOpenChange}>
             <DialogTrigger asChild>
                 <Button className="my-1" disabled={disabled}>Enter hand (optional)</Button>
             </DialogTrigger>

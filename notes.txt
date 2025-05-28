@@ -376,3 +376,6 @@ async function.
 Made the table ID a unique 4-digit number.
 Currently, only 9000 unique table IDs are possible.
 This is not an issue at the current scale, but I may implement a way to automatically remove inactive tables from the database.
+
+Also fixed an issue with Dialog boxes not resetting the radio value on re-open.
+This was fixed by using `<Dialog onOpenChange={handleOpenChange}>`, with handleOpenChange resetting the form through `form.reset(...);`.
