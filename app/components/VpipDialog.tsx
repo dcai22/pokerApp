@@ -7,7 +7,6 @@ import * as RadioGroupPrimitive from "@radix-ui/react-radio-group"
 import { z } from "zod";
 import { vpipFormSchema } from "~/formSchemas";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
 
 interface VpipDialogProps {
     disabled: boolean,
@@ -22,10 +21,14 @@ export default function VpipDialog({ disabled, onVpip }: VpipDialogProps) {
         },
     });
 
-    const [value, setValue] = useState("no");
+    function handleOpenChange(open: boolean) {
+        if (open) {
+            vpipForm.reset({ option: "no" });
+        }
+    }
 
     return (
-        <Dialog>
+        <Dialog onOpenChange={handleOpenChange}>
             <DialogTrigger asChild>
                 <Button className="my-1" disabled={disabled}>VPIP</Button>
             </DialogTrigger>
@@ -45,17 +48,14 @@ export default function VpipDialog({ disabled, onVpip }: VpipDialogProps) {
                                 <FormItem>
                                     <FormControl>
                                         <RadioGroup
-                                            onValueChange={v => {
-                                                setValue(v);
-                                                field.onChange(v);
-                                            }}
-                                            defaultValue="no"
+                                            onValueChange={field.onChange}
+                                            defaultValue={field.value}
                                             className="flex"
                                         >
                                             <FormItem className="flex items-center space-y-0">
                                                 <FormControl className="checked:bg-black">
                                                     <RadioGroupPrimitive.Item value="no" asChild>
-                                                        <Button className={`${value === "no" ? "bg-gray-500 text-white" : "bg-white text-gray-500"} border-1 border-gray-200 shadow-xs hover:bg-gray-500 hover:text-white w-22`}>
+                                                        <Button className={`${field.value === "no" ? "bg-gray-500 text-white" : "bg-white text-gray-500"} border-1 border-gray-200 shadow-xs hover:bg-gray-500 hover:text-white w-22`}>
                                                             No
                                                         </Button>
                                                     </RadioGroupPrimitive.Item>
@@ -64,7 +64,7 @@ export default function VpipDialog({ disabled, onVpip }: VpipDialogProps) {
                                             <FormItem className="flex items-center space-y-0">
                                                 <FormControl className="checked:bg-black">
                                                     <RadioGroupPrimitive.Item value="yes" asChild>
-                                                        <Button className={`${value === "yes" ? "bg-gray-500 text-white" : "bg-white text-gray-500"} border-1 border-gray-200 shadow-xs hover:bg-gray-500 hover:text-white w-22`}>
+                                                        <Button className={`${field.value === "yes" ? "bg-gray-500 text-white" : "bg-white text-gray-500"} border-1 border-gray-200 shadow-xs hover:bg-gray-500 hover:text-white w-22`}>
                                                             Yes
                                                         </Button>
                                                     </RadioGroupPrimitive.Item>

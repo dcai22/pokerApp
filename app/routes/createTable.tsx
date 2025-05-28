@@ -71,6 +71,7 @@ export default function CreateTable() {
         const bb = values.bb;
 
         if (sb > bb) {
+            setLoadingText("");
             window.alert("small blind cannot be larger than big blind");
             return;
         }

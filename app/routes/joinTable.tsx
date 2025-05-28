@@ -64,6 +64,7 @@ function JoinTable() {
 
         const tableId = parseInt(values.tableId);
         if (!tableId) {
+            setLoadingText("");
             window.alert("Invalid Table ID");
             return;
         }
