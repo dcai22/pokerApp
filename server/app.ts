@@ -61,7 +61,7 @@ app.delete('/removePlayer', async (req: Request, res: Response) => {
             "SELECT id FROM tables WHERE owner=$1",
             [playerId]
         );
-        const tableIds = tableRes.rows.map(t => t.table_id);
+        const tableIds = tableRes.rows.map(t => t.id);
 
         // delete all data related to tables owned by player
         for (const tableId of tableIds) {
