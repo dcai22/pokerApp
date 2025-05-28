@@ -62,8 +62,8 @@ export async function authToken(token: string, playerId: number) {
         return { message: "error: bad token" };
     } else {
         await pool.query(
-            "DELETE FROM tokens WHERE NOT hash=$1",
-            [hash]
+            "DELETE FROM tokens WHERE player_id=$1 AND NOT hash=$2",
+            [playerId, hash]
         );
     }
 
