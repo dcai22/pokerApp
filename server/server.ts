@@ -41,7 +41,7 @@ io.on("connection", (socket) => {
             io.to(playerData.tableId).emit("updatePlayers", await getTablePlayers(playerData.tableId));
 
             await cancelPlayersAgree(playerData.tableId);
-            socket.emit("cancelEndGame");
+            io.to(playerData.tableId).emit("cancelEndGame");
         } catch (err) {
             console.log(err);
         }

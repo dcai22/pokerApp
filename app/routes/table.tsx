@@ -154,17 +154,21 @@ export default function Table() {
                 const handRes = await axios.get(
                     `${API_BASE}/getHand?tableId=${tableId}&playerId=${newPlayerId}&handNum=${newHandNum}`
                 );
-                if (handRes.data.handExists) {
-                    console.log("successful query");
-                    console.log(handRes.data);
-                    setHasVpip(true);
+                if (handRes.status === 200) {
+                    if (handRes.data.handExists) {
+                        console.log("successful query");
+                        console.log(handRes.data);
+                        setHasVpip(true);
 
-                    const newHandCid = handRes.data.hand.combination_id;
-                    setCurHand(Hand.fromCid(newHandCid));
-                    setHasEnteredHand(newHandCid >= 0);
+                        const newHandCid = handRes.data.hand.combination_id;
+                        setCurHand(Hand.fromCid(newHandCid));
+                        setHasEnteredHand(newHandCid >= 0);
+                    } else {
+                        setHasVpip(false);
+                        setHasEnteredHand(false);
+                    }
                 } else {
-                    setHasVpip(false);
-                    setHasEnteredHand(false);
+                    console.log(handRes.data.message);
                 }
             } catch (err) {
                 navigate("/joinTable");
@@ -241,7 +245,11 @@ export default function Table() {
                 const res = await axios.get(
                     `${API_BASE}/getAllHands?tableId=${tableId}`
                 );
-                setAllHands(res.data.hands);
+                if (res.status === 200) {
+                    setAllHands(res.data.hands);
+                } else {
+                    console.log(res.data.message);
+                }
             } catch (err) {
                 console.log(err);
             }
@@ -296,6 +304,7 @@ export default function Table() {
                 setLastBuyinTime(buyinTime);
                 setBuyinAlert(newBuyinAlert);
             } else {
+                console.log(res.data.message);
                 window.alert("Error: couldn't buy in");
                 return;
             }
@@ -313,7 +322,7 @@ export default function Table() {
             if (res.status === 200) {
                 setBuyinHistory(res.data.buyins);
             } else {
-                console.log("Error fetching buyin history");
+                console.log(res.data.message);
             }
         } catch (err) {
             console.log("Error fetching buyin history");
@@ -325,7 +334,11 @@ export default function Table() {
             const res = await axios.get(
                 `${API_BASE}/player/getHands?playerId=${playerId}&tableId=${tableId}`
             );
-            setHandHistory(res.data.hands);
+            if (res.status === 200) {
+                setHandHistory(res.data.hands);
+            } else {
+                console.log(res.data.message);
+            }
         } catch (err) {
             console.log(err);
         }
@@ -349,7 +362,7 @@ export default function Table() {
                 setHasVpip(true);
                 socket.emit("checkHandDone", handNum);
             } else {
-                console.log(res.data.err);
+                console.log(res.data.message);
             }
         } catch (err) {
             console.log(err);
@@ -399,7 +412,7 @@ export default function Table() {
                 setHasEnteredHand(true);
                 console.log("Hand successfully set!");
             } else {
-                console.log(res.data.err);
+                console.log(res.data.message);
             }
         } catch (err) {
             console.log(err);

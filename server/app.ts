@@ -107,7 +107,9 @@ app.delete('/removePlayer', async (req: Request, res: Response) => {
 
         res.json();
     } catch (err) {
-        console.log(err);
+        const message = `Error in /removePlayer: ${err}`;
+        console.log(message);
+        res.status(400).json();
     }
 });
 
@@ -131,6 +133,7 @@ app.post('/login', async (req: Request, res: Response) => {
             return;
         }
     } catch(err) {
+        const message = `Error in /login: ${err}`;
         res.status(400).json();
         return;
     }
@@ -159,14 +162,18 @@ app.delete('/deleteToken', async (req: Request, res: Response) => {
     );
     const allHashes = dbRes.rows.map(t => t.hash);
 
-    for (const dbHash of allHashes) {
-        if (await bcrypt.compare(token, dbHash)) {
+    const compareHashes = await Promise.all(allHashes.map((dbHash) => bcrypt.compare(token, dbHash)));
+    const matchedIndex = compareHashes.findIndex((isMatch) => isMatch);
+    if (matchedIndex !== -1) {
+        try {
             await pool.query(
                 "DELETE FROM tokens WHERE hash=$1",
-                [dbHash]
+                [allHashes[matchedIndex]]
             );
-            res.json();
-            return;
+        } catch (err) {
+            const message = `Error in /deleteTokens: ${err}`;
+            console.log(message);
+            res.status(400).json({ message });
         }
     }
 
@@ -201,8 +208,9 @@ app.post('/player/createTable', async (req: Request, res: Response) => {
             return;
         }
     } catch(err) {
-        console.log("Error: ", err);
-        res.status(400).json();
+        const message = `Error: ${err}`;
+        console.log(message);
+        res.status(400).json({ message });
         return;
     }
 
@@ -318,7 +326,9 @@ app.post('/player/buyin', async (req: Request, res: Response) => {
             res.status(400).json({ message: "Error creating new buyin" });
         }
     } catch (err) {
-        res.status(400).json({ message: "Error creating new buyin" });
+        const message = `Error in /player/buyin: ${err}`;
+        console.log(message);
+        res.status(400).json({ message });
     }
 });
 
@@ -350,7 +360,9 @@ app.get('/player/getBuyins', async (req: Request, res: Response) => {
             }
         }) });
     } catch (err) {
-        res.status(400).json({ message: "Error fetching buyins" });
+        const message = `Error in /player/getBuyins: ${err}`;
+        console.log(message);
+        res.status(400).json({ message });
     }
 });
 
@@ -373,7 +385,9 @@ app.get('/player/getHands', async (req: Request, res: Response) => {
         });
         res.json({ hands });
     } catch (err) {
-        console.log(err);
+        const message = `Error in /player/getHands: ${err}`;
+        console.log(message);
+        res.status(400).json({ message });
     }
 });
 
@@ -393,7 +407,9 @@ app.put('/player/addHand', async (req: Request, res: Response) => {
         );
         res.json();
     } catch (err) {
-        res.status(400).json({ err });
+        const message = `Error in /player/addHand: ${err}`;
+        console.log(message);
+        res.status(400).json({ message });
     }
 });
 
@@ -412,16 +428,10 @@ app.post('/player/vpip', async (req: Request, res: Response) => {
         );
         res.json();
     } catch (err) {
-        res.status(400).json({ err });
+        const message = `Error in /player/vpip: ${err}`;
+        console.log(message);
+        res.status(400).json({ message });
     }
-});
-
-app.get('/player/getVpip', (req: Request, res: Response) => {
-    // TODO
-});
-
-app.get('/player/handStats', (req: Request, res: Response) => {
-    // TODO
 });
 
 
@@ -506,8 +516,9 @@ app.get('/getHand', async (req: Request, res: Response) => {
             res.json({ handExists: false });
         }
     } catch (err) {
-        console.log(err);
-        res.status(400).json();
+        const message = `Error in /getHand: ${err}`;
+        console.log(message);
+        res.status(400).json({ message });
     }
 });
 
@@ -544,7 +555,9 @@ app.get('/getAllHands', async (req: Request, res: Response) => {
         });
         res.json({ hands });
     } catch (err) {
-        console.log(err);
+        const message = `Error in /getAllHands: ${err}`;
+        console.log(message);
+        res.status(400).json({ message });
     }
 });
 

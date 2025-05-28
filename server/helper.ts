@@ -15,17 +15,6 @@ export async function genToken(player_id: number) {
         const token = crypto.randomBytes(64).toString('hex');
         const hash = await genHash(token);
 
-        // check for duplicates
-        try {
-            const dbRes = await pool.query(
-                "SELECT * FROM tokens WHERE hash=$1",
-                [hash]
-            );
-            if (dbRes.rowCount) continue;
-        } catch(err) {
-            throw new Response("Error in auth.ts", { status: 400 });
-        }
-    
         try {
             const dbRes = await pool.query(
                 "INSERT INTO tokens(hash, player_id) VALUES($1, $2)",
@@ -35,10 +24,10 @@ export async function genToken(player_id: number) {
             if (dbRes.rowCount) {
                 return token;
             } else {
-                throw new Response("Error in auth.ts", { status: 400 });
+                throw new Error("Error in helper.ts");
             }
         } catch(err) {
-            throw new Response("Error in auth.ts", { status: 400 });
+            throw new Error("Error in helper.ts");
         }
     }
 }
@@ -101,6 +90,9 @@ export async function getTablePlayers(tableId: number) {
         "SELECT * FROM tables WHERE id=$1",
         [tableId]
     );
+    if (tableRes.rowCount === 0) {
+        throw new Error("Error in helper.ts");
+    }
     const handNum = tableRes.rows[0].num_hands + 1;
 
     const handsRes = await pool.query(
