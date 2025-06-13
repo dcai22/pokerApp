@@ -17,6 +17,28 @@ const io = new Server(server, {
 });
 
 var sockets = new Map();
+const tableLocks = new Map<string, Promise<void>>();
+
+function withTableLocks<T>(tableId: string, fn: () => Promise<T>) {
+    const prev = tableLocks.get(tableId) || Promise.resolve();
+
+    let release: () => void;
+    const next = new Promise<void>((resolve) => {
+        release = resolve
+    });
+
+    const run = prev.then(async () => {
+        try {
+            return await fn();
+        } finally {
+            release();
+        }
+    });
+
+    tableLocks.set(tableId, next);
+    return run;
+}
+
 io.on("connection", (socket) => {
     console.log("a user has connected");
     const _id = socket.id;
@@ -34,20 +56,22 @@ io.on("connection", (socket) => {
             return;
         }
         try {
-            await pool.query(
-                "UPDATE table_players SET is_active=false WHERE table_id=$1 AND player_id=$2",
-                [playerData.tableId, playerData.playerId]
-            );
-            io.to(playerData.tableId).emit("updatePlayers", await getTablePlayers(playerData.tableId));
-
-            await cancelPlayersAgree(playerData.tableId);
-            io.to(playerData.tableId).emit("cancelEndGame");
+            await withTableLocks<void>(playerData.tableId, async () => {
+                await pool.query(
+                    "UPDATE table_players SET is_active=false WHERE table_id=$1 AND player_id=$2",
+                    [playerData.tableId, playerData.playerId]
+                );
+                io.to(playerData.tableId).emit("updatePlayers", await getTablePlayers(playerData.tableId));
+    
+                await cancelPlayersAgree(playerData.tableId);
+                io.to(playerData.tableId).emit("cancelEndGame");
+            });
         } catch (err) {
             console.log(err);
         }
         sockets.delete(_id);
     });
-    
+
     socket.on("newVote", (newYes, newNo) => {
         console.log(`Yes votes is now ${newYes}, No votes is now ${newNo}`);
         io.emit("newVote", newYes, newNo);
@@ -62,7 +86,9 @@ io.on("connection", (socket) => {
         console.log(`New player has joined table with id=${playerData.tableId}`);
 
         try {
-            io.to(playerData.tableId).emit("updatePlayers", await getTablePlayers(playerData.tableId));
+            await withTableLocks(playerData.tableId, async () => {
+                io.to(playerData.tableId).emit("updatePlayers", await getTablePlayers(playerData.tableId));
+            });
         } catch (err) {
             console.log("error in socket.on(joinTable)");
         }
@@ -75,11 +101,14 @@ io.on("connection", (socket) => {
                 console.warn("playerData not found for socket:", _id);
                 return;
             }
-            await pool.query(
-                "UPDATE tables SET has_started=true WHERE id=$1",
-                [playerData.tableId]
-            );
-            io.to(playerData.tableId).emit("startGame");
+
+            await withTableLocks(playerData.tableId, async () => {
+                await pool.query(
+                    "UPDATE tables SET has_started=true WHERE id=$1",
+                    [playerData.tableId]
+                );
+                io.to(playerData.tableId).emit("startGame");
+            });
             console.log(`Game started on table with id=${playerData.tableId}`);
         } catch (err) {
             console.log("error in socket.on(startGame)");
@@ -92,7 +121,10 @@ io.on("connection", (socket) => {
             console.warn("playerData not found for socket:", _id);
             return;
         }
-        io.to(playerData.tableId).emit("updatePlayers", await getTablePlayers(playerData.tableId));
+
+        await withTableLocks(playerData.tableId, async () => {
+            io.to(playerData.tableId).emit("updatePlayers", await getTablePlayers(playerData.tableId));
+        });
 
         await new Promise(r => setTimeout(r, 2000));
         socket.emit("removeBuyinAlert", buyinTime);
@@ -106,25 +138,27 @@ io.on("connection", (socket) => {
                 return;
             }
 
-            io.to(playerData.tableId).emit("updatePlayers", await getTablePlayers(playerData.tableId));
-
-            const activePlayersRes = await pool.query(
-                "SELECT * FROM table_players WHERE table_id=$1 AND is_active=true",
-                [playerData.tableId]
-            );
-            const activePlayerIds = activePlayersRes.rows.map((p) => p.player_id);
-
-            const handsRes = await pool.query(
-                "SELECT * FROM hands WHERE table_id=$1 AND hand_num=$2",
-                [playerData.tableId, handNum]
-            );
-            const handPlayerIds = handsRes.rows.map((h) => h.player_id);
-
-            if (activePlayerIds.every((p) => handPlayerIds.includes(p))) {
-                io.to(playerData.tableId).emit("updateHandDone", true);
-            } else {
-                io.to(playerData.tableId).emit("updateHandDone", false);
-            }
+            await withTableLocks(playerData.tableId, async () => {
+                io.to(playerData.tableId).emit("updatePlayers", await getTablePlayers(playerData.tableId));
+                
+                const activePlayersRes = await pool.query(
+                    "SELECT * FROM table_players WHERE table_id=$1 AND is_active=true",
+                    [playerData.tableId]
+                );
+                const activePlayerIds = activePlayersRes.rows.map((p) => p.player_id);
+                
+                const handsRes = await pool.query(
+                    "SELECT * FROM hands WHERE table_id=$1 AND hand_num=$2",
+                    [playerData.tableId, handNum]
+                );
+                const handPlayerIds = handsRes.rows.map((h) => h.player_id);
+                
+                if (activePlayerIds.every((p) => handPlayerIds.includes(p))) {
+                    io.to(playerData.tableId).emit("updateHandDone", true);
+                } else {
+                    io.to(playerData.tableId).emit("updateHandDone", false);
+                }
+            });
         } catch (err) {
             console.log(err);
         }
@@ -137,11 +171,13 @@ io.on("connection", (socket) => {
                 console.warn("playerData not found for socket:", _id);
                 return;
             }
-            await pool.query(
-                "UPDATE tables SET num_hands=$1 WHERE id=$2",
-                [numHands, playerData.tableId]
-            );
-            io.to(playerData.tableId).emit("nextHand", numHands + 1);
+            await withTableLocks(playerData.tableId, async () => {
+                await pool.query(
+                    "UPDATE tables SET num_hands=$1 WHERE id=$2",
+                    [numHands, playerData.tableId]
+                );
+                io.to(playerData.tableId).emit("nextHand", numHands + 1);
+            });
         } catch (err) {
             console.log(err);
         }
@@ -154,18 +190,21 @@ io.on("connection", (socket) => {
                 console.warn("playerData not found for socket:", _id);
                 return;
             }
-            const tablePlayerRes = await pool.query(
-                "SELECT * FROM table_players WHERE table_id=$1 AND player_id=$2",
-                [playerData.tableId, playerData.playerId]
-            );
-            const oldStatus = tablePlayerRes.rows[0].is_active;
-            await pool.query(
-                "UPDATE table_players SET is_active=$1 WHERE table_id=$2 AND player_id=$3",
-                [!oldStatus, playerData.tableId, playerData.playerId]
-            );
 
-            io.to(playerData.tableId).emit("updatePlayers", await getTablePlayers(playerData.tableId));
-            socket.emit("changeStatusDone");
+            await withTableLocks(playerData.tableId, async () => {
+                const tablePlayerRes = await pool.query(
+                    "SELECT * FROM table_players WHERE table_id=$1 AND player_id=$2",
+                    [playerData.tableId, playerData.playerId]
+                );
+                const oldStatus = tablePlayerRes.rows[0].is_active;
+                await pool.query(
+                    "UPDATE table_players SET is_active=$1 WHERE table_id=$2 AND player_id=$3",
+                    [!oldStatus, playerData.tableId, playerData.playerId]
+                );
+                
+                io.to(playerData.tableId).emit("updatePlayers", await getTablePlayers(playerData.tableId));
+                socket.emit("changeStatusDone");
+            });
         } catch (err) {
             console.log(err);
         }
@@ -178,12 +217,15 @@ io.on("connection", (socket) => {
                 console.warn("playerData not found for socket:", _id);
                 return;
             }
-            await pool.query(
-                "UPDATE table_players SET is_active=false WHERE table_id=$1 AND player_id=$2",
-                [playerData.tableId, playerData.playerId]
-            );
-            
-            io.to(playerData.tableId).emit("updatePlayers", await getTablePlayers(playerData.tableId));
+
+            await withTableLocks(playerData.tableId, async () => {
+                await pool.query(
+                    "UPDATE table_players SET is_active=false WHERE table_id=$1 AND player_id=$2",
+                    [playerData.tableId, playerData.playerId]
+                );
+                
+                io.to(playerData.tableId).emit("updatePlayers", await getTablePlayers(playerData.tableId));
+            });
         } catch(err) {
             console.log(err);
         }
@@ -195,7 +237,10 @@ io.on("connection", (socket) => {
             console.warn("playerData not found for socket:", _id);
             return;
         }
-        io.to(playerData.tableId).emit("endGameSuggested");
+        
+        await withTableLocks(playerData.tableId, async () => {
+            io.to(playerData.tableId).emit("endGameSuggested");
+        });
     });
 
     socket.on("agreeEndGame", async () => {
@@ -205,18 +250,20 @@ io.on("connection", (socket) => {
             return;
         }
         try {
-            await pool.query(
-                "UPDATE table_players SET want_end_game=true WHERE table_id=$1 AND player_id=$2",
-                [playerData.tableId, playerData.playerId]
-            );
-
-            if (await checkPlayersAgree(playerData.tableId)) {
+            await withTableLocks(playerData.tableId, async () => {
                 await pool.query(
-                    "UPDATE tables SET has_ended=true WHERE id=$1",
-                    [playerData.tableId]
+                    "UPDATE table_players SET want_end_game=true WHERE table_id=$1 AND player_id=$2",
+                    [playerData.tableId, playerData.playerId]
                 );
-                io.to(playerData.tableId).emit("endGame");
-            }
+                
+                if (await checkPlayersAgree(playerData.tableId)) {
+                    await pool.query(
+                        "UPDATE tables SET has_ended=true WHERE id=$1",
+                        [playerData.tableId]
+                    );
+                    io.to(playerData.tableId).emit("endGame");
+                }
+            });
         } catch (err) {
             console.log(err);
         }
@@ -229,8 +276,10 @@ io.on("connection", (socket) => {
             return;
         }
         try {
-            await cancelPlayersAgree(playerData.tableId);
-            io.to(playerData.tableId).emit("cancelEndGame");
+            await withTableLocks(playerData.tableId, async () => {
+                await cancelPlayersAgree(playerData.tableId);
+                io.to(playerData.tableId).emit("cancelEndGame");
+            });
         } catch (err) {
             console.log(err);
         }

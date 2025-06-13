@@ -379,3 +379,55 @@ This is not an issue at the current scale, but I may implement a way to automati
 
 Also fixed an issue with Dialog boxes not resetting the radio value on re-open.
 This was fixed by using `<Dialog onOpenChange={handleOpenChange}>`, with handleOpenChange resetting the form through `form.reset(...);`.
+
+13/06/2025
+Looking into concurrency now. Code snippet from server.ts:
+```
+const tableLocks = new Map<string, Promise<void>>();
+
+function withTableLocks<T>(tableId: string, fn: () => Promise<T>) {
+    const prev = tableLocks.get(tableId) || Promise.resolve();
+
+    let release: () => void;
+    const next = new Promise<void>((resolve) => {
+        release = resolve
+    });
+
+    const run = prev.then(async () => {
+        try {
+            return await fn();
+        } finally {
+            release();
+        }
+    });
+
+    tableLocks.set(tableId, next);
+    return run;
+}
+```
+
+This took me a while to understand, but to summarise:
+ - `tableLocks` maps each table to a "queue of functions" (not an actual queue data structure)
+ - in `withTableLocks`, `prev` is a queue of previous functions (or empty if there are none)
+ - I initially thought `resolve` was the function that runs after the Promise resolves. I believe I was wrong, and that it
+   is actually the function that **marks** the Promise as resolved
+    - This means `release = resolve` stores the resolver of the Promise as a function that can be called later, allowing
+      .then(...) handlers to run
+ - The actual function we want to run is `run`. It waits for previous functions in the queue to finish, runs `fn`, then
+   releases, allowing for future functions to start running
+ - tableLocks.set(...) is necessary so that future calls to withTableLocks queue properly
+ - `run` is finally called, signalling that it will run as soon as it reaches its turn in the queue
+
+This concurrency handling is necessary due to some socket updates, such as "changeStatus", updating the database and then returning
+the new state. This can be problematic if multiple sockets are running this simultaneously, e.g.,
+```
+socket A updates the database
+socket A reads from the updated database
+socket B updates the database
+socket B reads from the updated database
+socket B returns data from the most recent database change
+socket A returns data from a previous database change
+```
+
+Furthermore, JS is a single-threaded language, and 'context switches' (or the JS equivalent) don't occur unless .then(...) or await
+are used. This is what allowed for me to update the `tableLocks` map without concurrency issues.

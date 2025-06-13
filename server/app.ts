@@ -1,5 +1,5 @@
 import express, { json, type Request, type Response } from 'express';
-import cors from 'cors';
+const { default: cors } = await import('cors');
 
 import pool from "./db";
 import bcrypt from 'bcryptjs';
@@ -35,7 +35,7 @@ app.post('/registerPlayer', async (req: Request, res: Response) => {
             "INSERT INTO players(username, password) VALUES($1, $2) RETURNING id",
             [username, hashedPassword]
         );
-        
+
         if (dbRes.rowCount) {
             const player_id = dbRes.rows[0].id;
             const token = await genToken(player_id);
