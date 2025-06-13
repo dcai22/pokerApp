@@ -110,3 +110,8 @@ In another terminal:
 ```bash
 npm run dev
 ```
+
+**8. Access the web application online**
+
+Your terminal or IDE may direct you to `http://127.0.0.1:5173`, but accessing the app via this URL can cause CORS errors.
+To avoid this, please use the URL `http://localhost:5173/register` instead.
