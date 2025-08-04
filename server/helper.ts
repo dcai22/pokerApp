@@ -2,18 +2,18 @@ import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import pool from "./db";
 
-export async function genHash(str: string) {
+export async function genHash(rawText: string): Promise<string> {
     const saltRounds = 10;
-    const salt = await bcrypt.genSalt(saltRounds);
-    const hash = await bcrypt.hash(str, salt);
+    const salt: string = await bcrypt.genSalt(saltRounds);
+    const hash: string = await bcrypt.hash(rawText, salt);
     return hash;
 }
 
 // generates and returns (unique) token after adding to database
-export async function genToken(player_id: number) {
+export async function genToken(player_id: number): Promise<string> {
     while (true) {
-        const token = crypto.randomBytes(64).toString('hex');
-        const hash = await genHash(token);
+        const token: string = crypto.randomBytes(64).toString('hex');
+        const hash: string = await genHash(token);
 
         try {
             const dbRes = await pool.query(
@@ -33,14 +33,14 @@ export async function genToken(player_id: number) {
 }
 
 // returns { message } or { username }
-export async function authToken(token: string, playerId: number) {
+export async function authToken(token: string, playerId: number): Promise<{ username: string } | { message: string }> {
     const tokenRes = await pool.query(
         "SELECT * FROM tokens WHERE player_id=$1",
         [playerId]
     );
     const playerTokens = tokenRes.rows;
 
-    let hash;
+    let hash: string | undefined;
     for (const t of playerTokens) {
         if (await bcrypt.compare(token, t.hash)) {
             hash = t.hash;
@@ -61,61 +61,49 @@ export async function authToken(token: string, playerId: number) {
         [playerId]
     );
     if (playerRes.rowCount) {
-        const username = playerRes.rows[0].username;
+        const username: string = playerRes.rows[0].username;
         return { username };
     } else {
         return { message: "error: player not found" };
     }
 }
 
-export async function getTablePlayers(tableId: number) {
-    const tablePlayersRes = await pool.query(
-        "SELECT * FROM table_players WHERE table_id=$1 ORDER BY position",
+export async function getTablePlayers(tableId: number): Promise<{ name: string, buyin: number, isActive: boolean, hasVpip: boolean }[]> {
+    const dbRes = await pool.query(
+        `SELECT
+            players.username,
+            COALESCE(buyin_data.total_buyin, 0) as total_buyin,
+            table_players.is_active,
+            CASE
+                WHEN hands IS NULL THEN FALSE
+                ELSE TRUE
+            END AS has_vpip
+        FROM tables
+            JOIN table_players ON table_players.table_id = tables.id
+            JOIN players ON players.id = table_players.player_id
+            LEFT JOIN (
+                SELECT buyins.player_id, SUM(amount) as total_buyin
+                FROM buyins
+                WHERE buyins.table_id = $1
+                GROUP BY buyins.player_id
+            ) AS buyin_data ON buyin_data.player_id = players.id
+            LEFT JOIN hands ON hands.table_id = tables.id AND hands.player_id = players.id AND hands.hand_num = tables.num_hands + 1
+        WHERE tables.id = $1
+        ORDER BY table_players.position ASC;`,
         [tableId]
     );
-    const tablePlayers = tablePlayersRes.rows;
-
-    const playersRes = await pool.query(
-        "SELECT * FROM players"
-    );
-    const players = playersRes.rows;
-
-    const buyinsRes = await pool.query(
-        "SELECT player_id, SUM(amount) AS total_buyin FROM buyins WHERE table_id=$1 GROUP BY player_id",
-        [tableId]
-    );
-    const buyins = buyinsRes.rows;
-
-    const tableRes = await pool.query(
-        "SELECT * FROM tables WHERE id=$1",
-        [tableId]
-    );
-    if (tableRes.rowCount === 0) {
-        throw new Error("Error in helper.ts");
-    }
-    const handNum = tableRes.rows[0].num_hands + 1;
-
-    const handsRes = await pool.query(
-        "SELECT player_id FROM hands WHERE table_id=$1 AND hand_num=$2",
-        [tableId, handNum]
-    );
-    const vpipPlayers = handsRes.rows.map(p => p.player_id);
-
-    const newPlayers = tablePlayers
-        .sort((a, b) => a.position -  b.position)
-        .map((tp) => {
-            const buyin = buyins.find((b) => b.player_id === tp.player_id);
-            return {
-                name: players.find((p) => p.id === tp.player_id).username,
-                buyin: buyin === undefined ? '0' : buyin.total_buyin,
-                isActive: tp.is_active,
-                hasVpip: vpipPlayers.includes(tp.player_id),
-            };
-        });
-    return newPlayers;
+    const players = dbRes.rows.map(player => {
+        return {
+            name: player.username,
+            buyin: player.total_buyin,
+            isActive: player.isActive,
+            hasVpip: player.has_vpip,
+        };
+    });
+    return players;
 }
 
-export async function checkPlayersAgree(tableId: number) {
+export async function checkPlayersAgree(tableId: number): Promise<boolean> {
     try {
         const tablePlayersRes = await pool.query(
             "SELECT * FROM table_players WHERE table_id=$1",
@@ -128,24 +116,24 @@ export async function checkPlayersAgree(tableId: number) {
         } else {
             return true;
         }
-    } catch (err) {
+    } catch (err: unknown) {
         console.log(err);
         return false;
     }
 }
 
-export async function cancelPlayersAgree(tableId: number) {
+export async function cancelPlayersAgree(tableId: number): Promise<void> {
     try {
         await pool.query(
             "UPDATE table_players SET want_end_game=false WHERE table_id=$1",
             [tableId]
         );
-    } catch (err) {
+    } catch (err: unknown) {
         console.log(err);
     }
 }
 
-export async function genTableId() {
+export async function genTableId(): Promise<number> {
     while (true) {
         const tableId = Math.floor(Math.random() * 9000 + 1000);
 
@@ -156,7 +144,7 @@ export async function genTableId() {
                 [tableId]
             );
             if (dbRes.rowCount) continue;
-        } catch (err) {
+        } catch (err: unknown) {
             throw new Response("Error in helper.ts", { status: 400 });
         }
 
