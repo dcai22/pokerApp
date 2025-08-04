@@ -14,13 +14,13 @@ export default function Home() {
   const navigate = useNavigate();
 
   return (
-    <div className="flex flex-col justify-center items-center w-screen h-screen">
-      <div className="flex flex-col w-50">
-        <div className="flex justify-center mb-10">Welcome to my app!</div>
-        <div className="mb-10"><RandomButton /></div>
-        <Button onClick={() => navigate(`/login`)}>get me out</Button>
+      <div className="flex flex-col justify-center items-center w-screen h-screen">
+      <div className="flex flex-col w-flex">
+        <div className="flex justify-center mb-10">Welcome to the landing page!</div>
+        <Button onClick={() => navigate(`/login`)} className="bg-green-500">ENTER POKER APP</Button>
+        <div className="my-10"><RandomButton /></div>
         <Button onClick={() => navigate(`/test`)}>test page</Button>
       </div>
     </div>
-  )
+  );
 }
