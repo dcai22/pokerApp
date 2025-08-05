@@ -1,8 +1,3 @@
-export interface DataStore {
-    Players: number[],
-    Tables: number[]
-}
-
 export class Table {
     id: number;
     name: string;
@@ -37,14 +32,10 @@ export class Player {
         this.username = username;
     }
 
-    getVpip() {
-        let len = this.vpips.length;
-        if (!len) return 0;
-
-        let count = 0;
-        for (let i = 0; i < len; i++) {
-            if (this.vpips[i]) count++;
-        }
+    getVpip(): number {
+        const len = this.vpips.length;
+        if (len === 0) return 0;
+        const count = this.vpips.filter(vpip => vpip).length;
         return count / len;
     }
 }
@@ -67,11 +58,11 @@ export class Hand {
         }
     }
 
-    isNull() {
+    isNull(): boolean {
         return this.card1 === null || this.card2 === null;
     }
 
-    isSuited() {
+    isSuited(): boolean {
         if (this.isNull()) {
             return false;
         }
@@ -80,7 +71,7 @@ export class Hand {
         return card1.suit === card2.suit;
     }
 
-    isPaired() {
+    isPaired(): boolean {
         if (this.isNull()) {
             return false;
         }
@@ -89,7 +80,7 @@ export class Hand {
         return card1.rank === card2.rank;
     }
 
-    isConnected() {
+    isConnected(): boolean {
         if (this.isNull()) {
             return false;
         }
@@ -100,11 +91,11 @@ export class Hand {
                (Math.abs(card1.rankVal() - card2.rankVal()) === 1);
     }
 
-    isSuitedConnector() {
+    isSuitedConnector(): boolean {
         return this.isSuited() && this.isConnected();
     }
 
-    displayName() {
+    displayName(): string {
         if (this.isNull()) return "unknown";
         const card1 = this.card1 as Card;
         const card2 = this.card2 as Card;
@@ -112,32 +103,32 @@ export class Hand {
     }
 
     // to combination_id
-    cid() {
+    cid(): number {
         if (this.isNull()) {
             return -1;
         }
         const card1 = this.card1 as Card;
         const card2 = this.card2 as Card;
-        const card1_id = 4 * card1.rankVal() + card1.suitVal();
-        const card2_id = 4 * card2.rankVal() + card2.suitVal();
-        return 52 * card1_id + card2_id;
+        const card1Id: number = 4 * card1.rankVal() + card1.suitVal();
+        const card2Id: number = 4 * card2.rankVal() + card2.suitVal();
+        return 52 * card1Id + card2Id;
     }
 
     // from combination_id
-    static fromCid(cid: number) {
+    static fromCid(cid: number): Hand {
         if (cid < 0) return new Hand(null, null);
 
-        const card1_id = Math.floor(cid / 52);
-        const card1_rank = Math.floor(card1_id / 4);
-        const card1_suit = card1_id % 4;
+        const card1Id: number = Math.floor(cid / 52);
+        const card1Rank: number = Math.floor(card1Id / 4);
+        const card1Suit: number = card1Id % 4;
 
-        const card2_id = cid % 52;
-        const card2_rank = Math.floor(card2_id / 4);
-        const card2_suit = card2_id % 4;
+        const card2Id: number = cid % 52;
+        const card2Rank: number = Math.floor(card2Id / 4);
+        const card2Suit: number = card2Id % 4;
 
         return new Hand(
-            new Card(Card.ranks[card1_rank], Card.suits[card1_suit]),
-            new Card(Card.ranks[card2_rank], Card.suits[card2_suit])
+            new Card(Card.ranks[card1Rank], Card.suits[card1Suit]),
+            new Card(Card.ranks[card2Rank], Card.suits[card2Suit])
         );
     }
 }
@@ -146,60 +137,60 @@ export class Card {
     rank: string;
     suit: string;
 
-    static ranks = ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A'];
-    static suits = ['d', 'c', 'h', 's'];
+    static ranks: string[] = ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A'];
+    static suits: string[] = ['d', 'c', 'h', 's'];
 
     constructor(rank: string, suit: string) {
         this.rank = rank;
         this.suit = suit;
     }
 
-    rankVal() {
+    rankVal(): number {
         return Card.ranks.indexOf(this.rank);
     }
 
-    suitVal() {
+    suitVal(): number {
         return Card.suits.indexOf(this.suit);
     }
 
-    isLargerThan(other: Card) {
+    isLargerThan(other: Card): boolean {
         if (this.rankVal() > other.rankVal()) return true;
         if (this.rankVal() < other.rankVal()) return false;
         if (this.suitVal() > other.suitVal()) return true;
         return false;
     }
 
-    static expandSuit(suitChar: string) {
-        if (suitChar === "c") {
-            return "Clubs";
-        }
-        if (suitChar === "d") {
-            return "Diamonds";
-        }
-        if (suitChar === "h") {
-            return "Hearts";
-        }
-        if (suitChar === "s") {
-            return "Spades";
-        }
-    }
-
-    static prettySuit(suitChar: string) {
-        if (suitChar === "c") {
-            return "♣";
-        }
-        if (suitChar === "d") {
-            return "♦";
-        }
-        if (suitChar === "h") {
-            return "♥";
-        }
-        if (suitChar === "s") {
-            return "♠";
+    static expandSuit(suitChar: string): string {
+        switch (suitChar) {
+            case "c":
+                return "Clubs";
+            case "d":
+                return "Diamonds";
+            case "h":
+                return "Hearts";
+            case "s":
+                return "Spades";
+            default:
+                throw new Error(`Invalid suit ${suitChar}`);
         }
     }
 
-    static prettyPrint(card: Card) {
+    static prettySuit(suitChar: string): string {
+        switch (suitChar) {
+            case "c":
+                return "♣";
+            case "d":
+                return "♦";
+            case "h":
+                return "♥";
+            case "s":
+                return "♠";
+            default:
+                throw new Error(`Invalid suit ${suitChar}`);
+        }
+    }
+
+    static prettyPrint(card: Card): string {
         return `${card.rank}${card.suit}`.toUpperCase();
     }
 }
