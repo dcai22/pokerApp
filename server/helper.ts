@@ -129,7 +129,7 @@ export async function getTablePlayers(tableId: number): Promise<{ name: string, 
  */
 export async function checkPlayersAgree(tableId: number): Promise<boolean> {
     try {
-        const tablePlayersRes = await pool.query<{ wantEndGame: boolean }>(
+        const tablePlayersRes = await pool.query<{ want_end_game: boolean }>(
             `SELECT want_end_game
             FROM table_players
             WHERE table_id = $1`,
@@ -137,7 +137,7 @@ export async function checkPlayersAgree(tableId: number): Promise<boolean> {
         );
         const tablePlayers = tablePlayersRes.rows;
 
-        if (tablePlayers.length === 0 || tablePlayers.some(tp => !tp.wantEndGame)) {
+        if (tablePlayers.length === 0 || tablePlayers.some(tp => !tp.want_end_game)) {
             return false;
         } else {
             return true;
@@ -173,7 +173,7 @@ export async function cancelPlayersAgree(tableId: number): Promise<void> {
  */
 export async function genTableId(): Promise<number> {
     while (true) {
-        const tableId = Math.floor(Math.random() * 9000 + 1000);
+        const tableId: number = Math.floor(Math.random() * 9000 + 1000);
 
         // check for duplicates
         try {
