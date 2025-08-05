@@ -437,5 +437,6 @@ It's time to add some documentation to the backend.
 The priority now is adding type annotations to leverage the power of TypeScript.
 Some SQL queries can also be improved significantly.
 For example, `getTablePlayers` in helper.ts had sequential SQL queries, which could be simplified to a single query.
+Adding generic typing to `pool.query` is a high priority, as it improves both typing and SQL queries.
 
 I also noticed a problem with buyins, where tapping the 'Confirm' button twice in quick succession would cause two buyins to go through.
