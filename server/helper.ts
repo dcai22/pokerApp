@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import pool from "./db";
+import { string } from "zod";
 
 export async function genHash(rawText: string): Promise<string> {
     const saltRounds = 10;
@@ -34,37 +35,30 @@ export async function genToken(player_id: number): Promise<string> {
 
 // returns { message } or { username }
 export async function authToken(token: string, playerId: number): Promise<{ username: string } | { message: string }> {
-    const tokenRes = await pool.query(
-        "SELECT * FROM tokens WHERE player_id=$1",
+    const tokenRes = await pool.query<{ username: string; hash: string }>(
+        `SELECT players.username, tokens.hash
+        FROM players
+        JOIN tokens ON players.id = tokens.player_id
+        WHERE players.id = $1`,
         [playerId]
     );
     const playerTokens = tokenRes.rows;
 
-    let hash: string | undefined;
-    for (const t of playerTokens) {
-        if (await bcrypt.compare(token, t.hash)) {
-            hash = t.hash;
+    let playerToken: { username: string; hash: string } | undefined;
+    for (const pt of playerTokens) {
+        if (await bcrypt.compare(token, pt.hash)) {
+            playerToken = pt;
             break;
         }
     }
-    if (!hash) {
+    if (!playerToken) {
         return { message: "error: bad token" };
     } else {
         await pool.query(
             "DELETE FROM tokens WHERE player_id=$1 AND NOT hash=$2",
-            [playerId, hash]
+            [playerId, playerToken.hash]
         );
-    }
-
-    const playerRes = await pool.query(
-        "SELECT * FROM players WHERE id=$1",
-        [playerId]
-    );
-    if (playerRes.rowCount) {
-        const username: string = playerRes.rows[0].username;
-        return { username };
-    } else {
-        return { message: "error: player not found" };
+        return { username: playerToken.username };
     }
 }
 
