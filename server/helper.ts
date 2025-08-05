@@ -55,7 +55,7 @@ export async function authToken(token: string, playerId: number): Promise<{ user
         return { message: "error: bad token" };
     } else {
         await pool.query(
-            "DELETE FROM tokens WHERE player_id=$1 AND NOT hash=$2",
+            "DELETE FROM tokens WHERE player_id = $1 AND NOT hash = $2",
             [playerId, playerToken.hash]
         );
         return { username: playerToken.username };
@@ -99,13 +99,15 @@ export async function getTablePlayers(tableId: number): Promise<{ name: string, 
 
 export async function checkPlayersAgree(tableId: number): Promise<boolean> {
     try {
-        const tablePlayersRes = await pool.query(
-            "SELECT * FROM table_players WHERE table_id=$1",
+        const tablePlayersRes = await pool.query<{ wantEndGame: boolean }>(
+            `SELECT want_end_game
+            FROM table_players
+            WHERE table_id = $1`,
             [tableId]
         );
         const tablePlayers = tablePlayersRes.rows;
 
-        if (tablePlayers.length === 0 || tablePlayers.some(tp => !tp.want_end_game)) {
+        if (tablePlayers.length === 0 || tablePlayers.some(tp => !tp.wantEndGame)) {
             return false;
         } else {
             return true;
@@ -119,7 +121,9 @@ export async function checkPlayersAgree(tableId: number): Promise<boolean> {
 export async function cancelPlayersAgree(tableId: number): Promise<void> {
     try {
         await pool.query(
-            "UPDATE table_players SET want_end_game=false WHERE table_id=$1",
+            `UPDATE table_players
+            SET want_end_game = false
+            WHERE table_id = $1`,
             [tableId]
         );
     } catch (err: unknown) {
@@ -134,7 +138,9 @@ export async function genTableId(): Promise<number> {
         // check for duplicates
         try {
             const dbRes = await pool.query(
-                "SELECT * FROM tables WHERE id=$1",
+                `SELECT *
+                FROM tables
+                WHERE id=$1`,
                 [tableId]
             );
             if (dbRes.rowCount) continue;
