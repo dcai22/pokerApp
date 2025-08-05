@@ -1,8 +1,13 @@
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import pool from "./db";
-import { string } from "zod";
 
+/**
+ * Salts and hashes a given string.
+ * 
+ * @param rawText - The string to be hashed and salted.
+ * @returns The encrypted string.
+ */
 export async function genHash(rawText: string): Promise<string> {
     const saltRounds = 10;
     const salt: string = await bcrypt.genSalt(saltRounds);
@@ -10,16 +15,22 @@ export async function genHash(rawText: string): Promise<string> {
     return hash;
 }
 
-// generates and returns (unique) token after adding to database
-export async function genToken(player_id: number): Promise<string> {
+/**
+ * Generates a new token for a player and inserts its hash to the database.
+ * 
+ * @param playerId - The ID of the player.
+ * @returns A unique token for the player.
+ */
+export async function genToken(playerId: number): Promise<string> {
     while (true) {
         const token: string = crypto.randomBytes(64).toString('hex');
         const hash: string = await genHash(token);
 
         try {
             const dbRes = await pool.query(
-                "INSERT INTO tokens(hash, player_id) VALUES($1, $2)",
-                [hash, player_id]
+                `INSERT INTO tokens(hash, player_id)
+                VALUES($1, $2)`,
+                [hash, playerId]
             );
 
             if (dbRes.rowCount) {
@@ -33,7 +44,14 @@ export async function genToken(player_id: number): Promise<string> {
     }
 }
 
-// returns { message } or { username }
+/**
+ * Authenticates a user token for a specific player.
+ * If successful, all other tokens are purged from the database.
+ * 
+ * @param token - An unhashed token.
+ * @param playerId - The ID of the player being authenticated.
+ * @returns The player's username if successful, or an error message otherwise.
+ */
 export async function authToken(token: string, playerId: number): Promise<{ username: string } | { message: string }> {
     const tokenRes = await pool.query<{ username: string; hash: string }>(
         `SELECT players.username, tokens.hash
@@ -62,6 +80,12 @@ export async function authToken(token: string, playerId: number): Promise<{ user
     }
 }
 
+/**
+ * Searches player details on a given table.
+ * 
+ * @param tableId - The ID of the table being queried.
+ * @returns An array of player details, each containing the player's username, total buyin, active status, and VPIP status.
+ */
 export async function getTablePlayers(tableId: number): Promise<{ name: string, buyin: number, isActive: boolean, hasVpip: boolean }[]> {
     const dbRes = await pool.query(
         `SELECT
@@ -97,6 +121,12 @@ export async function getTablePlayers(tableId: number): Promise<{ name: string, 
     return players;
 }
 
+/**
+ * Checks if all players on table agree to ending the game.
+ * 
+ * @param tableId - The ID of the table being checked.
+ * @returns Whether all players on the table agree to end the game.
+ */
 export async function checkPlayersAgree(tableId: number): Promise<boolean> {
     try {
         const tablePlayersRes = await pool.query<{ wantEndGame: boolean }>(
@@ -118,6 +148,11 @@ export async function checkPlayersAgree(tableId: number): Promise<boolean> {
     }
 }
 
+/**
+ * Resets `want_end_game` for each player on the table to be false.
+ * 
+ * @param tableId - The ID of the table to update.
+ */
 export async function cancelPlayersAgree(tableId: number): Promise<void> {
     try {
         await pool.query(
@@ -131,6 +166,11 @@ export async function cancelPlayersAgree(tableId: number): Promise<void> {
     }
 }
 
+/**
+ * Generates a unique 4-digit table ID.
+ * 
+ * @returns A unique 4-digit table ID.
+ */
 export async function genTableId(): Promise<number> {
     while (true) {
         const tableId = Math.floor(Math.random() * 9000 + 1000);
