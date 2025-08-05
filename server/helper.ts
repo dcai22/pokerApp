@@ -114,7 +114,7 @@ export async function getTablePlayers(tableId: number): Promise<{ name: string, 
         return {
             name: player.username,
             buyin: player.total_buyin,
-            isActive: player.isActive,
+            isActive: player.is_active,
             hasVpip: player.has_vpip,
         };
     });
@@ -180,7 +180,7 @@ export async function genTableId(): Promise<number> {
             const dbRes = await pool.query(
                 `SELECT *
                 FROM tables
-                WHERE id=$1`,
+                WHERE id = $1`,
                 [tableId]
             );
             if (dbRes.rowCount) continue;
