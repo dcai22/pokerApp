@@ -219,27 +219,27 @@ export class Buyin {
 }
 
 export interface LocalPlayerData {
-    name: string,
-    buyin: number,
-    isActive: boolean,
-    wantEndGame: boolean,
+    name: string;
+    buyin: number;
+    isActive: boolean;
+    wantEndGame: boolean;
 }
 
 export interface LocalBuyinData {
-    name: string,
-    time: string,
-    amount: number,
+    name: string;
+    time: string;
+    amount: number;
 }
 
 export interface LocalHandData {
-    handNum: number,
-    cid: number,
-    vpip: boolean,
+    handNum: number;
+    cid: number;
+    vpip: boolean;
 }
 
 export interface HandData {
-    name: string,
-    handNum: number,
-    cid: number,
-    vpip: boolean,
+    name: string;
+    handNum: number;
+    cid: number;
+    vpip: boolean;
 }
